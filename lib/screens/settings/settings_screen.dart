@@ -1,0 +1,178 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/routes.dart';
+import '../../providers/settings/settings_provider.dart';
+import '../../widgets/settings/accent_color_selector.dart';
+import '../../widgets/settings/font_scale_selector.dart';
+import '../../widgets/shared/custom_gradient_app_bar.dart';
+import '../../widgets/shared/app_bottom_nav_bar.dart';
+
+/// Pantalla de ajustes de la aplicación.
+/// 
+/// Permite al usuario personalizar la apariencia y comportamiento de ListMe.
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: const CustomGradientAppBar(title: 'Ajustes'),
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: 1, // Índice de Ajustes
+        onTap: (index) {
+          if (index == 0) Navigator.pushReplacementNamed(context, AppRoutes.home);
+          if (index == 2) Navigator.pushNamed(context, AppRoutes.lists);
+          if (index == 3) Navigator.pushNamed(context, AppRoutes.profile);
+        },
+      ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        children: [
+          _buildSection(
+            context,
+            'Apariencia',
+            [
+              _buildSettingTile(
+                context,
+                title: 'Tema de la aplicación',
+                subtitle: 'Elige el modo de color',
+                trailing: SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined)),
+                    ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.auto_awesome_outlined)),
+                    ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined)),
+                  ],
+                  selected: {settings.themeMode},
+                  onSelectionChanged: (val) => settings.setThemeMode(val.first),
+                  showSelectedIcon: false,
+                ),
+              ),
+              const Divider(height: 32),
+              const Text(
+                'Color de Acento (Gemas)',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              AccentColorSelector(settings: settings),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            context,
+            'Texto y Lectura',
+            [
+              _buildSettingTile(
+                context,
+                title: 'Tamaño de fuente',
+                subtitle: 'Ajusta el tamaño del texto global',
+                trailing: Text(
+                  _fontScaleLabel(settings.fontScale),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              FontScaleSelector(settings: settings),
+            ],
+          ),
+          const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Versión 0.1.0 Beta',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                fontSize: 12,
+              ),
+            ),
+          ),
+          const SizedBox(height: 80), // Espacio extra para scroll
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 8),
+          child: Text(
+            title.toUpperCase(),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingTile(BuildContext context, {required String title, required String subtitle, required Widget trailing}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLargeFont = MediaQuery.textScalerOf(context).scale(1) > 1.2;
+
+        if (isLargeFont) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 12),
+              Align(alignment: Alignment.centerRight, child: trailing),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            trailing,
+          ],
+        );
+      },
+    );
+  }
+
+  String _fontScaleLabel(double scale) {
+    if (scale <= 0.85) return 'Muy Pequeño';
+    if (scale <= 0.95) return 'Pequeño';
+    if (scale <= 1.05) return 'Normal';
+    if (scale <= 1.15) return 'Mediano';
+    if (scale <= 1.30) return 'Grande';
+    return 'Muy Grande';
+  }
+}
