@@ -6,47 +6,77 @@ import '../../data/lists/list_model.dart';
 ///
 /// Gestiona la carga, creación, edición, eliminación y reordenación de listas.
 class ListsProvider extends ChangeNotifier {
-  // ignore: unused_field
   final ListsRepository _listsRepository;
 
-  // ignore: prefer_final_fields
   bool _isLoading = false;
-  final List<ListModel> _lists = [
-    const ListModel(
-      id: '1',
-      name: 'Compra Semanal',
-      description: 'Cosas para el súper',
-      color: 'amethyst',
-      icon: 'shopping_cart',
-      isShared: false,
-      order: 0,
-    ),
-    const ListModel(
-      id: '2',
-      name: 'Series Pendientes',
-      description: 'Netflix, HBO, Disney+',
-      color: 'ruby',
-      icon: 'tv',
-      isShared: true,
-      order: 1,
-    ),
-    const ListModel(
-      id: '3',
-      name: 'Libros 2024',
-      description: 'Lecturas para este año',
-      color: 'sapphire',
-      icon: 'book',
-      isShared: false,
-      order: 2,
-    ),
-  ];
+  List<ListModel> _lists = [];
   String? _errorMessage;
 
-  ListsProvider(this._listsRepository);
+  ListsProvider(this._listsRepository) {
+    fetchLists();
+  }
 
   bool get isLoading => _isLoading;
   List<ListModel> get lists => _lists;
   String? get errorMessage => _errorMessage;
+
+  Future<void> fetchLists() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _lists = await _listsRepository.getAllLibraries();
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<bool> createList(ListModel newList) async {
+    try {
+      final createdList = await _listsRepository.createLibrary(newList);
+      _lists.add(createdList);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateList(int id, ListModel updatedList) async {
+    try {
+      final list = await _listsRepository.updateLibrary(id, updatedList);
+      final index = _lists.indexWhere((l) => l.id == id);
+      if (index != -1) {
+        _lists[index] = list;
+        notifyListeners();
+      }
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteList(int id) async {
+    try {
+      await _listsRepository.deleteLibrary(id);
+      _lists.removeWhere((l) => l.id == id);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
 
   void reorderLists(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) {
@@ -54,8 +84,7 @@ class ListsProvider extends ChangeNotifier {
     }
     final ListModel item = _lists.removeAt(oldIndex);
     _lists.insert(newIndex, item);
+    // TODO: Persistence of order in DB if needed (using position field)
     notifyListeners();
   }
-
-  // TODO: Implementar fetchLists, createList, updateList, deleteList y reorderLists.
 }

@@ -1,25 +1,74 @@
 import 'package:flutter/material.dart';
 import '../../data/auth/auth_repository.dart';
+import '../../data/auth/auth_models.dart';
 
-/// Proveedor de estado de autenticación.
-///
-/// Gestiona el estado de sesión del usuario (login, logout, registro).
-/// Se registra como un Provider global en main.dart al ser requerido en múltiples pantallas.
+enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
+
 class AuthProvider extends ChangeNotifier {
-  // ignore: unused_field
   final AuthRepository _authRepository;
-
-  // ignore: prefer_final_fields
-  bool _isLoading = false;
+  
+  AuthStatus _status = AuthStatus.initial;
   String? _errorMessage;
-  // ignore: prefer_final_fields
-  bool _isAuthenticated = false;
 
-  AuthProvider(this._authRepository);
+  AuthProvider(this._authRepository) {
+    checkAuthStatus();
+  }
 
-  bool get isLoading => _isLoading;
+  AuthStatus get status => _status;
   String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _isAuthenticated;
+  bool get isLoading => _status == AuthStatus.loading;
 
-  // TODO: Implementar login, register y logout.
+  Future<void> checkAuthStatus() async {
+    final isLoggedIn = await _authRepository.isLoggedIn();
+    _status = isLoggedIn ? AuthStatus.authenticated : AuthStatus.unauthenticated;
+    notifyListeners();
+  }
+
+  Future<bool> login(String username, String password) async {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authRepository.login(LoginRequest(
+        username: username,
+        password: password,
+      ));
+      _status = AuthStatus.authenticated;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _status = AuthStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> register(String username, String password) async {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authRepository.register(RegisterRequest(
+        username: username,
+        password: password,
+      ));
+      _status = AuthStatus.unauthenticated;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _status = AuthStatus.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await _authRepository.logout();
+    _status = AuthStatus.unauthenticated;
+    notifyListeners();
+  }
 }

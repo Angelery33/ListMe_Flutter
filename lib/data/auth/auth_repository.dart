@@ -2,6 +2,55 @@
 /// 
 /// Abstrae el acceso a los endpoints de auth de la API REST (Spring Boot).
 /// Los métodos aquí devuelven modelos de dominio, nunca JSON en crudo.
+import 'package:dio/dio.dart';
+import 'package:list_me/core/api_client.dart';
+import 'package:list_me/core/token_storage.dart';
+import 'package:list_me/data/auth/auth_models.dart';
+import 'package:list_me/data/auth/user_model.dart';
+
 class AuthRepository {
-  // TODO: Inyectar el cliente HTTP (wrapper sobre Dio/Http) desde core/
+  final ApiClient _apiClient;
+
+  AuthRepository(this._apiClient);
+
+  Future<LoginResponse> login(LoginRequest request) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/auth/login',
+        data: request.toJson(),
+      );
+      final loginResponse = LoginResponse.fromJson(response.data);
+      
+      // Save tokens
+      await TokenStorage.saveTokens(
+        accessToken: loginResponse.accessToken,
+        refreshToken: loginResponse.refreshToken,
+      );
+      
+      return loginResponse;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> register(RegisterRequest request) async {
+    try {
+      await _apiClient.dio.post(
+        '/auth/register',
+        data: request.toJson(),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> logout() async {
+    await TokenStorage.clearTokens();
+  }
+
+  // Helper to check if logged in
+  Future<bool> isLoggedIn() async {
+    final token = await TokenStorage.getAccessToken();
+    return token != null;
+  }
 }
