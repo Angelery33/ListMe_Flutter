@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth/auth_provider.dart';
 import '../../core/routes.dart';
 import '../../widgets/shared/app_logo_title.dart';
 
@@ -12,21 +14,45 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
+  final _userController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _userController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _handleLogin(BuildContext context) async {
+    final auth = context.read<AuthProvider>();
+    final username = _userController.text.trim();
+    final password = _passwordController.text;
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, rellena todos los campos')),
+      );
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final success = await auth.login(username, password);
+    if (!mounted) return;
+
+    if (!success) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(auth.errorMessage ?? 'Error al iniciar sesión')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
+    final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -44,15 +70,15 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           // Contenido principal
           SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                const AppLogoTitle(),
-                const Spacer(),
-                Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: ClipRRect(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const AppLogoTitle(),
+                    const SizedBox(height: 60),
+                    ClipRRect(
                       borderRadius: BorderRadius.circular(24),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -85,10 +111,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               const SizedBox(height: 24),
+                              if (authProvider.errorMessage != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: Text(
+                                    authProvider.errorMessage!,
+                                    style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
                               _buildTextField(
-                                controller: _emailController,
-                                label: 'Correo Electrónico',
-                                icon: Icons.email_outlined,
+                                controller: _userController,
+                                label: 'Nombre de Usuario',
+                                icon: Icons.person_outline,
                               ),
                               const SizedBox(height: 16),
                               _buildTextField(
@@ -98,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 isPassword: true,
                               ),
                               const SizedBox(height: 24),
-                              _buildLoginButton(context, theme),
+                              _buildLoginButton(context, theme, authProvider),
                               const SizedBox(height: 16),
                               TextButton(
                                 onPressed: () => Navigator.pushNamed(context, AppRoutes.register),
@@ -112,10 +147,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                const Spacer(),
-              ],
+              ),
             ),
           ),
         ],
@@ -164,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginButton(BuildContext context, ThemeData theme) {
+  Widget _buildLoginButton(BuildContext context, ThemeData theme, AuthProvider auth) {
     return Container(
       width: double.infinity,
       height: 55,
@@ -179,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
+        onPressed: auth.isLoading ? null : () => _handleLogin(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: theme.colorScheme.primary,
@@ -188,13 +222,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           elevation: 0,
         ),
-        child: const Text(
-          'ENTRAR',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
+        child: auth.isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Text(
+                'ENTRAR',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
       ),
     );
   }

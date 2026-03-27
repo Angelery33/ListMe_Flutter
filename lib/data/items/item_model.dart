@@ -113,41 +113,121 @@ class ItemModel {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    if (id != null) 'idItem': id,
-    'idLibrary': idLibrary,
-    'name': name,
-    'description': description,
-    'date': date,
-    'status': status,
-    'imagePath': imagePath,
-    'score': score,
-    'genre': genre,
-    'startDate': startDate,
-    'completionDate': completionDate,
-    'acquisitionDate': acquisitionDate,
-    'price': price,
-    'remoteImageUrl': remoteImageUrl,
-    'progressUnit': progressUnit,
-    'currentProgress': currentProgress,
-    'totalProgress': totalProgress,
-    'season': season,
-    'chapter': chapter,
-    'page': page,
-    'volume': volume,
-    'totalSeason': totalSeason,
-    'totalChapter': totalChapter,
-    'totalPage': totalPage,
-    'totalVolume': totalVolume,
-    'parentId': parentId,
-    'externalRating': externalRating,
-    'imageAlignmentX': imageAlignmentX,
-    'imageAlignmentY': imageAlignmentY,
-    'itemNumber': itemNumber,
-    'productType': productType,
-    'edition': edition,
-    'collection': collection,
-    'wishlist': wishlist,
-    'current': current,
-  };
+  ItemModel copyWith({
+    int? id,
+    int? idLibrary,
+    String? name,
+    String? description,
+    int? date,
+    String? status,
+    String? imagePath,
+    double? score,
+    String? genre,
+    int? startDate,
+    int? completionDate,
+    int? acquisitionDate,
+    double? price,
+    String? remoteImageUrl,
+    String? progressUnit,
+    int? currentProgress,
+    int? totalProgress,
+    int? season,
+    int? chapter,
+    int? page,
+    int? volume,
+    int? totalSeason,
+    int? totalChapter,
+    int? totalPage,
+    int? totalVolume,
+    int? parentId,
+    double? externalRating,
+    double? imageAlignmentX,
+    double? imageAlignmentY,
+    String? itemNumber,
+    String? productType,
+    String? edition,
+    bool? collection,
+    bool? wishlist,
+    bool? current,
+  }) {
+    return ItemModel(
+      id: id ?? this.id,
+      idLibrary: idLibrary ?? this.idLibrary,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      date: date ?? this.date,
+      status: status ?? this.status,
+      imagePath: imagePath ?? this.imagePath,
+      score: score ?? this.score,
+      genre: genre ?? this.genre,
+      startDate: startDate ?? this.startDate,
+      completionDate: completionDate ?? this.completionDate,
+      acquisitionDate: acquisitionDate ?? this.acquisitionDate,
+      price: price ?? this.price,
+      remoteImageUrl: remoteImageUrl ?? this.remoteImageUrl,
+      progressUnit: progressUnit ?? this.progressUnit,
+      currentProgress: currentProgress ?? this.currentProgress,
+      totalProgress: totalProgress ?? this.totalProgress,
+      season: season ?? this.season,
+      chapter: chapter ?? this.chapter,
+      page: page ?? this.page,
+      volume: volume ?? this.volume,
+      totalSeason: totalSeason ?? this.totalSeason,
+      totalChapter: totalChapter ?? this.totalChapter,
+      totalPage: totalPage ?? this.totalPage,
+      totalVolume: totalVolume ?? this.totalVolume,
+      parentId: parentId ?? this.parentId,
+      externalRating: externalRating ?? this.externalRating,
+      imageAlignmentX: imageAlignmentX ?? this.imageAlignmentX,
+      imageAlignmentY: imageAlignmentY ?? this.imageAlignmentY,
+      itemNumber: itemNumber ?? this.itemNumber,
+      productType: productType ?? this.productType,
+      edition: edition ?? this.edition,
+      collection: collection ?? this.collection,
+      wishlist: wishlist ?? this.wishlist,
+      current: current ?? this.current,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{
+      'idLibrary': idLibrary,
+      'name': name,
+      'collection': collection,
+      'wishlist': wishlist,
+      'current': current,
+    };
+    if (id != null) map['idItem'] = id;
+    if (description != null) map['description'] = description;
+    if (date != null) map['date'] = date;
+    if (status != null) map['status'] = status;
+    if (imagePath != null) map['imagePath'] = imagePath;
+    if (score != null) map['score'] = score;
+    if (genre != null) map['genre'] = genre;
+    if (startDate != null) map['startDate'] = startDate;
+    if (completionDate != null) map['completionDate'] = completionDate;
+    if (acquisitionDate != null) map['acquisitionDate'] = acquisitionDate;
+    if (price != null) map['price'] = price;
+    if (remoteImageUrl != null) map['remoteImageUrl'] = remoteImageUrl;
+    if (progressUnit != null) map['progressUnit'] = progressUnit;
+    if (currentProgress != null) map['currentProgress'] = currentProgress;
+    if (totalProgress != null) map['totalProgress'] = totalProgress;
+    if (season != null) map['season'] = season;
+    if (chapter != null) map['chapter'] = chapter;
+    if (page != null) map['page'] = page;
+    if (volume != null) map['volume'] = volume;
+    if (totalSeason != null) map['totalSeason'] = totalSeason;
+    if (totalChapter != null) map['totalChapter'] = totalChapter;
+    if (totalPage != null) map['totalPage'] = totalPage;
+    if (totalVolume != null) map['totalVolume'] = totalVolume;
+    if (parentId != null) map['parentId'] = parentId;
+    if (externalRating != null) map['externalRating'] = externalRating;
+    if (imageAlignmentX != null) map['imageAlignmentX'] = imageAlignmentX;
+    if (imageAlignmentY != null) map['imageAlignmentY'] = imageAlignmentY;
+    if (itemNumber != null) map['itemNumber'] = itemNumber;
+    if (productType != null) map['productType'] = productType;
+    if (edition != null) map['edition'] = edition;
+    
+    return map;
+  }
 }

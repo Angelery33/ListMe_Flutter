@@ -9,6 +9,10 @@ import 'providers/auth/auth_provider.dart';
 import 'providers/lists/lists_provider.dart';
 import 'providers/settings/settings_provider.dart';
 
+import 'core/auth_wrapper.dart';
+import 'core/api_client.dart';
+import 'data/items/items_repository.dart';
+import 'data/attributes/attributes_repository.dart';
 import 'providers/items/items_provider.dart';
 
 void main() {
@@ -54,7 +58,7 @@ class ListMeApp extends StatelessWidget {
           theme: AppTheme.getTheme(settings.accentColor, Brightness.light, settings.fontScale),
           darkTheme: AppTheme.getTheme(settings.accentColor, Brightness.dark, settings.fontScale),
           themeMode: settings.themeMode,
-          initialRoute: AppRoutes.login,
+          home: const AuthWrapper(),
           routes: AppRoutes.routes,
         );
       },

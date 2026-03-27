@@ -45,7 +45,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> register(String username, String password) async {
+  Future<bool> register(String username, String password, String email) async {
     _status = AuthStatus.loading;
     _errorMessage = null;
     notifyListeners();
@@ -54,6 +54,7 @@ class AuthProvider extends ChangeNotifier {
       await _authRepository.register(RegisterRequest(
         username: username,
         password: password,
+        email: email,
       ));
       _status = AuthStatus.unauthenticated;
       notifyListeners();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/items/items_repository.dart';
 import '../../data/items/item_model.dart';
+import '../../core/utils/item_grouping_helper.dart';
 
 class ItemsProvider extends ChangeNotifier {
   final ItemsRepository _itemsRepository;
@@ -9,16 +10,43 @@ class ItemsProvider extends ChangeNotifier {
   List<ItemModel> _items = [];
   String? _errorMessage;
 
+  // Filtros y Ordenación
+  String _searchQuery = '';
+  String? _filterGenre;
+  SortOption _sortOption = SortOption.dateNewest;
+
   ItemsProvider(this._itemsRepository);
 
   bool get isLoading => _isLoading;
   List<ItemModel> get items => _items;
   String? get errorMessage => _errorMessage;
 
+  String get searchQuery => _searchQuery;
+  String? get filterGenre => _filterGenre;
+  SortOption get sortOption => _sortOption;
+
+  List<String> get availableGenres =>
+      _items.map((i) => i.genre).whereType<String>().toSet().toList();
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  void setFilterGenre(String? genre) {
+    _filterGenre = genre;
+    notifyListeners();
+  }
+
+  void setSortOption(SortOption option) {
+    _sortOption = option;
+    notifyListeners();
+  }
+
   Future<void> fetchItemsByLibrary(int libraryId) async {
     _isLoading = true;
     _errorMessage = null;
-    _items = []; // Clear current items while loading
+    _items = []; // Limpia la lista (para carga inicial o cambio de lista)
     notifyListeners();
 
     try {
@@ -29,6 +57,17 @@ class ItemsProvider extends ChangeNotifier {
       _isLoading = false;
       _errorMessage = e.toString();
       notifyListeners();
+    }
+  }
+
+  /// Actualiza los items desde el servidor SIN limpiar la lista actual primero.
+  /// Úsalo al volver de crear/editar un item para evitar el flash de lista vacía.
+  Future<void> refreshItems(int libraryId) async {
+    try {
+      _items = await _itemsRepository.getItemsByLibrary(libraryId);
+      notifyListeners();
+    } catch (_) {
+      // En caso de error silencioso, mantenemos lo que tenemos
     }
   }
 
@@ -73,4 +112,18 @@ class ItemsProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Incrementa el progreso de un item en 1 unidad y actualiza la API.
+  Future<void> incrementProgress(ItemModel item) async {
+    if (item.id == null) return;
+    final current = item.currentProgress ?? 0;
+    final total = item.totalProgress;
+
+    // No incrementar si ya se llegó al total
+    if (total != null && total > 0 && current >= total) return;
+
+    final updated = item.copyWith(currentProgress: current + 1);
+    await updateItem(item.id!, updated);
+  }
 }
+

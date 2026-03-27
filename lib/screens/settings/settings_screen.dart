@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:provider/provider.dart';
 import '../../core/routes.dart';
 import '../../providers/settings/settings_provider.dart';
@@ -19,13 +20,12 @@ class SettingsScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const CustomGradientAppBar(title: 'Ajustes'),
+      appBar: const CustomGradientAppBar(title: 'Ajustes', showBackButton: false),
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1, // Índice de Ajustes
+        currentIndex: 2, // Ajustes = 2
         onTap: (index) {
-          if (index == 0) Navigator.pushReplacementNamed(context, AppRoutes.home);
-          if (index == 2) Navigator.pushNamed(context, AppRoutes.lists);
-          if (index == 3) Navigator.pushNamed(context, AppRoutes.profile);
+          if (index == 0) Navigator.pushReplacementNamed(context, AppRoutes.lists);
+          if (index == 1) Navigator.pushNamed(context, AppRoutes.profile);
         },
       ),
       body: ListView(
@@ -78,6 +78,27 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               FontScaleSelector(settings: settings),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            context,
+            'Cuenta',
+            [
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.redAccent),
+                title: const Text(
+                  'Cerrar Sesión',
+                  style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                ),
+                onTap: () async {
+                  final auth = context.read<AuthProvider>();
+                  await auth.logout();
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+                  }
+                },
+              ),
             ],
           ),
           const SizedBox(height: 40),

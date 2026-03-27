@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/lists/lists_repository.dart';
 import '../../data/lists/list_model.dart';
+import '../../data/lists/library_genre_model.dart';
 
 /// Proveedor de estado para la gestión de listas del usuario.
 ///
@@ -87,4 +88,28 @@ class ListsProvider extends ChangeNotifier {
     // TODO: Persistence of order in DB if needed (using position field)
     notifyListeners();
   }
+
+  // Genre Management Helpers
+  Future<LibraryGenreModel?> addGenreToList(int listId, String name) async {
+    try {
+      final newGenre = LibraryGenreModel(libraryId: listId, name: name);
+      return await _listsRepository.addLibraryGenre(newGenre);
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<bool> deleteGenreFromList(int genreId) async {
+    try {
+      await _listsRepository.deleteLibraryGenre(genreId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
 }
+

@@ -1,0 +1,111 @@
+import 'package:flutter/material.dart';
+import '../../data/items/item_model.dart';
+import '../../data/items/items_repository.dart';
+import '../../data/items/item_image_model.dart';
+
+class ItemDetailsProvider extends ChangeNotifier {
+  final ItemsRepository _itemsRepository;
+  
+  ItemModel? _item;
+  List<ItemModel> _subItems = [];
+  List<ItemImageModel> _images = [];
+  // TODO: Add Attributes when supported in backend
+  // List<AttributeItemModel> _attributes = [];
+  
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  ItemDetailsProvider(this._itemsRepository);
+
+  ItemModel? get item => _item;
+  List<ItemModel> get subItems => _subItems;
+  List<ItemImageModel> get images => _images;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
+  /// Loads the item and its relationships from the API
+  Future<void> loadItemDetails(int itemId, {ItemModel? initialItem}) async {
+    _isLoading = true;
+    _errorMessage = null;
+    
+    // Fast render with initial item if provided from the list
+    if (initialItem != null) {
+      _item = initialItem;
+      notifyListeners();
+    }
+
+    try {
+      // 1. Refresh item data completely
+      _item = await _itemsRepository.getItemById(itemId);
+
+      if (_item != null) {
+        // 2. Fetch gallery
+        _images = await _itemsRepository.getItemImages(itemId);
+        
+        // 3. Fetch sub-items if it's a collection
+        if (_item!.collection) {
+          // If the backend doesn't have a direct /items/parent/{id} endpoint yet, 
+          // we might just fetch library items and filter, or assume it's added.
+          // For now we will await adding that endpoint, or filtering locally.
+          final libraryItems = await _itemsRepository.getItemsByLibrary(_item!.idLibrary);
+          _subItems = libraryItems.where((i) => i.parentId == _item!.id).toList();
+        }
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Updates the item via API and locally updates the state
+  Future<bool> updateItem(ItemModel updatedItem) async {
+    if (updatedItem.id == null) return false;
+    
+    try {
+      final result = await _itemsRepository.updateItem(updatedItem.id!, updatedItem);
+      _item = result;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> updateScore(double newScore) async {
+    if (_item != null) {
+      final updatedItem = _item!.copyWith(score: newScore);
+      await updateItem(updatedItem);
+    }
+  }
+
+  Future<void> updateDescription(String newDescription) async {
+    if (_item != null) {
+      final updatedItem = _item!.copyWith(description: newDescription);
+      await updateItem(updatedItem);
+    }
+  }
+
+  Future<void> updateProgress(int current, int? total) async {
+    if (_item != null) {
+      final updatedItem = _item!.copyWith(
+        currentProgress: current,
+        totalProgress: total ?? _item!.totalProgress,
+      );
+      await updateItem(updatedItem);
+    }
+  }
+
+  Future<void> incrementProgress() async {
+    if (_item != null) {
+      final current = _item!.currentProgress ?? 0;
+      final total = _item!.totalProgress;
+      
+      if (total != null && total > 0 && current >= total) return;
+      await updateProgress(current + 1, total);
+    }
+  }
+}

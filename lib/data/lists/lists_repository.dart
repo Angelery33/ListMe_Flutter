@@ -1,6 +1,3 @@
-/// Repositorio de listas de usuario.
-/// 
-/// Gestiona las operaciones CRUD contra los endpoints de listas de la API REST.
 import 'package:list_me/core/api_client.dart';
 import 'package:list_me/data/lists/list_model.dart';
 import 'package:list_me/data/lists/library_genre_model.dart';
@@ -85,4 +82,25 @@ class ListsRepository {
       rethrow;
     }
   }
+
+  Future<LibraryGenreModel> addLibraryGenre(LibraryGenreModel genre) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/library-genres',
+        data: genre.toJson(),
+      );
+      return LibraryGenreModel.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteLibraryGenre(int genreId) async {
+    try {
+      await _apiClient.dio.delete('/library-genres/$genreId');
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
+

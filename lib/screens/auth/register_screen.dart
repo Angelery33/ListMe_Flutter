@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/routes.dart';
-import '../../widgets/shared/app_logo_title.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth/auth_provider.dart';
 
 /// Pantalla de registro con diseño Premium (Glassmorphism).
 class RegisterScreen extends StatefulWidget {
@@ -15,6 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _userController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
 
   @override
@@ -22,13 +23,60 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _userController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _handleRegister(BuildContext context) async {
+    final auth = context.read<AuthProvider>();
+    final username = _userController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (username.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, rellena todos los campos')),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
+    }
+
+    if (!email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Introduce un email válido')),
+      );
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final success = await auth.register(username, password, email);
+    if (!mounted) return;
+
+    if (success) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('¡Registro exitoso! Ya puedes iniciar sesión')),
+      );
+      navigator.pop(); // Volver al login
+    } else {
+      messenger.showSnackBar(
+        SnackBar(content: Text(auth.errorMessage ?? 'Error al registrarse')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
+    final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -46,110 +94,119 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           // Contenido principal
           SafeArea(
-            child: Column(
-              children: [
-                Stack(
-                  children: [
-                    // Botón de flecha atrás
-                    Positioned(
-                      left: 16,
-                      top: 10,
-                      child: ClipOval(
-                        child: Material(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          child: InkWell(
-                            onTap: () => Navigator.pop(context),
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 24),
-                            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        width: size.width > 600 ? 500 : double.infinity,
+                        padding: const EdgeInsets.all(32),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 1.5,
                           ),
                         ),
-                      ),
-                    ),
-                    // Título de la App
-                    const SizedBox(height: 20),
-                    // Título de la App (Logo + Nombre)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 20),
-                      child: AppLogoTitle(),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          width: size.width > 600 ? 500 : double.infinity,
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.person_add_rounded,
-                                size: 56,
-                                color: Colors.white,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // Botón de atrás flotante (Cambiamos Positioned para que sea absoluto al Stack)
+                            Positioned(
+                              left: -10,
+                              top: -10,
+                              child: ClipOval(
+                                child: Material(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  child: InkWell(
+                                    onTap: () => Navigator.pop(context),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Icon(Icons.arrow_back_ios_rounded,
+                                          color: Colors.white, size: 32),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Registro',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                            ),
+                            // Contenido central
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.person_add_rounded,
+                                  size: 56,
                                   color: Colors.white,
                                 ),
-                              ),
-                              const SizedBox(height: 24),
-                              _buildTextField(
-                                controller: _userController,
-                                label: 'Nombre de Usuario',
-                                icon: Icons.person_outline,
-                              ),
-                              const SizedBox(height: 16),
-                              _buildTextField(
-                                controller: _emailController,
-                                label: 'Correo Electrónico',
-                                icon: Icons.email_outlined,
-                              ),
-                              const SizedBox(height: 16),
-                              _buildTextField(
-                                controller: _passwordController,
-                                label: 'Contraseña',
-                                icon: Icons.lock_outline,
-                                isPassword: true,
-                              ),
-                              const SizedBox(height: 24),
-                              _buildRegisterButton(context, theme),
-                              const SizedBox(height: 16),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text(
-                                  '¿Ya tienes cuenta? Inicia sesión',
-                                  style: TextStyle(color: Colors.white70),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Registro',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(height: 24),
+                                if (authProvider.errorMessage != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: Text(
+                                      authProvider.errorMessage!,
+                                      style: const TextStyle(
+                                          color: Colors.redAccent, fontSize: 13),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                _buildTextField(
+                                  controller: _userController,
+                                  label: 'Nombre de Usuario',
+                                  icon: Icons.person_outline,
+                                ),
+                                const SizedBox(height: 16),
+                                _buildTextField(
+                                  controller: _emailController,
+                                  label: 'Correo Electrónico',
+                                  icon: Icons.email_outlined,
+                                ),
+                                const SizedBox(height: 16),
+                                _buildTextField(
+                                  controller: _passwordController,
+                                  label: 'Contraseña',
+                                  icon: Icons.lock_outline,
+                                  isPassword: true,
+                                ),
+                                const SizedBox(height: 16),
+                                _buildTextField(
+                                  controller: _confirmPasswordController,
+                                  label: 'Confirmar Contraseña',
+                                  icon: Icons.lock_reset_outlined,
+                                  isPassword: true,
+                                ),
+                                const SizedBox(height: 24),
+                                _buildRegisterButton(context, theme, authProvider),
+                                const SizedBox(height: 16),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text(
+                                    '¿Ya tienes cuenta? Inicia sesión',
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-                const Spacer(),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -198,7 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildRegisterButton(BuildContext context, ThemeData theme) {
+  Widget _buildRegisterButton(BuildContext context, ThemeData theme, AuthProvider auth) {
     return Container(
       width: double.infinity,
       height: 55,
@@ -213,7 +270,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
+        onPressed: auth.isLoading ? null : () => _handleRegister(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: theme.colorScheme.primary,
@@ -222,13 +279,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           elevation: 0,
         ),
-        child: const Text(
-          'REGISTRARSE',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
+        child: auth.isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Text(
+                'REGISTRARSE',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
       ),
     );
   }

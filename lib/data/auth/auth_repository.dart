@@ -1,12 +1,6 @@
-/// Repositorio de autenticación.
-/// 
-/// Abstrae el acceso a los endpoints de auth de la API REST (Spring Boot).
-/// Los métodos aquí devuelven modelos de dominio, nunca JSON en crudo.
-import 'package:dio/dio.dart';
 import 'package:list_me/core/api_client.dart';
 import 'package:list_me/core/token_storage.dart';
 import 'package:list_me/data/auth/auth_models.dart';
-import 'package:list_me/data/auth/user_model.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;

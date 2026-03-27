@@ -10,6 +10,7 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
   final List<Widget>? actions;
   final Widget? leading;
   final double height;
+  final bool showBackButton;
 
   const CustomGradientAppBar({
     super.key,
@@ -17,6 +18,7 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
     this.actions,
     this.leading,
     this.height = kToolbarHeight,
+    this.showBackButton = true,
   });
 
   @override
@@ -60,6 +62,7 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
+            automaticallyImplyLeading: showBackButton,
             actions: actions,
             leading: leading,
             iconTheme: const IconThemeData(color: Colors.white),

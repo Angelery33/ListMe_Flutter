@@ -19,18 +19,26 @@ class ListsScreen extends StatefulWidget {
 
 class _ListsScreenState extends State<ListsScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Cargar listas cuando la pantalla se muestra (después del login)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ListsProvider>().fetchLists();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final listsProvider = context.watch<ListsProvider>();
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const CustomGradientAppBar(title: 'Mis Listas'),
+      appBar: const CustomGradientAppBar(title: 'Mis Listas', showBackButton: false),
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 2, // Índice de Listas
+        currentIndex: 0, // Listas = 0
         onTap: (index) {
-          if (index == 0) Navigator.pushReplacementNamed(context, AppRoutes.home);
-          if (index == 1) Navigator.pushNamed(context, AppRoutes.settings);
-          if (index == 3) Navigator.pushNamed(context, AppRoutes.profile);
+          if (index == 1) Navigator.pushNamed(context, AppRoutes.profile);
+          if (index == 2) Navigator.pushNamed(context, AppRoutes.settings);
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -62,12 +70,16 @@ class _ListsScreenState extends State<ListsScreen> {
                     onTap: () {
                       Navigator.pushNamed(
                         context, 
-                        AppRoutes.listDetail,
-                        arguments: list.id,
+                        AppRoutes.list,
+                        arguments: list,
                       );
                     },
                     onEdit: () {
-                      // TODO: Implementar edición
+                      Navigator.pushNamed(
+                        context, 
+                        AppRoutes.listConfig,
+                        arguments: list,
+                      );
                     },
                     onDelete: () {
                       // TODO: Implementar eliminación satisfactoria

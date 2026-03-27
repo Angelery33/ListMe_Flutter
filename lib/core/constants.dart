@@ -6,6 +6,8 @@ class AppConstants {
   static const String appName = 'ListMe';
 
   // API Configuration
-  static const String baseUrl = 'http://localhost:8089/api/v1';
+  // Use 10.0.2.2 for Android Emulator to access host's localhost
+  static const String baseUrl = 'http://192.168.1.242:8089/api/v1';
+
   static const String authUrl = '$baseUrl/auth';
 }
