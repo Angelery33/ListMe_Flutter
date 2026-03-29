@@ -43,14 +43,14 @@ class _ListsScreenState extends State<ListsScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
+        extendedPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         onPressed: () {
-          // TODO: Abrir diálogo o pantalla de nueva lista
           Navigator.pushNamed(context, AppRoutes.listConfig);
         },
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('NUEVA LISTA'),
+        icon: const Icon(Icons.add_rounded, size: 18),
+        label: const Text('NUEVA LISTA', style: TextStyle(fontSize: 16)),
       ),
       body: listsProvider.lists.isEmpty
           ? const EmptyListsState()

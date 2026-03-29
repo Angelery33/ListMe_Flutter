@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/lists/list_model.dart';
-import '../../core/app_colors.dart';
+import '../../core/theme.dart';
 
 /// Tarjeta visual que representa una lista del usuario en el listado principal.
 class ListCard extends StatelessWidget {
@@ -22,17 +22,17 @@ class ListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accentColor = AppColors.getPrimary(list.color);
+    final accentColor = AppTheme.getPrimaryColor(list.color, theme.brightness);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               // Icono con color personalizado
@@ -56,43 +56,69 @@ class ListCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          list.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            list.name,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (list.isShared) ...[
                           const SizedBox(width: 8),
-                          Icon(Icons.people_alt_rounded, size: 16, color: theme.hintColor),
+                          Icon(
+                            Icons.people_alt_rounded, 
+                            size: 16, 
+                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          ),
                         ],
                       ],
                     ),
-                    if (list.description != null)
-                      Text(
-                        list.description!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: theme.hintColor),
+                    if (list.description != null && list.description!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          list.description!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                   ],
                 ),
               ),
               // Menú de 3 puntos
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded),
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
                 onSelected: (value) {
                   if (value == 'edit') onEdit?.call();
                   if (value == 'delete') onDelete?.call();
                   if (value == 'share') onShare?.call();
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Editar')),
-                  const PopupMenuItem(value: 'share', child: Text('Compartir')),
-                  const PopupMenuItem(
+                  PopupMenuItem(
+                    value: 'edit', 
+                    child: Text('Editar', style: theme.textTheme.bodyMedium),
+                  ),
+                  PopupMenuItem(
+                    value: 'share', 
+                    child: Text('Compartir', style: theme.textTheme.bodyMedium),
+                  ),
+                  PopupMenuItem(
                     value: 'delete', 
-                    child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+                    child: Text(
+                      'Eliminar', 
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
                   ),
                 ],
               ),

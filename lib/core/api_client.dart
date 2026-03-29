@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:list_me/core/constants.dart';
+import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/core/token_storage.dart';
 
 class ApiClient {
+  static final LoggerService _logger = LoggerService.instance;
   late final Dio _dio;
 
   ApiClient() {
@@ -25,9 +27,9 @@ class ApiClient {
           return handler.next(options);
         },
         onError: (DioException e, handler) async {
+          _logger.error('API Error: ${e.message}', e, e.stackTrace);
           if (e.response?.statusCode == 401) {
-            // TODO: Implement Token Refresh logic here if needed
-            // For now, just pass the error
+            _logger.warning('Token expirado o inválido');
           }
           return handler.next(e);
         },
@@ -35,12 +37,14 @@ class ApiClient {
     );
 
     // Logger for debugging
-    _dio.interceptors.add(LogInterceptor(
-      requestHeader: true,
-      requestBody: true,
-      responseHeader: true,
-      responseBody: true,
-    ));
+    _dio.interceptors.add(
+      LogInterceptor(
+        requestHeader: true,
+        requestBody: true,
+        responseHeader: true,
+        responseBody: true,
+      ),
+    );
   }
 
   Dio get dio => _dio;

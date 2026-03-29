@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/theme.dart';
 
 /// Un AppBar personalizado con un fondo degradado basado en el tema elegido.
 /// 
@@ -30,7 +30,7 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
       children: [
         // Fondo dinámico basado en gradiente o color sólido
         Positioned.fill(
-          child: AppColors.getAppBarGradient(context),
+          child: AppTheme.appBarGradient(context),
         ),
         // Sombra suave en la parte inferior
         Positioned(

@@ -28,6 +28,7 @@ class ListsProvider extends ChangeNotifier {
 
     try {
       _lists = await _listsRepository.getAllLibraries();
+      _lists.sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -80,13 +81,27 @@ class ListsProvider extends ChangeNotifier {
   }
 
   void reorderLists(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-    final ListModel item = _lists.removeAt(oldIndex);
+    if (oldIndex < newIndex) newIndex -= 1;
+    final item = _lists.removeAt(oldIndex);
     _lists.insert(newIndex, item);
-    // TODO: Persistence of order in DB if needed (using position field)
     notifyListeners();
+
+    // Persist new positions in the background
+    _persistOrder();
+  }
+
+  Future<void> _persistOrder() async {
+    final items = _lists
+        .asMap()
+        .entries
+        .where((e) => e.value.id != null)
+        .map((e) => {'id': e.value.id!, 'position': e.key})
+        .toList();
+    try {
+      await _listsRepository.reorderLibraries(items);
+    } catch (_) {
+      // Order is already updated locally; silently ignore network errors
+    }
   }
 
   // Genre Management Helpers

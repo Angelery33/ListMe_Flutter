@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/app_colors.dart';
+import '../../core/theme.dart';
 import '../../providers/settings/settings_provider.dart';
 
 /// Widget especializado para seleccionar el color de acento (gemas).
@@ -23,7 +23,7 @@ class AccentColorSelector extends StatelessWidget {
         itemBuilder: (context, index) {
           final accent = accents[index];
           final isSelected = settings.accentColor == accent;
-          final color = AppColors.getPrimary(accent);
+          final color = AppTheme.getPrimaryColor(accent, Theme.of(context).brightness);
 
           return GestureDetector(
             onTap: () => settings.setAccentColor(accent),

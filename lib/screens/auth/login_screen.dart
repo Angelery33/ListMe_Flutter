@@ -38,10 +38,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+    
     final success = await auth.login(username, password);
-    if (!mounted) return;
 
-    if (!success) {
+    if (success) {
+      nav.pushNamedAndRemoveUntil(AppRoutes.lists, (route) => false);
+    } else {
       messenger.showSnackBar(
         SnackBar(content: Text(auth.errorMessage ?? 'Error al iniciar sesión')),
       );

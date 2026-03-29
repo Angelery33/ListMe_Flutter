@@ -15,9 +15,16 @@ import 'data/items/items_repository.dart';
 import 'data/attributes/attributes_repository.dart';
 import 'providers/items/items_provider.dart';
 
-void main() {
+void main() async {
+  // Aseguramos que los bindings de Flutter estén inicializados para SharedPreferences
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Inicializamos el cliente API único
   final apiClient = ApiClient();
+
+  // Cargamos los ajustes del usuario antes de arrancar la interfaz
+  final settingsProvider = SettingsProvider();
+  await settingsProvider.loadSettings();
 
   runApp(
     MultiProvider(
@@ -32,7 +39,7 @@ void main() {
         ChangeNotifierProvider(
           create: (context) => AuthProvider(context.read<AuthRepository>()),
         ),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(
           create: (context) => ListsProvider(context.read<ListsRepository>()),
         ),
