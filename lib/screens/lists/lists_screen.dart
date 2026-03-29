@@ -54,40 +54,58 @@ class _ListsScreenState extends State<ListsScreen> {
       ),
       body: listsProvider.lists.isEmpty
           ? const EmptyListsState()
-          : Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: ReorderableListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100), // Espacio para el FAB centrado
-                itemCount: listsProvider.lists.length,
-                onReorder: (oldIndex, newIndex) {
-                  listsProvider.reorderLists(oldIndex, newIndex);
-                },
-                itemBuilder: (context, index) {
-                  final list = listsProvider.lists[index];
-                  return ListCard(
-                    key: ValueKey(list.id),
-                    list: list,
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context, 
-                        AppRoutes.list,
-                        arguments: list,
-                      );
-                    },
-                    onEdit: () {
-                      Navigator.pushNamed(
-                        context, 
-                        AppRoutes.listConfig,
-                        arguments: list,
-                      );
-                    },
-                    onDelete: () {
-                      // TODO: Implementar eliminación satisfactoria
-                    },
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                // Si la pantalla es ancha (Tablet/Desktop > 600px), usamos Grid
+                if (constraints.maxWidth > 600) {
+                  return GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 400, // Máximo 400px de ancho por tarjeta
+                      mainAxisExtent: 80,      // Altura fija para mantener el estilo de lista
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemCount: listsProvider.lists.length,
+                    itemBuilder: (context, index) => _buildListCard(listsProvider.lists[index]),
                   );
-                },
-              ),
+                }
+
+                // En móvil mantenemos la lista clásica con drag & drop
+                return ReorderableListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                  itemCount: listsProvider.lists.length,
+                  onReorder: (oldIndex, newIndex) {
+                    listsProvider.reorderLists(oldIndex, newIndex);
+                  },
+                  itemBuilder: (context, index) => _buildListCard(listsProvider.lists[index]),
+                );
+              },
             ),
+    );
+  }
+
+  Widget _buildListCard(dynamic list) {
+    return ListCard(
+      key: ValueKey(list.id),
+      list: list,
+      onTap: () {
+        Navigator.pushNamed(
+          context, 
+          AppRoutes.list,
+          arguments: list,
+        );
+      },
+      onEdit: () {
+        Navigator.pushNamed(
+          context, 
+          AppRoutes.listConfig,
+          arguments: list,
+        );
+      },
+      onDelete: () {
+        // TODO: Implementar eliminación satisfactoria
+      },
     );
   }
 }

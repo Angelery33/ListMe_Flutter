@@ -10,6 +10,7 @@ import '../../widgets/lists/config/config_features_section.dart';
 import '../../widgets/lists/config/config_rating_progress_section.dart';
 import '../../widgets/lists/config/config_genres_section.dart';
 import '../../widgets/lists/config/config_display_section.dart';
+import '../../widgets/lists/config/config_icon_color_section.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 
 /// Géneros por defecto por tipo de lista (igual que la versión legacy)
@@ -67,6 +68,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
 
   bool _isLoading = false;
   List<LibraryGenreModel> _displayedGenres = [];
+  late String _selectedColor;
+  late String _selectedIcon;
 
   @override
   void initState() {
@@ -86,6 +89,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     _supportsProgress = widget.library?.supportsProgress ?? false;
     _progressType = widget.library?.progressType;
     _ratingScale = widget.library?.ratingScale ?? 10;
+    _selectedColor = widget.library?.color ?? 'titanium';
+    _selectedIcon = widget.library?.icon ?? 'list';
 
     // Preferir defaultCategory, si no type (compatibilidad con datos legacy)
     _defaultCategory = widget.library?.defaultCategory ?? widget.library?.type;
@@ -184,6 +189,12 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
         _supportsProgress = false;
         _progressType = "Manual";
       }
+
+      // --- Auto-fill de Icono según categoría ---
+      if (val == "Book") _selectedIcon = "book";
+      if (val == "Manga" || val == "Comic") _selectedIcon = "book";
+      if (val == "Anime" || val == "Series" || val == "Movie") _selectedIcon = "tv";
+      if (val == "Figures" || val == "Funko") _selectedIcon = "fitness";
     });
   }
 
@@ -253,8 +264,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
           : _customProgressUnitController.text.trim(),
       defaultCategory: _defaultCategory,
       ratingScale: _ratingScale,
-      color: widget.library?.color ?? 'titanium',
-      icon: widget.library?.icon ?? 'list',
+      color: _selectedColor,
+      icon: _selectedIcon,
     );
 
     try {
@@ -314,6 +325,13 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
                     ConfigMainInfoSection(
                       nameController: _nameController,
                       descController: _descController,
+                    ),
+                    const SizedBox(height: 16),
+                    ConfigIconColorSection(
+                      selectedIcon: _selectedIcon,
+                      selectedColor: _selectedColor,
+                      onIconChanged: (v) => setState(() => _selectedIcon = v),
+                      onColorChanged: (v) => setState(() => _selectedColor = v),
                     ),
                     const SizedBox(height: 16),
                     ConfigTypeSection(

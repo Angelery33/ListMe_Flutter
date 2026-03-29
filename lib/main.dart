@@ -9,6 +9,7 @@ import 'providers/auth/auth_provider.dart';
 import 'providers/lists/lists_provider.dart';
 import 'providers/settings/settings_provider.dart';
 
+import 'core/services/local_storage_service.dart';
 import 'core/auth_wrapper.dart';
 import 'core/api_client.dart';
 import 'data/items/items_repository.dart';
@@ -18,6 +19,9 @@ import 'providers/items/items_provider.dart';
 void main() async {
   // Aseguramos que los bindings de Flutter estén inicializados para SharedPreferences
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar Persistencia Local (Hive)
+  await LocalStorageService.instance.init();
 
   // Inicializamos el cliente API único
   final apiClient = ApiClient();

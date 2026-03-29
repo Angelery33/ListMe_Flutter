@@ -14,6 +14,7 @@ class ListsRepository {
     try {
       _logger.debug('ListsRepository: Obteniendo todas las listas');
       final response = await _apiClient.dio.get('/libraries');
+      _logger.debug('ListsRepository: Respuesta del servidor (GET /libraries): ${response.data}');
       final result = (response.data as List)
           .map((json) => ListModel.fromJson(json))
           .toList();
@@ -39,11 +40,13 @@ class ListsRepository {
   Future<ListModel> createLibrary(ListModel library) async {
     try {
       _logger.debug('ListsRepository: Creando lista: ${library.name}');
+      final requestData = library.toJson();
+      _logger.debug('ListsRepository: Datos enviados (POST /libraries): $requestData');
       final response = await _apiClient.dio.post(
         '/libraries',
-        data: library.toJson(),
+        data: requestData,
       );
-      _logger.info('ListsRepository: Lista creada: ${library.name}');
+      _logger.info('ListsRepository: Respuesta del servidor (POST /libraries): ${response.data}');
       return ListModel.fromJson(response.data);
     } catch (e) {
       _logger.error('ListsRepository: Error al crear lista', e);
@@ -54,11 +57,13 @@ class ListsRepository {
   Future<ListModel> updateLibrary(int id, ListModel library) async {
     try {
       _logger.debug('ListsRepository: Actualizando lista $id: ${library.name}');
+      final requestData = library.toJson();
+      _logger.debug('ListsRepository: Datos enviados (PUT /libraries/$id): $requestData');
       final response = await _apiClient.dio.put(
         '/libraries/$id',
-        data: library.toJson(),
+        data: requestData,
       );
-      _logger.info('ListsRepository: Lista $id actualizada');
+      _logger.info('ListsRepository: Respuesta del servidor (PUT /libraries/$id): ${response.data}');
       return ListModel.fromJson(response.data);
     } catch (e) {
       _logger.error('ListsRepository: Error al actualizar lista $id', e);

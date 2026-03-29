@@ -57,13 +57,25 @@ class ListCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            list.name,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                list.name,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${list.itemCount} elementos',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         if (list.isShared) ...[
@@ -134,6 +146,14 @@ class ListCard extends StatelessWidget {
       case 'shopping_cart': return Icons.shopping_cart_rounded;
       case 'tv': return Icons.tv_rounded;
       case 'book': return Icons.book_rounded;
+      case 'movie': return Icons.movie_rounded;
+      case 'games': return Icons.sports_esports_rounded;
+      case 'music': return Icons.music_note_rounded;
+      case 'restaurant': return Icons.restaurant_rounded;
+      case 'work': return Icons.work_rounded;
+      case 'fitness': return Icons.fitness_center_rounded;
+      case 'home': return Icons.home_rounded;
+      case 'favorite': return Icons.favorite_rounded;
       default: return Icons.list_rounded;
     }
   }
