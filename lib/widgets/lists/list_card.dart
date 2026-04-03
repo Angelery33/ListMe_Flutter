@@ -22,15 +22,30 @@ class ListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scheme = theme.colorScheme;
     final accentColor = AppTheme.getPrimaryColor(list.color, theme.brightness);
+    final isTitanium =
+        scheme.primary.toARGB32() == const Color(0xFF1D1B1E).toARGB32() ||
+        scheme.primary.toARGB32() == const Color(0xFFE3E2E6).toARGB32();
+
+    Color cardColor;
+    if (isTitanium) {
+      cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    } else {
+      cardColor = isDark
+          ? scheme.surface.withValues(alpha: 0.95)
+          : scheme.surface;
+    }
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+      elevation: isDark ? 4 : 1,
+      color: cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
@@ -71,7 +86,8 @@ class ListCard extends StatelessWidget {
                               Text(
                                 '${list.itemCount} elementos',
                                 style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.7),
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -81,14 +97,16 @@ class ListCard extends StatelessWidget {
                         if (list.isShared) ...[
                           const SizedBox(width: 8),
                           Icon(
-                            Icons.people_alt_rounded, 
-                            size: 16, 
-                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                            Icons.people_alt_rounded,
+                            size: 16,
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.6),
                           ),
                         ],
                       ],
                     ),
-                    if (list.description != null && list.description!.isNotEmpty)
+                    if (list.description != null &&
+                        list.description!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
@@ -116,17 +134,17 @@ class ListCard extends StatelessWidget {
                 },
                 itemBuilder: (context) => [
                   PopupMenuItem(
-                    value: 'edit', 
+                    value: 'edit',
                     child: Text('Editar', style: theme.textTheme.bodyMedium),
                   ),
                   PopupMenuItem(
-                    value: 'share', 
+                    value: 'share',
                     child: Text('Compartir', style: theme.textTheme.bodyMedium),
                   ),
                   PopupMenuItem(
-                    value: 'delete', 
+                    value: 'delete',
                     child: Text(
-                      'Eliminar', 
+                      'Eliminar',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.error,
                       ),
@@ -143,18 +161,30 @@ class ListCard extends StatelessWidget {
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
-      case 'shopping_cart': return Icons.shopping_cart_rounded;
-      case 'tv': return Icons.tv_rounded;
-      case 'book': return Icons.book_rounded;
-      case 'movie': return Icons.movie_rounded;
-      case 'games': return Icons.sports_esports_rounded;
-      case 'music': return Icons.music_note_rounded;
-      case 'restaurant': return Icons.restaurant_rounded;
-      case 'work': return Icons.work_rounded;
-      case 'fitness': return Icons.fitness_center_rounded;
-      case 'home': return Icons.home_rounded;
-      case 'favorite': return Icons.favorite_rounded;
-      default: return Icons.list_rounded;
+      case 'shopping_cart':
+        return Icons.shopping_cart_rounded;
+      case 'tv':
+        return Icons.tv_rounded;
+      case 'book':
+        return Icons.book_rounded;
+      case 'movie':
+        return Icons.movie_rounded;
+      case 'games':
+        return Icons.sports_esports_rounded;
+      case 'music':
+        return Icons.music_note_rounded;
+      case 'restaurant':
+        return Icons.restaurant_rounded;
+      case 'work':
+        return Icons.work_rounded;
+      case 'fitness':
+        return Icons.fitness_center_rounded;
+      case 'home':
+        return Icons.home_rounded;
+      case 'favorite':
+        return Icons.favorite_rounded;
+      default:
+        return Icons.list_rounded;
     }
   }
 }

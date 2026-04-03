@@ -36,24 +36,13 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
         Positioned.fill(
           child: AppTheme.appBarGradient(context),
         ),
-        // Sombra suave en la parte inferior (solo en Titanium claro)
-        if (useDarkText)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 1,
-              color: Colors.black12,
-            ),
-          ),
         SafeArea(
           child: AppBar(
             title: Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: fgColor,
+                color: Colors.white,
               ),
             ),
             backgroundColor: Colors.transparent,

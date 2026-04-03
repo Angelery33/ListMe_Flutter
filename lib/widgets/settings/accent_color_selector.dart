@@ -13,7 +13,7 @@ class AccentColorSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accents = ['amethyst', 'sapphire', 'ruby', 'emerald', 'amber', 'cobalt', 'cyan', 'magenta', 'titanium'];
+    final accents = ['amethyst', 'sapphire', 'ruby', 'emerald','cobalt', 'cyan', 'magenta', 'titanium'];
 
     return SizedBox(
       height: 60,
@@ -29,8 +29,8 @@ class AccentColorSelector extends StatelessWidget {
             onTap: () => settings.setAccentColor(accent),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              width: 44,
-              height: 44,
+              width: 28,
+              height: 28,
               margin: const EdgeInsets.only(right: 12, top: 4, bottom: 4),
               decoration: BoxDecoration(
                 color: color,

@@ -9,16 +9,24 @@ class AppTheme {
   AppTheme._();
 
   /// Devuelve el [ThemeData] para el acento y brillo indicados.
-  static ThemeData getTheme(String accent, Brightness brightness, double fontScale) {
+  static ThemeData getTheme(
+    String accent,
+    Brightness brightness,
+    double fontScale,
+  ) {
     final isDark = brightness == Brightness.dark;
     final (scheme, surface) = _schemeAndSurface(accent, isDark);
-    
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: surface,
       textTheme: TextThemes.scaledTextTheme(scheme, fontScale),
-      appBarTheme: WidgetThemes.appBarTheme(scheme, isDark, _isTitanium(scheme)),
+      appBarTheme: WidgetThemes.appBarTheme(
+        scheme,
+        isDark,
+        _isTitanium(scheme),
+      ),
       cardTheme: WidgetThemes.cardTheme(scheme, isDark),
       inputDecorationTheme: WidgetThemes.inputDecorationTheme(scheme, isDark),
       elevatedButtonTheme: WidgetThemes.elevatedButtonTheme(scheme),
@@ -28,7 +36,10 @@ class AppTheme {
 
   /// Devuelve el color primario de un acento específico.
   static Color getPrimaryColor(String accent, Brightness brightness) {
-    final (scheme, _) = _schemeAndSurface(accent, brightness == Brightness.dark);
+    final (scheme, _) = _schemeAndSurface(
+      accent,
+      brightness == Brightness.dark,
+    );
     return scheme.primary;
   }
 
@@ -38,15 +49,20 @@ class AppTheme {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isTitanium(scheme)) {
-      // Titanium/Platino: gradiente metálico premium
+      final Color lighterGray = !isDark
+          ? const Color(0xFF3C3C3E)
+          : const Color(0xFFE5E5EA);
+      final Color darkerGray = !isDark
+          ? const Color(0xFF1C1C1E)
+          : const Color.fromARGB(255, 107, 107, 109);
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isDark
-                ? const [Color(0xFF1D1B1E), Color(0xFFD0D0D8)]
-                : const [Color(0xFFD0D0D8),Color(0xFF1D1B1E)],
+                ? [darkerGray, lighterGray]
+                : [darkerGray, lighterGray],
             begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            end: const Alignment(0.8, 0.8),
           ),
         ),
       );
@@ -75,24 +91,42 @@ class AppTheme {
 
   static (ColorScheme, Color) _schemeAndSurface(String accent, bool isDark) {
     return switch (accent) {
-      'emerald'   => isDark ? (ColorSchemes.emeraldDark,   AppColors.emeraldSurfaceDark)
-                            : (ColorSchemes.emeraldLight,  AppColors.emeraldSurfaceLight),
-      'amethyst'  => isDark ? (ColorSchemes.amethystDark,  AppColors.amethystSurfaceDark)
-                            : (ColorSchemes.amethystLight, AppColors.amethystSurfaceLight),
-      'sapphire'  => isDark ? (ColorSchemes.sapphireDark,  AppColors.sapphireSurfaceDark)
-                            : (ColorSchemes.sapphireLight, AppColors.sapphireSurfaceLight),
-      'ruby'      => isDark ? (ColorSchemes.rubyDark,      AppColors.rubySurfaceDark)
-                            : (ColorSchemes.rubyLight,     AppColors.rubySurfaceLight),
-      'amber'     => isDark ? (ColorSchemes.amberDark,     AppColors.amberSurfaceDark)
-                            : (ColorSchemes.amberLight,    AppColors.amberSurfaceLight),
-      'cobalt'    => isDark ? (ColorSchemes.cobaltDark,    AppColors.cobaltSurfaceDark)
-                            : (ColorSchemes.cobaltLight,   AppColors.cobaltSurfaceLight),
-      'cyan'      => isDark ? (ColorSchemes.cyanDark,      AppColors.cyanSurfaceDark)
-                            : (ColorSchemes.cyanLight,     AppColors.cyanSurfaceLight),
-      'magenta'   => isDark ? (ColorSchemes.magentaDark,   AppColors.magentaSurfaceDark)
-                            : (ColorSchemes.magentaLight,  AppColors.magentaSurfaceLight),
-      _           => isDark ? (ColorSchemes.titaniumDark,  AppColors.titaniumSurfaceDark)
-                            : (ColorSchemes.titaniumLight, AppColors.titaniumSurfaceLight),
+      'emerald' =>
+        isDark
+            ? (ColorSchemes.emeraldDark, AppColors.emeraldSurfaceDark)
+            : (ColorSchemes.emeraldLight, AppColors.emeraldSurfaceLight),
+      'amethyst' =>
+        isDark
+            ? (ColorSchemes.amethystDark, AppColors.amethystSurfaceDark)
+            : (ColorSchemes.amethystLight, AppColors.amethystSurfaceLight),
+      'sapphire' =>
+        isDark
+            ? (ColorSchemes.sapphireDark, AppColors.sapphireSurfaceDark)
+            : (ColorSchemes.sapphireLight, AppColors.sapphireSurfaceLight),
+      'ruby' =>
+        isDark
+            ? (ColorSchemes.rubyDark, AppColors.rubySurfaceDark)
+            : (ColorSchemes.rubyLight, AppColors.rubySurfaceLight),
+      'amber' =>
+        isDark
+            ? (ColorSchemes.amberDark, AppColors.amberSurfaceDark)
+            : (ColorSchemes.amberLight, AppColors.amberSurfaceLight),
+      'cobalt' =>
+        isDark
+            ? (ColorSchemes.cobaltDark, AppColors.cobaltSurfaceDark)
+            : (ColorSchemes.cobaltLight, AppColors.cobaltSurfaceLight),
+      'cyan' =>
+        isDark
+            ? (ColorSchemes.cyanDark, AppColors.cyanSurfaceDark)
+            : (ColorSchemes.cyanLight, AppColors.cyanSurfaceLight),
+      'magenta' =>
+        isDark
+            ? (ColorSchemes.magentaDark, AppColors.magentaSurfaceDark)
+            : (ColorSchemes.magentaLight, AppColors.magentaSurfaceLight),
+      _ =>
+        isDark
+            ? (ColorSchemes.titaniumDark, AppColors.titaniumSurfaceDark)
+            : (ColorSchemes.titaniumLight, AppColors.titaniumSurfaceLight),
     };
   }
 
@@ -102,6 +136,6 @@ class AppTheme {
   static bool _isTitanium(ColorScheme scheme) {
     final p = scheme.primary.toARGB32();
     return p == AppColors.titaniumPrimaryLight.toARGB32() ||
-           p == AppColors.titaniumPrimaryDark.toARGB32();
+        p == AppColors.titaniumPrimaryDark.toARGB32();
   }
 }

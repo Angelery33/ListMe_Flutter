@@ -5,7 +5,11 @@ import 'app_colors.dart';
 class WidgetThemes {
   WidgetThemes._();
 
-  static AppBarTheme appBarTheme(ColorScheme scheme, bool isDark, bool isTitanium) {
+  static AppBarTheme appBarTheme(
+    ColorScheme scheme,
+    bool isDark,
+    bool isTitanium,
+  ) {
     return AppBarTheme(
       centerTitle: true,
       backgroundColor: Colors.transparent,
@@ -14,6 +18,7 @@ class WidgetThemes {
           : Colors.white,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
+      toolbarHeight: 48,
     );
   }
 
@@ -21,36 +26,43 @@ class WidgetThemes {
   static bool isTitaniumScheme(ColorScheme scheme) {
     final p = scheme.primary.toARGB32();
     return p == AppColors.titaniumPrimaryLight.toARGB32() ||
-           p == AppColors.titaniumPrimaryDark.toARGB32();
+        p == AppColors.titaniumPrimaryDark.toARGB32();
   }
 
   static CardThemeData cardTheme(ColorScheme scheme, bool isDark) {
     final isTitanium = isTitaniumScheme(scheme);
-    
+
     return CardThemeData(
       elevation: isTitanium ? (isDark ? 8 : 1) : (isDark ? 6 : 2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: isDark ? scheme.surface : (isTitanium ? Colors.white : scheme.surfaceContainerHigh),
+      color: isDark
+          ? scheme.surface
+          : (isTitanium ? Colors.white : scheme.surfaceContainerHigh),
       clipBehavior: Clip.antiAlias,
       surfaceTintColor: isDark ? Colors.white10 : Colors.black12,
     );
   }
 
-  static InputDecorationTheme inputDecorationTheme(ColorScheme scheme, bool isDark) {
+  static InputDecorationTheme inputDecorationTheme(
+    ColorScheme scheme,
+    bool isDark,
+  ) {
     final isTitanium = isTitaniumScheme(scheme);
-    
+
     return InputDecorationTheme(
       filled: true,
-      fillColor: isTitanium ? (isDark ? const Color(0xFF1E1E1E) : Colors.white) : scheme.surface,
+      fillColor: isTitanium
+          ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
+          : scheme.surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: isTitanium ? BorderSide(color: isDark ? Colors.white10 : Colors.black12) : BorderSide.none,
+        borderSide: isTitanium
+            ? BorderSide(color: isDark ? Colors.white10 : Colors.black12)
+            : BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: isDark ? Colors.white12 : Colors.black12,
-        ),
+        borderSide: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -73,9 +85,7 @@ class WidgetThemes {
 
   static ChipThemeData chipTheme(ColorScheme scheme) {
     return ChipThemeData(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       side: BorderSide.none,
       backgroundColor: scheme.surfaceContainerHighest,
     );
