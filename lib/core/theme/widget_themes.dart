@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 /// Centraliza la construcción de temas de widgets específicos (Cards, Botones, Inputs, Chips).
 class WidgetThemes {
@@ -8,29 +9,42 @@ class WidgetThemes {
     return AppBarTheme(
       centerTitle: true,
       backgroundColor: Colors.transparent,
-      foregroundColor: isTitanium ? (isDark ? Colors.white : Colors.black) : Colors.white,
+      foregroundColor: isTitanium
+          ? (isDark ? Colors.white : Colors.black)
+          : Colors.white,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
     );
   }
 
+  /// Detecta el tema Titanium por sus colores primarios conocidos.
+  static bool isTitaniumScheme(ColorScheme scheme) {
+    final p = scheme.primary.toARGB32();
+    return p == AppColors.titaniumPrimaryLight.toARGB32() ||
+           p == AppColors.titaniumPrimaryDark.toARGB32();
+  }
+
   static CardThemeData cardTheme(ColorScheme scheme, bool isDark) {
+    final isTitanium = isTitaniumScheme(scheme);
+    
     return CardThemeData(
-      elevation: isDark ? 6 : 2,
+      elevation: isTitanium ? (isDark ? 8 : 1) : (isDark ? 6 : 2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: isDark ? scheme.surface : scheme.surfaceContainerHigh,
+      color: isDark ? scheme.surface : (isTitanium ? Colors.white : scheme.surfaceContainerHigh),
       clipBehavior: Clip.antiAlias,
       surfaceTintColor: isDark ? Colors.white10 : Colors.black12,
     );
   }
 
   static InputDecorationTheme inputDecorationTheme(ColorScheme scheme, bool isDark) {
+    final isTitanium = isTitaniumScheme(scheme);
+    
     return InputDecorationTheme(
       filled: true,
-      fillColor: scheme.surface,
+      fillColor: isTitanium ? (isDark ? const Color(0xFF1E1E1E) : Colors.white) : scheme.surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+        borderSide: isTitanium ? BorderSide(color: isDark ? Colors.white10 : Colors.black12) : BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

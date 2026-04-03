@@ -38,9 +38,21 @@ class AppTheme {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isTitanium(scheme)) {
-      return Container(color: isDark ? const Color(0xFF121212) : Colors.white);
+      // Titanium/Platino: gradiente metálico premium
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? const [Color(0xFF1D1B1E), Color(0xFFD0D0D8)]
+                : const [Color(0xFFD0D0D8),Color(0xFF1D1B1E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      );
     }
 
+    // Todos los demás temas: gradiente Primary -> Tertiary
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -50,6 +62,13 @@ class AppTheme {
         ),
       ),
     );
+  }
+
+  /// Devuelve si el texto del AppBar debe ser oscuro (Titanium claro).
+  static bool appBarUsesDarkText(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return _isTitanium(scheme) && !isDark;
   }
 
   // --- Privados ---
@@ -77,7 +96,12 @@ class AppTheme {
     };
   }
 
-  static bool _isTitanium(ColorScheme scheme) =>
-      scheme.primary.r == scheme.primary.g &&
-      scheme.primary.g == scheme.primary.b;
+  /// Detecta el tema Titanium comparando con sus colores primarios conocidos.
+  /// NO se puede usar r==g==b porque titaniumPrimaryLight(0xFF1D1B1E) no tiene
+  /// los canales iguales.
+  static bool _isTitanium(ColorScheme scheme) {
+    final p = scheme.primary.toARGB32();
+    return p == AppColors.titaniumPrimaryLight.toARGB32() ||
+           p == AppColors.titaniumPrimaryDark.toARGB32();
+  }
 }

@@ -139,23 +139,32 @@ class ColorSchemes {
     brightness: Brightness.dark,
   );
 
-  static final ColorScheme titaniumLight = ColorScheme.fromSeed(
-    seedColor: AppColors.titaniumPrimaryLight,
+  static final ColorScheme titaniumLight = ColorScheme(
+    brightness: Brightness.light,
     primary: AppColors.titaniumPrimaryLight,
     onPrimary: Colors.white,
     secondary: const Color(0xFF605D62),
+    onSecondary: Colors.white,
+    error: const Color(0xFFBA1A1A),
+    onError: Colors.white,
     surface: AppColors.titaniumSurfaceLight,
     onSurface: const Color(0xFF1D1B1E),
-    brightness: Brightness.light,
+    surfaceContainerHighest: const Color(0xFFE3E2E6),
+    outline: const Color(0xFF7D747D),
   );
-  static final ColorScheme titaniumDark = ColorScheme.fromSeed(
-    seedColor: AppColors.titaniumPrimaryDark,
+
+  static final ColorScheme titaniumDark = ColorScheme(
+    brightness: Brightness.dark,
     primary: AppColors.titaniumPrimaryDark,
     onPrimary: Colors.black,
     secondary: const Color(0xFF938F99),
+    onSecondary: Colors.black,
+    error: const Color(0xFFFFB4AB),
+    onError: const Color(0xFF690005),
     surface: AppColors.titaniumSurfaceDark,
     onSurface: const Color(0xFFE3E2E6),
-    brightness: Brightness.dark,
+    surfaceContainerHighest: const Color(0xFF4C444D),
+    outline: const Color(0xFF978E97),
   );
 
   static final ColorScheme amberLight = ColorScheme.fromSeed(

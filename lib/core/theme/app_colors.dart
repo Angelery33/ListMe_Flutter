@@ -114,9 +114,9 @@ class AppColors {
   static const rubySurfaceDark        = Color(0xFF241616);
 
   static const titaniumPrimaryLight   = Color(0xFF1D1B1E);
-  static const titaniumSurfaceLight   = Colors.white;
+  static const titaniumSurfaceLight   = Color(0xFFFCFBF9);
   static const titaniumPrimaryDark    = Color(0xFFE3E2E6);
-  static const titaniumSurfaceDark    = Color(0xFF1C1C1E);
+  static const titaniumSurfaceDark    = Color(0xFF0C0C0C);
 
   static const amberPrimaryLight      = Color(0xFFA66800);
   static const amberSurfaceLight      = Color(0xFFFFF8F0);

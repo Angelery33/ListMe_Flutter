@@ -26,37 +26,34 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
 
   @override
   Widget build(BuildContext context) {
+    // En Titanium claro el fondo es blanco → texto e íconos deben ser negros
+    final useDarkText = AppTheme.appBarUsesDarkText(context);
+    final fgColor = useDarkText ? Colors.black : Colors.white;
+
     return Stack(
       children: [
         // Fondo dinámico basado en gradiente o color sólido
         Positioned.fill(
           child: AppTheme.appBarGradient(context),
         ),
-        // Sombra suave en la parte inferior
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            height: 1,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+        // Sombra suave en la parte inferior (solo en Titanium claro)
+        if (useDarkText)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 1,
+              color: Colors.black12,
             ),
           ),
-        ),
         SafeArea(
           child: AppBar(
             title: Text(
               title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: fgColor,
               ),
             ),
             backgroundColor: Colors.transparent,
@@ -65,7 +62,7 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
             automaticallyImplyLeading: showBackButton,
             actions: actions,
             leading: leading,
-            iconTheme: const IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: fgColor),
           ),
         ),
       ],
