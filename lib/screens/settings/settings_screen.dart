@@ -169,8 +169,8 @@ class SettingsScreen extends StatelessWidget {
       cardColor = isDark ? const Color.fromARGB(255, 75, 75, 78) : const Color.fromARGB(255, 226, 224, 224);
     } else {
       cardColor = isDark
-          ? scheme.onPrimary.withValues(alpha: 0.8)
-          : scheme.onPrimary.withValues(alpha: 0.8);
+          ? scheme.onSurfaceVariant.withValues(alpha: 0.25)
+          : scheme.onSurfaceVariant.withValues(alpha: 0.1);
     }
 
     return Column(

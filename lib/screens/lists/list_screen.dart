@@ -24,17 +24,16 @@ class _ListScreenState extends State<ListScreen> {
   final TextEditingController _searchController = TextEditingController();
   final Set<String> _collapsedSections = {};
   bool _isStatsVisible = true;
+  late ListModel _currentList;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    
-    // Carga inicial
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final list = ModalRoute.of(context)!.settings.arguments as ListModel;
-      if (list.id != null) {
-        context.read<ItemsProvider>().fetchItemsByLibrary(list.id!);
+      _currentList = ModalRoute.of(context)!.settings.arguments as ListModel;
+      if (_currentList.id != null) {
+        context.read<ItemsProvider>().fetchItemsByLibrary(_currentList.id!);
       }
     });
   }
@@ -52,87 +51,81 @@ class _ListScreenState extends State<ListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final list = ModalRoute.of(context)!.settings.arguments as ListModel;
     final itemsProvider = context.watch<ItemsProvider>();
 
-    // Agrupación usando el Helper centralizado
     final groupedItems = ItemGroupingHelper.groupItems(
       items: itemsProvider.items,
-      list: list,
+      list: _currentList,
       filterGenre: itemsProvider.filterGenre,
       searchQuery: itemsProvider.searchQuery,
       sortOption: itemsProvider.sortOption,
     );
 
     final activeItems = itemsProvider.items.where((i) => i.current).toList();
-    final totalAcquired = ItemGroupingHelper.calculateTotal(itemsProvider.items.where((i) => !i.wishlist).toList());
-    final totalWishlist = ItemGroupingHelper.calculateTotal(itemsProvider.items.where((i) => i.wishlist).toList());
+    final totalAcquired = ItemGroupingHelper.calculateTotal(
+      itemsProvider.items.where((i) => !i.wishlist).toList(),
+    );
+    final totalWishlist = ItemGroupingHelper.calculateTotal(
+      itemsProvider.items.where((i) => i.wishlist).toList(),
+    );
 
     return Scaffold(
       appBar: ListDetailAppBar(
-        list: list,
+        list: _currentList,
         searchController: _searchController,
-        onSettingsPressed: () => _navigateToListConfig(context, list),
-        onMorePressed: () => _showLibraryOptions(context, list),
-        onSharePressed: () => _showShareDialog(context, list),
+        onSettingsPressed: () => _navigateToListConfig(),
+        onMorePressed: () => _showLibraryOptions(),
+        onSharePressed: () => _showShareDialog(),
       ),
-
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToAddItem(context, list),
+        onPressed: _navigateToAddItem,
         child: const Icon(Icons.add_rounded),
       ),
       body: Column(
         children: [
-          // Barra de Ordenación y Filtros
           ListSortFilterBar(
             currentSort: itemsProvider.sortOption,
             onSortChanged: itemsProvider.setSortOption,
             currentGenre: itemsProvider.filterGenre,
             availableGenres: itemsProvider.availableGenres,
             onGenreChanged: itemsProvider.setFilterGenre,
-            supportsPrice: list.supportsPrice,
+            supportsPrice: _currentList.supportsPrice,
             isStatsVisible: _isStatsVisible,
-            onStatsToggle: () => setState(() => _isStatsVisible = !_isStatsVisible),
+            onStatsToggle: () =>
+                setState(() => _isStatsVisible = !_isStatsVisible),
           ),
-          
-          // Resumen de Precios (Estadísticas) — se oculta si el usuario pulsa el toggle
-          if (list.supportsPrice && _isStatsVisible)
+          if (_currentList.supportsPrice && _isStatsVisible)
             ListPriceSummary(
               totalAcquired: totalAcquired,
               totalWishlist: totalWishlist,
               isVisible: _isStatsVisible,
             ),
-            
-          // Lista de Items
           Expanded(
             child: itemsProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
-                    onRefresh: () => itemsProvider.fetchItemsByLibrary(list.id!),
+                    onRefresh: () =>
+                        itemsProvider.fetchItemsByLibrary(_currentList.id!),
                     child: ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        // Sección "Disfrutando Ahora"
                         ActiveItemsSection(
                           items: activeItems,
-                          isCompact: list.compact,
-                          isGradeable: list.gradeable,
-                          isThematic: list.thematic,
-                          supportsPrice: list.supportsPrice,
-                          supportsProgress: list.supportsProgress,
-                          onTap: (item) => _navigateToItemDetails(context, item),
-                          onLongPress: (item) => _showItemOptions(context, item, list),
-                          onIncrement: list.supportsProgress
+                          isCompact: _currentList.compact,
+                          isGradeable: _currentList.gradeable,
+                          isThematic: _currentList.thematic,
+                          supportsPrice: _currentList.supportsPrice,
+                          supportsProgress: _currentList.supportsProgress,
+                          onTap: _navigateToItemDetails,
+                          onLongPress: _showItemOptions,
+                          onIncrement: _currentList.supportsProgress
                               ? (item) => itemsProvider.incrementProgress(item)
                               : null,
                         ),
-                        
-                        // Items agrupados
                         if (groupedItems.isEmpty)
                           _buildEmptyState(itemsProvider.searchQuery.isNotEmpty)
                         else
-                          ..._buildGroupedItems(groupedItems, list, itemsProvider),
-                          
+                          ..._buildGroupedItems(groupedItems, itemsProvider),
                         const SizedBox(height: 80),
                       ],
                     ),
@@ -145,11 +138,10 @@ class _ListScreenState extends State<ListScreen> {
 
   List<Widget> _buildGroupedItems(
     Map<String, List<ItemModel>> grouped,
-    ListModel list,
     ItemsProvider itemsProvider,
   ) {
     List<Widget> widgets = [];
-    
+
     grouped.forEach((groupTitle, items) {
       final isCollapsed = _collapsedSections.contains(groupTitle);
       final groupPrice = ItemGroupingHelper.calculateTotal(items);
@@ -158,7 +150,7 @@ class _ListScreenState extends State<ListScreen> {
         ListSectionHeader(
           title: groupTitle,
           isCollapsed: isCollapsed,
-          totalPrice: list.supportsPrice ? groupPrice : null,
+          totalPrice: _currentList.supportsPrice ? groupPrice : null,
           onTap: () {
             setState(() {
               if (isCollapsed) {
@@ -172,36 +164,38 @@ class _ListScreenState extends State<ListScreen> {
       );
 
       if (!isCollapsed) {
-        if (list.compact) {
-          widgets.add(_buildGrid(items, list, itemsProvider));
+        if (_currentList.compact) {
+          widgets.add(_buildGrid(items, itemsProvider));
         } else {
           widgets.addAll(
-            items.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: ItemCard(
-                item: item,
-                onTap: () => _navigateToItemDetails(context, item),
-                onLongPress: () => _showItemOptions(context, item, list),
-                isCompact: false,
-                showStatus: list.supportsCompletion,
-                isGradeable: list.gradeable,
-                isThematic: list.thematic,
-                supportsPrice: list.supportsPrice,
-                supportsProgress: list.supportsProgress,
-                onIncrement: list.supportsProgress
-                    ? () => itemsProvider.incrementProgress(item)
-                    : null,
+            items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ItemCard(
+                  item: item,
+                  onTap: () => _navigateToItemDetails(item),
+                  onLongPress: () => _showItemOptions(item),
+                  isCompact: false,
+                  showStatus: _currentList.supportsCompletion,
+                  isGradeable: _currentList.gradeable,
+                  isThematic: _currentList.thematic,
+                  supportsPrice: _currentList.supportsPrice,
+                  supportsProgress: _currentList.supportsProgress,
+                  onIncrement: _currentList.supportsProgress
+                      ? () => itemsProvider.incrementProgress(item)
+                      : null,
+                ),
               ),
-            )),
+            ),
           );
         }
       }
     });
-    
+
     return widgets;
   }
 
-  Widget _buildGrid(List<ItemModel> items, ListModel list, ItemsProvider itemsProvider) {
+  Widget _buildGrid(List<ItemModel> items, ItemsProvider itemsProvider) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -216,15 +210,15 @@ class _ListScreenState extends State<ListScreen> {
         final item = items[index];
         return ItemCard(
           item: item,
-          onTap: () => _navigateToItemDetails(context, item),
-          onLongPress: () => _showItemOptions(context, item, list),
+          onTap: () => _navigateToItemDetails(item),
+          onLongPress: () => _showItemOptions(item),
           isCompact: true,
-          showStatus: list.supportsCompletion,
-          isGradeable: list.gradeable,
-          isThematic: list.thematic,
-          supportsPrice: list.supportsPrice,
-          supportsProgress: list.supportsProgress,
-          onIncrement: list.supportsProgress
+          showStatus: _currentList.supportsCompletion,
+          isGradeable: _currentList.gradeable,
+          isThematic: _currentList.thematic,
+          supportsPrice: _currentList.supportsPrice,
+          supportsProgress: _currentList.supportsProgress,
+          onIncrement: _currentList.supportsProgress
               ? () => itemsProvider.incrementProgress(item)
               : null,
         );
@@ -240,13 +234,17 @@ class _ListScreenState extends State<ListScreen> {
         child: Column(
           children: [
             Icon(
-              isSearching ? Icons.search_off_rounded : Icons.library_books_outlined,
+              isSearching
+                  ? Icons.search_off_rounded
+                  : Icons.library_books_outlined,
               size: 80,
               color: theme.colorScheme.primary.withValues(alpha: 0.2),
             ),
             const SizedBox(height: 16),
             Text(
-              isSearching ? "No hay resultados para tu búsqueda" : "Esta lista está vacía",
+              isSearching
+                  ? "No hay resultados para tu búsqueda"
+                  : "Esta lista está vacía",
               style: theme.textTheme.titleLarge?.copyWith(
                 color: theme.colorScheme.primary.withValues(alpha: 0.5),
                 fontWeight: FontWeight.bold,
@@ -267,39 +265,40 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  // --- Navegación y Diálogos ---
+  void _refreshItems() {
+    if (_currentList.id != null) {
+      context.read<ItemsProvider>().refreshItems(_currentList.id!);
+    }
+  }
 
-  void _navigateToItemDetails(BuildContext context, ItemModel item) {
-    final list = ModalRoute.of(context)!.settings.arguments as ListModel;
+  void _navigateToItemDetails(ItemModel item) {
     Navigator.pushNamed(
-      context, 
+      context,
       AppRoutes.itemDetail,
-      arguments: {'item': item, 'list': list},
-    ).then((_) {
-      if (context.mounted && list.id != null) {
-        context.read<ItemsProvider>().refreshItems(list.id!);
-      }
-    });
+      arguments: {'item': item, 'list': _currentList},
+    ).then((_) => _refreshItems());
   }
 
-
-  void _navigateToAddItem(BuildContext context, ListModel list) {
+  void _navigateToAddItem() {
     Navigator.pushNamed(
-      context, 
-      AppRoutes.itemEntry, 
-      arguments: {'list': list, 'item': null},
-    ).then((_) {
-      if (context.mounted && list.id != null) {
-        context.read<ItemsProvider>().refreshItems(list.id!);
-      }
-    });
+      context,
+      AppRoutes.itemEntry,
+      arguments: {'list': _currentList, 'item': null},
+    ).then((_) => _refreshItems());
   }
 
+  void _navigateToListConfig() {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.listConfig,
+      arguments: _currentList,
+    ).then((_) => _refreshItems());
+  }
 
-  void _showItemOptions(BuildContext context, ItemModel item, ListModel list) {
+  void _showItemOptions(ItemModel item) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => SafeArea(
+      builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -307,25 +306,23 @@ class _ListScreenState extends State<ListScreen> {
               leading: const Icon(Icons.edit_rounded),
               title: const Text('Editar'),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(ctx);
                 Navigator.pushNamed(
-                  context, 
-                  AppRoutes.itemEntry, 
-                  arguments: {'list': list, 'item': item},
-                ).then((_) {
-                  if (context.mounted && list.id != null) {
-                    context.read<ItemsProvider>().refreshItems(list.id!);
-                  }
-                });
-
+                  context,
+                  AppRoutes.itemEntry,
+                  arguments: {'list': _currentList, 'item': item},
+                ).then((_) => _refreshItems());
               },
             ),
             ListTile(
               leading: const Icon(Icons.delete_rounded, color: Colors.red),
-              title: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Eliminar',
+                style: TextStyle(color: Colors.red),
+              ),
               onTap: () {
-                Navigator.pop(context);
-                _confirmDeleteItem(context, item, list);
+                Navigator.pop(ctx);
+                _confirmDeleteItem(item);
               },
             ),
           ],
@@ -334,24 +331,24 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  void _confirmDeleteItem(BuildContext context, ItemModel item, ListModel list) {
+  void _confirmDeleteItem(ItemModel item) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Eliminar elemento'),
         content: Text('¿Seguro que quieres eliminar "${item.name}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('CANCELAR'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               if (item.id != null) {
                 await context.read<ItemsProvider>().deleteItem(item.id!);
-                if (context.mounted && list.id != null) {
-                  context.read<ItemsProvider>().fetchItemsByLibrary(list.id!);
+                if (mounted) {
+                  _refreshItems();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('"${item.name}" eliminado')),
                   );
@@ -365,19 +362,7 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  void _navigateToListConfig(BuildContext context, ListModel list) {
-    Navigator.pushNamed(
-      context,
-      AppRoutes.listConfig,
-      arguments: list,
-    ).then((_) {
-      if (context.mounted && list.id != null) {
-        context.read<ItemsProvider>().fetchItemsByLibrary(list.id!);
-      }
-    });
-  }
-
-  void _showLibraryOptions(BuildContext context, ListModel list) {
+  void _showLibraryOptions() {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -386,10 +371,13 @@ class _ListScreenState extends State<ListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.delete_rounded, color: Colors.red),
-              title: const Text('Eliminar lista', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Eliminar lista',
+                style: TextStyle(color: Colors.red),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
-                _confirmDeleteList(context, list);
+                _confirmDeleteList();
               },
             ),
           ],
@@ -398,26 +386,29 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-
-  void _confirmDeleteList(BuildContext context, ListModel list) {
+  void _confirmDeleteList() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Eliminar Lista'),
         content: Text(
-          '¿Estás seguro de que quieres eliminar la lista "${list.name}"? Se borrarán todos sus elementos.',
+          '¿Estás seguro de que quieres eliminar "${_currentList.name}"? Se borrarán todos sus elementos.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('CANCELAR'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context); // Cierra diálogo
-              if (list.id != null) {
-                await context.read<ListsProvider>().deleteList(list.id!);
-                if (context.mounted) Navigator.pop(context); // Vuelve a la lista de listas
+              Navigator.pop(dialogContext);
+              if (_currentList.id != null) {
+                final success = await context.read<ListsProvider>().deleteList(
+                  _currentList.id!,
+                );
+                if (success && mounted) {
+                  Navigator.pop(context);
+                }
               }
             },
             child: const Text('ELIMINAR', style: TextStyle(color: Colors.red)),
@@ -427,7 +418,40 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  void _showShareDialog(BuildContext context, ListModel list) {
-    // TODO: Diálogo de compartir lista
+  void _showShareDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Compartir lista'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Comparte "${_currentList.name}" con otros usuarios.'),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Email del usuario',
+                hintText: 'usuario@ejemplo.com',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCELAR'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Invitación enviada')),
+              );
+            },
+            child: const Text('ENVIAR'),
+          ),
+        ],
+      ),
+    );
   }
 }

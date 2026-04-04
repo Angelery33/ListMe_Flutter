@@ -25,16 +25,14 @@ class ListCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final scheme = theme.colorScheme;
     final accentColor = AppTheme.getPrimaryColor(list.color, theme.brightness);
-    final isTitanium =
-        scheme.primary.toARGB32() == const Color(0xFF1D1B1E).toARGB32() ||
-        scheme.primary.toARGB32() == const Color(0xFFE3E2E6).toARGB32();
+    final isTitanium = AppTheme.isTitanium(scheme);
 
     Color cardColor;
     if (isTitanium) {
       cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
     } else {
       cardColor = isDark
-          ? scheme.surface.withValues(alpha: 0.95)
+          ? scheme.surface.withValues(alpha: 0.8)
           : scheme.surface;
     }
 

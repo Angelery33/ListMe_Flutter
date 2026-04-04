@@ -22,11 +22,7 @@ class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: surface,
       textTheme: TextThemes.scaledTextTheme(scheme, fontScale),
-      appBarTheme: WidgetThemes.appBarTheme(
-        scheme,
-        isDark,
-        _isTitanium(scheme),
-      ),
+      appBarTheme: WidgetThemes.appBarTheme(scheme, isDark, isTitanium(scheme)),
       cardTheme: WidgetThemes.cardTheme(scheme, isDark),
       inputDecorationTheme: WidgetThemes.inputDecorationTheme(scheme, isDark),
       elevatedButtonTheme: WidgetThemes.elevatedButtonTheme(scheme),
@@ -48,7 +44,7 @@ class AppTheme {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (_isTitanium(scheme)) {
+    if (isTitanium(scheme)) {
       final Color lighterGray = !isDark
           ? const Color(0xFF3C3C3E)
           : const Color(0xFFE5E5EA);
@@ -84,7 +80,7 @@ class AppTheme {
   static bool appBarUsesDarkText(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return _isTitanium(scheme) && !isDark;
+    return isTitanium(scheme) && !isDark;
   }
 
   // --- Privados ---
@@ -133,7 +129,7 @@ class AppTheme {
   /// Detecta el tema Titanium comparando con sus colores primarios conocidos.
   /// NO se puede usar r==g==b porque titaniumPrimaryLight(0xFF1D1B1E) no tiene
   /// los canales iguales.
-  static bool _isTitanium(ColorScheme scheme) {
+  static bool isTitanium(ColorScheme scheme) {
     final p = scheme.primary.toARGB32();
     return p == AppColors.titaniumPrimaryLight.toARGB32() ||
         p == AppColors.titaniumPrimaryDark.toARGB32();

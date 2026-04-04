@@ -1,12 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../data/lists/list_model.dart';
 
 class ListDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final ListModel list;
   final TextEditingController searchController;
-  final VoidCallback onSettingsPressed; // → Navega a ListConfigScreen
-  final VoidCallback onMorePressed;     // → Menú opciones extra (eliminar)
+  final VoidCallback onSettingsPressed;
+  final VoidCallback onMorePressed;
   final VoidCallback onSharePressed;
 
   const ListDetailAppBar({
@@ -20,6 +21,15 @@ class ListDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isTitanium = AppTheme.isTitanium(scheme);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final useDarkText = isTitanium && !isDark;
+
+    final textColor = useDarkText ? Colors.black87 : Colors.white;
+    final hintColor = useDarkText ? Colors.black54 : Colors.white54;
+    final iconColor = useDarkText ? Colors.black54 : Colors.white70;
+
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -27,7 +37,9 @@ class ListDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: (useDarkText ? Colors.white : Colors.black).withValues(
+              alpha: 0.2,
+            ),
           ),
         ),
       ),
@@ -38,13 +50,17 @@ class ListDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             'assets/images/logo.png',
             height: 30,
             errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.bookmark_rounded),
+                Icon(Icons.bookmark_rounded, color: textColor),
           ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               list.name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: textColor,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -53,18 +69,17 @@ class ListDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         if (list.shared || list.owner)
           IconButton(
-            icon: const Icon(Icons.share_rounded),
+            icon: Icon(Icons.share_rounded, color: textColor),
             onPressed: onSharePressed,
             tooltip: 'Compartir',
           ),
-        // Acceso directo a los ajustes/configuración de esta lista
         IconButton(
-          icon: const Icon(Icons.settings_rounded),
+          icon: Icon(Icons.settings_rounded, color: textColor),
           onPressed: onSettingsPressed,
           tooltip: 'Ajustes de la lista',
         ),
         IconButton(
-          icon: const Icon(Icons.more_vert_rounded),
+          icon: Icon(Icons.more_vert_rounded, color: textColor),
           onPressed: onMorePressed,
           tooltip: 'Más opciones',
         ),
@@ -76,20 +91,23 @@ class ListDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Container(
             height: 45,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: textColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: textColor.withValues(alpha: 0.1)),
             ),
             child: TextField(
               controller: searchController,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              style: TextStyle(color: textColor),
+              decoration: InputDecoration(
                 hintText: 'Buscar...',
-                hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
-                prefixIcon:
-                    Icon(Icons.search_rounded, color: Colors.white70, size: 20),
+                hintStyle: TextStyle(color: hintColor, fontSize: 14),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: iconColor,
+                  size: 20,
+                ),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
           ),
@@ -99,5 +117,5 @@ class ListDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(116); // 56 AppBar + 60 Bottom
+  Size get preferredSize => const Size.fromHeight(116);
 }
