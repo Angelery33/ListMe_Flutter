@@ -25,17 +25,26 @@ class _ListScreenState extends State<ListScreen> {
   final Set<String> _collapsedSections = {};
   bool _isStatsVisible = true;
   late ListModel _currentList;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
       _currentList = ModalRoute.of(context)!.settings.arguments as ListModel;
-      if (_currentList.id != null) {
-        context.read<ItemsProvider>().fetchItemsByLibrary(_currentList.id!);
-      }
-    });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_currentList.id != null) {
+          context.read<ItemsProvider>().fetchItemsByLibrary(_currentList.id!);
+        }
+      });
+    }
   }
 
   void _onSearchChanged() {
