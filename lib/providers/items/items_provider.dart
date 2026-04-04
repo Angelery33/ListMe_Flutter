@@ -15,11 +15,19 @@ class ItemsProvider extends ChangeNotifier {
   String? _filterGenre;
   SortOption _sortOption = SortOption.dateNewest;
 
+  // Estado actual
+  int? _currentLibraryId;
+  int? _currentParentId;
+  String? _currentRemoteId;
+
   ItemsProvider(this._itemsRepository);
 
   bool get isLoading => _isLoading;
   List<ItemModel> get items => _items;
   String? get errorMessage => _errorMessage;
+  int? get currentLibraryId => _currentLibraryId;
+  int? get currentParentId => _currentParentId;
+  String? get currentRemoteId => _currentRemoteId;
 
   String get searchQuery => _searchQuery;
   String? get filterGenre => _filterGenre;
@@ -41,6 +49,71 @@ class ItemsProvider extends ChangeNotifier {
   void setSortOption(SortOption option) {
     _sortOption = option;
     notifyListeners();
+  }
+
+  /// Carga items de una lista normal.
+  Future<void> loadData(int libraryId) async {
+    _currentLibraryId = libraryId;
+    _currentParentId = null;
+    _currentRemoteId = null;
+    await fetchItemsByLibrary(libraryId);
+  }
+
+  /// Carga subcollections (items con parentId).
+  Future<void> loadSubCollections(int parentId, int libraryId) async {
+    _currentLibraryId = libraryId;
+    _currentParentId = parentId;
+    _currentRemoteId = null;
+    await _fetchSubCollections(parentId, libraryId);
+  }
+
+  /// Carga items de lista remota compartida.
+  Future<void> loadByRemoteId(String remoteId, {String? libraryName}) async {
+    _currentLibraryId = null;
+    _currentParentId = null;
+    _currentRemoteId = remoteId;
+    await _fetchByRemoteId(remoteId);
+  }
+
+  Future<void> _fetchSubCollections(int parentId, int libraryId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _items = [];
+    notifyListeners();
+
+    try {
+      _items = await _itemsRepository.getSubCollections(parentId, libraryId);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _fetchByRemoteId(String remoteId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _items = [];
+    notifyListeners();
+
+    try {
+      _items = await _itemsRepository.getItemsByRemoteId(remoteId);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// Sincroniza items con el servidor.
+  Future<void> syncItems() async {
+    if (_currentLibraryId != null) {
+      await fetchItemsByLibrary(_currentLibraryId!);
+    }
   }
 
   Future<void> fetchItemsByLibrary(int libraryId) async {
@@ -126,4 +199,3 @@ class ItemsProvider extends ChangeNotifier {
     await updateItem(item.id!, updated);
   }
 }
-

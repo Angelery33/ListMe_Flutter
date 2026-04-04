@@ -31,8 +31,8 @@ class ConfigGenresSection extends StatelessWidget {
             Text(
               "Personalizar Géneros / Categorías",
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -72,10 +72,9 @@ class ConfigGenresSection extends StatelessWidget {
               final g = entry.value;
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 4),
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest
-                    .withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 child: ListTile(
                   leading: const Icon(Icons.label),
                   title: Text(g.name),

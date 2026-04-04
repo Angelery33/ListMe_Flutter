@@ -31,77 +31,110 @@ class ListSortFilterBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
+          bottom: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-      child: Row(
+      child: Column(
         children: [
-          // Stats toggle — solo si la lista soporta precios
-          if (supportsPrice) ...[
-            IconButton(
-              icon: Icon(
-                isStatsVisible ? Icons.insert_chart : Icons.insert_chart_outlined,
-                color: isStatsVisible ? colorScheme.primary : Colors.grey,
-                size: 20,
-              ),
-              tooltip: isStatsVisible ? 'Ocultar estadísticas' : 'Mostrar estadísticas',
-              onPressed: onStatsToggle,
-            ),
-            Container(height: 24, width: 1, color: colorScheme.outlineVariant),
-            const SizedBox(width: 4),
-          ],
-          // Botón de Ordenación
-          PopupMenuButton<SortOption>(
-            icon: Icon(
-              Icons.sort_rounded,
-              color: colorScheme.primary,
-            ),
-            tooltip: "Ordenar",
-            initialValue: currentSort,
-            onSelected: onSortChanged,
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<SortOption>>[
-              const PopupMenuItem(value: SortOption.dateNewest, child: Text('Fecha (Más reciente)')),
-              const PopupMenuItem(value: SortOption.dateOldest, child: Text('Fecha (Más antiguo)')),
-              const PopupMenuItem(value: SortOption.nameAsc, child: Text('Nombre (A-Z)')),
-              const PopupMenuItem(value: SortOption.nameDesc, child: Text('Nombre (Z-A)')),
-              const PopupMenuItem(value: SortOption.scoreHighLow, child: Text('Puntuación (Alta-Baja)')),
-              const PopupMenuItem(value: SortOption.scoreLowHigh, child: Text('Puntuación (Baja-Alta)')),
-            ],
-          ),
-          const SizedBox(width: 8),
-          Container(height: 24, width: 1, color: colorScheme.outlineVariant),
-          const SizedBox(width: 8),
-          
-          // Chips de Género
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  FilterChip(
-                    label: const Text('Todos'),
-                    selected: currentGenre == null,
-                    onSelected: (selected) => onGenreChanged(null),
-                    visualDensity: VisualDensity.compact,
+          // Sort and filter row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+            child: Row(
+              children: [
+                // Stats toggle — solo si la lista soporta precios
+                if (supportsPrice) ...[
+                  IconButton(
+                    icon: Icon(
+                      isStatsVisible
+                          ? Icons.insert_chart
+                          : Icons.insert_chart_outlined,
+                      color: isStatsVisible ? colorScheme.primary : Colors.grey,
+                      size: 20,
+                    ),
+                    tooltip: isStatsVisible
+                        ? 'Ocultar estadísticas'
+                        : 'Mostrar estadísticas',
+                    onPressed: onStatsToggle,
                   ),
-                  const SizedBox(width: 8),
-                  ...availableGenres.map((genre) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: FilterChip(
-                        label: Text(genre),
-                        selected: currentGenre == genre,
-                        onSelected: (selected) => onGenreChanged(selected ? genre : null),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    );
-                  }),
+                  Container(
+                    height: 24,
+                    width: 1,
+                    color: colorScheme.outlineVariant,
+                  ),
+                  const SizedBox(width: 4),
                 ],
-              ),
+                // Botón de Ordenación
+                PopupMenuButton<SortOption>(
+                  icon: Icon(Icons.sort_rounded, color: colorScheme.primary),
+                  tooltip: "Ordenar",
+                  initialValue: currentSort,
+                  onSelected: onSortChanged,
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<SortOption>>[
+                        const PopupMenuItem(
+                          value: SortOption.dateNewest,
+                          child: Text('Fecha (Más reciente)'),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.dateOldest,
+                          child: Text('Fecha (Más antiguo)'),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.nameAsc,
+                          child: Text('Nombre (A-Z)'),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.nameDesc,
+                          child: Text('Nombre (Z-A)'),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.scoreHighLow,
+                          child: Text('Puntuación (Alta-Baja)'),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.scoreLowHigh,
+                          child: Text('Puntuación (Baja-Alta)'),
+                        ),
+                      ],
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  height: 24,
+                  width: 1,
+                  color: colorScheme.outlineVariant,
+                ),
+                const SizedBox(width: 8),
+
+                // Chips de Género
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        FilterChip(
+                          label: const Text('Todos'),
+                          selected: currentGenre == null,
+                          onSelected: (selected) => onGenreChanged(null),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        const SizedBox(width: 8),
+                        ...availableGenres.map((genre) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: FilterChip(
+                              label: Text(genre),
+                              selected: currentGenre == genre,
+                              onSelected: (selected) =>
+                                  onGenreChanged(selected ? genre : null),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

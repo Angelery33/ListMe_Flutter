@@ -15,26 +15,88 @@ import '../../widgets/shared/custom_gradient_app_bar.dart';
 
 /// Géneros por defecto por tipo de lista (igual que la versión legacy)
 const Map<String, List<String>> kDefaultGenres = {
-  'Book':    ['Fantasía', 'Ciencia Ficción', 'Romance', 'Misterio', 'Terror', 'Historia', 'Aventura', 'Otros'],
-  'Manga':   ['Shounen', 'Shoujo', 'Seinen', 'Josei', 'Isekai', 'Mecha', 'Slice of Life', 'Otros'],
-  'Comic':   ['Superhéroes', 'Sci-Fi', 'Horror', 'Fantasía', 'Acción', 'Otros'],
-  'Anime':   ['Shounen', 'Shoujo', 'Seinen', 'Mecha', 'Isekai', 'Slice of Life', 'Deportes', 'Otros'],
-  'Movie':   ['Acción', 'Comedia', 'Drama', 'Terror', 'Sci-Fi', 'Animación', 'Documental', 'Otros'],
-  'Series':  ['Acción', 'Comedia', 'Drama', 'Thriller', 'Sci-Fi', 'Animación', 'Documental', 'Otros'],
-  'Figures': ['Anime', 'Videojuegos', 'Películas', 'Cómics', 'Vocaloid', 'Original', 'Otros'],
-  'Funko':   ['Marvel', 'DC', 'Anime', 'Star Wars', 'Harry Potter', 'Disney', 'Películas', 'Otros'],
+  'Book': [
+    'Fantasía',
+    'Ciencia Ficción',
+    'Romance',
+    'Misterio',
+    'Terror',
+    'Historia',
+    'Aventura',
+    'Otros',
+  ],
+  'Manga': [
+    'Shounen',
+    'Shoujo',
+    'Seinen',
+    'Josei',
+    'Isekai',
+    'Mecha',
+    'Slice of Life',
+    'Otros',
+  ],
+  'Comic': ['Superhéroes', 'Sci-Fi', 'Horror', 'Fantasía', 'Acción', 'Otros'],
+  'Anime': [
+    'Shounen',
+    'Shoujo',
+    'Seinen',
+    'Mecha',
+    'Isekai',
+    'Slice of Life',
+    'Deportes',
+    'Otros',
+  ],
+  'Movie': [
+    'Acción',
+    'Comedia',
+    'Drama',
+    'Terror',
+    'Sci-Fi',
+    'Animación',
+    'Documental',
+    'Otros',
+  ],
+  'Series': [
+    'Acción',
+    'Comedia',
+    'Drama',
+    'Thriller',
+    'Sci-Fi',
+    'Animación',
+    'Documental',
+    'Otros',
+  ],
+  'Figures': [
+    'Anime',
+    'Videojuegos',
+    'Películas',
+    'Cómics',
+    'Vocaloid',
+    'Original',
+    'Otros',
+  ],
+  'Funko': [
+    'Marvel',
+    'DC',
+    'Anime',
+    'Star Wars',
+    'Harry Potter',
+    'Disney',
+    'Películas',
+    'Otros',
+  ],
 };
 
 /// Nombre sugerido a mostrar según categoría
 const Map<String, String> kCategoryDefaultNames = {
-  'Book':    'Libros',
-  'Manga':   'Manga',
-  'Comic':   'Cómic',
-  'Anime':   'Anime',
-  'Movie':   'Películas',
-  'Series':  'Series / TV',
+  'Book': 'Libros',
+  'Manga': 'Manga',
+  'Comic': 'Cómic',
+  'Anime': 'Anime',
+  'Movie': 'Películas',
+  'Series': 'Series / TV',
   'Figures': 'Figuras',
-  'Funko':   'Colección Funko',
+  'Funko': 'Colección Funko',
 };
 
 class ListConfigScreen extends StatefulWidget {
@@ -75,8 +137,12 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.library?.name ?? '');
-    _descController = TextEditingController(text: widget.library?.description ?? '');
-    _customProgressUnitController = TextEditingController(text: widget.library?.customProgressUnit ?? '');
+    _descController = TextEditingController(
+      text: widget.library?.description ?? '',
+    );
+    _customProgressUnitController = TextEditingController(
+      text: widget.library?.customProgressUnit ?? '',
+    );
 
     _supportsCompletion = widget.library?.supportsCompletion ?? false;
     _isGradeable = widget.library?.gradeable ?? false;
@@ -97,10 +163,11 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
 
     // Cargar géneros en el siguiente frame para que Provider esté disponible
     if (widget.library != null && _isThematic) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadGenresIfEditing());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _loadGenresIfEditing(),
+      );
     }
   }
-
 
   Future<void> _loadGenresIfEditing() async {
     if (widget.library == null || widget.library!.id == null) return;
@@ -116,7 +183,6 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
       // Si no se pueden cargar los géneros, dejamos la lista vacía
     }
   }
-
 
   @override
   void dispose() {
@@ -193,7 +259,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
       // --- Auto-fill de Icono según categoría ---
       if (val == "Book") _selectedIcon = "book";
       if (val == "Manga" || val == "Comic") _selectedIcon = "book";
-      if (val == "Anime" || val == "Series" || val == "Movie") _selectedIcon = "tv";
+      if (val == "Anime" || val == "Series" || val == "Movie")
+        _selectedIcon = "tv";
       if (val == "Figures" || val == "Funko") _selectedIcon = "fitness";
     });
   }
@@ -243,7 +310,7 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     final provider = Provider.of<ListsProvider>(context, listen: false);
 
     final isNew = widget.library == null;
-    
+
     final listObj = ListModel(
       id: widget.library?.id,
       name: _nameController.text.trim(),
@@ -259,8 +326,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
       compact: _isCompact,
       supportsProgress: _supportsProgress,
       progressType: _progressType,
-      customProgressUnit: _customProgressUnitController.text.trim().isEmpty 
-          ? null 
+      customProgressUnit: _customProgressUnitController.text.trim().isEmpty
+          ? null
           : _customProgressUnitController.text.trim(),
       defaultCategory: _defaultCategory,
       ratingScale: _ratingScale,
@@ -277,7 +344,9 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
         if (_isThematic) {
           // If a new list was created successfully, the provider adds it to the list.
           // Getting the newly created list from the provider (assume it's the last one).
-          final createdList = provider.lists.lastWhere((l) => l.name == listObj.name);
+          final createdList = provider.lists.lastWhere(
+            (l) => l.name == listObj.name,
+          );
           // Insert queued genres
           for (var genre in _displayedGenres) {
             await provider.addGenreToList(createdList.id!, genre.name);
@@ -286,14 +355,18 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
       } else {
         final success = await provider.updateList(widget.library!.id!, listObj);
         if (!success) {
-          throw Exception(provider.errorMessage ?? "Error actualizando la lista");
+          throw Exception(
+            provider.errorMessage ?? "Error actualizando la lista",
+          );
         }
       }
-      
+
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -341,31 +414,41 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
                     const SizedBox(height: 16),
                     ConfigFeaturesSection(
                       supportsCompletion: _supportsCompletion,
-                      onSupportsCompletionChanged: (v) => setState(() => _supportsCompletion = v),
+                      onSupportsCompletionChanged: (v) =>
+                          setState(() => _supportsCompletion = v),
                       isGradeable: _isGradeable,
-                      onIsGradeableChanged: (v) => setState(() => _isGradeable = v),
+                      onIsGradeableChanged: (v) =>
+                          setState(() => _isGradeable = v),
                       isThematic: _isThematic,
-                      onIsThematicChanged: (v) => setState(() => _isThematic = v),
+                      onIsThematicChanged: (v) =>
+                          setState(() => _isThematic = v),
                       supportsWishlist: _supportsWishlist,
-                      onSupportsWishlistChanged: (v) => setState(() => _supportsWishlist = v),
+                      onSupportsWishlistChanged: (v) =>
+                          setState(() => _supportsWishlist = v),
                       tracksDates: _tracksDates,
-                      onTracksDatesChanged: (v) => setState(() => _tracksDates = v),
+                      onTracksDatesChanged: (v) =>
+                          setState(() => _tracksDates = v),
                       supportsPrice: _supportsPrice,
-                      onSupportsPriceChanged: (v) => setState(() => _supportsPrice = v),
+                      onSupportsPriceChanged: (v) =>
+                          setState(() => _supportsPrice = v),
                       isCompact: _isCompact,
                       onIsCompactChanged: (v) => setState(() => _isCompact = v),
                       supportsProgress: _supportsProgress,
-                      onSupportsProgressChanged: (v) => setState(() => _supportsProgress = v),
+                      onSupportsProgressChanged: (v) =>
+                          setState(() => _supportsProgress = v),
                     ),
                     const SizedBox(height: 16),
                     ConfigRatingProgressSection(
                       isGradeable: _isGradeable,
                       ratingScale: _ratingScale,
-                      onRatingScaleChanged: (v) => setState(() => _ratingScale = v),
+                      onRatingScaleChanged: (v) =>
+                          setState(() => _ratingScale = v),
                       supportsProgress: _supportsProgress,
                       progressType: _progressType,
-                      onProgressTypeChanged: (v) => setState(() => _progressType = v),
-                      customProgressUnitController: _customProgressUnitController,
+                      onProgressTypeChanged: (v) =>
+                          setState(() => _progressType = v),
+                      customProgressUnitController:
+                          _customProgressUnitController,
                     ),
                     const SizedBox(height: 16),
                     ConfigGenresSection(
@@ -379,7 +462,11 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
                     ConfigDisplaySection(
                       isThematic: _isThematic,
                       genreLayoutMode: _genreLayoutMode,
-                      onGenreLayoutModeChanged: (v) => setState(() => _genreLayoutMode = v),
+                      onGenreLayoutModeChanged: (v) {
+                        if (v != null) {
+                          setState(() => _genreLayoutMode = v);
+                        }
+                      },
                     ),
                     const SizedBox(height: 32),
                   ],

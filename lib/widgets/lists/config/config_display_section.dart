@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ConfigDisplaySection extends StatelessWidget {
   final bool isThematic;
   final int genreLayoutMode;
-  final ValueChanged<int> onGenreLayoutModeChanged;
+  final ValueChanged<int?> onGenreLayoutModeChanged;
 
   const ConfigDisplaySection({
     super.key,
@@ -25,8 +25,8 @@ class ConfigDisplaySection extends StatelessWidget {
             child: Text(
               "Configuración de Visualización",
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ),
           RadioListTile<int>(
@@ -34,27 +34,21 @@ class ConfigDisplaySection extends StatelessWidget {
             subtitle: const Text("Estándar / Mezclado"),
             value: 0,
             groupValue: genreLayoutMode,
-            onChanged: (v) {
-              if (v != null) onGenreLayoutModeChanged(v);
-            },
+            onChanged: onGenreLayoutModeChanged,
           ),
           RadioListTile<int>(
             title: const Text("Secciones con Cabeceras"),
             subtitle: const Text("Agrupar ítems por su tema con un título"),
             value: 1,
             groupValue: genreLayoutMode,
-            onChanged: (v) {
-              if (v != null) onGenreLayoutModeChanged(v);
-            },
+            onChanged: onGenreLayoutModeChanged,
           ),
           RadioListTile<int>(
             title: const Text("Agrupado sin Cabeceras"),
             subtitle: const Text("Ordenados por tema pero de forma continua"),
             value: 2,
             groupValue: genreLayoutMode,
-            onChanged: (v) {
-              if (v != null) onGenreLayoutModeChanged(v);
-            },
+            onChanged: onGenreLayoutModeChanged,
           ),
           const SizedBox(height: 8),
         ],

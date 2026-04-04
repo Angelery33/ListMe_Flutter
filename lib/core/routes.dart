@@ -29,29 +29,54 @@ class AppRoutes {
   static const String itemEntry = '/item-entry';
   static const String itemDetail = '/item-detail';
 
-  /// Mapa de rutas para la configuración de MaterialApp.
-  /// 
-  /// La ruta listConfig acepta un ListModel opcional como argumento:
-  ///   - Con argumento → modo edición, precarga los datos de la lista
-  ///   - Sin argumento → modo creación de nueva lista vacía
+  /// Argumentos para la ruta list.
+  /// Se usa un mapa con:
+  ///   - 'id': int (required) - ID de la lista
+  ///   - 'name': String (required) - Nombre de la lista
+  ///   - 'list': ListModel (optional) - Objeto lista completo
+  ///   - 'remoteId': String (optional) - ID remoto para listas compartidas
+  ///   - 'parentId': int (optional) - ID padre para subcollections
   static Map<String, WidgetBuilder> get routes => {
     login: (_) => const LoginScreen(),
     register: (_) => const RegisterScreen(),
     home: (_) => const HomeScreen(),
     lists: (_) => const ListsScreen(),
-    list: (_) => const ListScreen(),
+    list: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+
+      // Soporta tanto Map como ListModel para backwards compatibility
+      if (args is Map<String, dynamic>) {
+        return ListScreen(
+          listId: args['id'] as int,
+          listName: args['name'] as String,
+          remoteId: args['remoteId'] as String?,
+          parentId: args['parentId'] as int?,
+        );
+      }
+
+      // Legacy: si es ListModel, extraer id y name
+      if (args is ListModel) {
+        return ListScreen(
+          listId: args.id ?? 0,
+          listName: args.name,
+          list: args,
+        );
+      }
+
+      // Fallback
+      return const ListScreen(listId: 0, listName: 'Lista');
+    },
     listConfig: (context) {
       final args = ModalRoute.of(context)!.settings.arguments;
-      return ListConfigScreen(
-        library: args is ListModel ? args : null,
-      );
+      return ListConfigScreen(library: args is ListModel ? args : null);
     },
     profile: (_) => const ProfileScreen(),
     settings: (_) => const SettingsScreen(),
     info: (_) => const InfoScreen(),
     itemEntry: (_) => const ItemEntryScreen(),
     itemDetail: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       return ItemDetailScreen(item: args['item'] as ItemModel);
     },
   };

@@ -108,4 +108,46 @@ class ItemsRepository {
       rethrow;
     }
   }
+
+  Future<List<ItemModel>> getSubCollections(int parentId, int libraryId) async {
+    try {
+      _logger.debug(
+        'ItemsRepository: Obteniendo subcollections parent=$parentId, library=$libraryId',
+      );
+      final response = await _apiClient.dio.get(
+        '/items/library/$libraryId/parent/$parentId',
+      );
+      final result = (response.data as List)
+          .map((json) => ItemModel.fromJson(json))
+          .toList();
+      _logger.debug(
+        'ItemsRepository: Obtenidas ${result.length} subcollections',
+      );
+      return result;
+    } catch (e) {
+      _logger.error('ItemsRepository: Error al obtener subcollections', e);
+      rethrow;
+    }
+  }
+
+  Future<List<ItemModel>> getItemsByRemoteId(String remoteId) async {
+    try {
+      _logger.debug(
+        'ItemsRepository: Obteniendo items de lista remota $remoteId',
+      );
+      final response = await _apiClient.dio.get(
+        '/items/library/remote/$remoteId',
+      );
+      final result = (response.data as List)
+          .map((json) => ItemModel.fromJson(json))
+          .toList();
+      _logger.debug(
+        'ItemsRepository: Obtenidos ${result.length} items remotos',
+      );
+      return result;
+    } catch (e) {
+      _logger.error('ItemsRepository: Error al obtener items remotos', e);
+      rethrow;
+    }
+  }
 }
