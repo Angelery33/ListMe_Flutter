@@ -35,8 +35,6 @@ class EntryPropertiesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Card(
       elevation: 1,
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
@@ -104,7 +102,7 @@ class EntryPropertiesSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                score.toStringAsFixed(ratingScale == 100 ? 0 : 1),
+                score.toStringAsFixed(2),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onPrimaryContainer,
@@ -117,18 +115,32 @@ class EntryPropertiesSection extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Slider(
-                value: score.clamp(0, maxScore),
-                min: 0,
-                max: maxScore,
-                divisions: ratingScale == 5
-                    ? 10
-                    : (ratingScale == 100 ? 100 : 20),
-                label: score.toStringAsFixed(ratingScale == 100 ? 0 : 1),
-                onChanged: (val) => onScoreChanged(val.toString()),
+              child: TextFormField(
+                initialValue: score.toStringAsFixed(2),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  hintText: "0.00 - ${maxScore.toInt()}",
+                  prefixIcon: const Icon(Icons.score_rounded),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+                onChanged: (val) {
+                  final parsed = double.tryParse(val);
+                  if (parsed != null) {
+                    final clamped = parsed.clamp(0.0, maxScore);
+                    onScoreChanged(clamped.toStringAsFixed(2));
+                  }
+                },
               ),
             ),
-            // Star visualization
+            const SizedBox(width: 8),
             ...List.generate(5, (index) {
               double fraction;
               if (ratingScale == 5) {
