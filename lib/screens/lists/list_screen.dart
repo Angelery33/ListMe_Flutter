@@ -266,9 +266,10 @@ class _ListScreenState extends State<ListScreen> {
   Widget _buildGrid(List<ItemModel> items, ItemsProvider itemsProvider) {
     return GridView.builder(
       shrinkWrap: true,
+
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
         childAspectRatio: 0.7,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,

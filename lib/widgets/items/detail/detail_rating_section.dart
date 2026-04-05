@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../data/lists/list_model.dart';
 import '../../../../providers/items/item_details_provider.dart';
 
 class DetailRatingSection extends StatelessWidget {
-  final int ratingScale; // usually 10, passed from Library or defaults to 10
+  final ListModel? library;
 
-  const DetailRatingSection({super.key, this.ratingScale = 10});
+  const DetailRatingSection({super.key, this.library});
+
+  int get _ratingScale => library?.ratingScale ?? 10;
 
   @override
   Widget build(BuildContext context) {
-    // Escuchar el provider interno de forma selectiva o normal.
-    // Usamos context.watch porque el padre ya puso el provider
     final provider = context.watch<ItemDetailsProvider>();
     final item = provider.item;
+
     if (item == null) return const SizedBox.shrink();
 
     final showPersonal = item.score != null && item.score! > 0;
-    final showExternal = item.externalRating != null && item.externalRating! > 0;
+    final showExternal =
+        item.externalRating != null && item.externalRating! > 0;
 
     if (!showPersonal && !showExternal) return const SizedBox.shrink();
 
@@ -26,7 +29,6 @@ class DetailRatingSection extends StatelessWidget {
         children: [
           if (showPersonal)
             _buildPersonalRating(context, provider, item.score!),
-            
           if (showExternal)
             Padding(
               padding: EdgeInsets.only(top: showPersonal ? 12 : 0),
@@ -37,11 +39,17 @@ class DetailRatingSection extends StatelessWidget {
     );
   }
 
-  Widget _buildPersonalRating(BuildContext context, ItemDetailsProvider provider, double score) {
+  Widget _buildPersonalRating(
+    BuildContext context,
+    ItemDetailsProvider provider,
+    double score,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -50,7 +58,7 @@ class DetailRatingSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Puntuación",
+                'Puntuación',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
@@ -68,20 +76,31 @@ class DetailRatingSection extends StatelessWidget {
           Row(
             children: List.generate(5, (index) {
               double fraction;
-              if (ratingScale == 5) fraction = score - index;
-              else if (ratingScale == 100) fraction = (score / 20.0) - index;
-              else fraction = (score / 2.0) - index;
+              if (_ratingScale == 5) {
+                fraction = score - index;
+              } else if (_ratingScale == 100) {
+                fraction = (score / 20.0) - index;
+              } else {
+                fraction = (score / 2.0) - index;
+              }
 
               IconData icon = Icons.star_border;
-              if (fraction >= 0.75) icon = Icons.star;
-              else if (fraction >= 0.25) icon = Icons.star_half;
+              if (fraction >= 0.75) {
+                icon = Icons.star;
+              } else if (fraction >= 0.25) {
+                icon = Icons.star_half;
+              }
 
               return GestureDetector(
                 onTap: () {
                   double newScore;
-                  if (ratingScale == 5) newScore = (index + 1).toDouble();
-                  else if (ratingScale == 100) newScore = (index + 1) * 20.0;
-                  else newScore = (index + 1) * 2.0;
+                  if (_ratingScale == 5) {
+                    newScore = (index + 1).toDouble();
+                  } else if (_ratingScale == 100) {
+                    newScore = (index + 1) * 20.0;
+                  } else {
+                    newScore = (index + 1) * 2.0;
+                  }
                   provider.updateScore(newScore);
                 },
                 child: Icon(icon, color: Colors.amber, size: 28),
@@ -106,7 +125,7 @@ class DetailRatingSection extends StatelessWidget {
           const Icon(Icons.public, color: Colors.blueAccent, size: 20),
           const SizedBox(width: 8),
           Text(
-            "Valoración General",
+            'Valoración General',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.blueAccent,
@@ -120,16 +139,22 @@ class DetailRatingSection extends StatelessWidget {
               double starValue = extRating / 2;
               double diff = starValue - index;
               IconData icon = Icons.star_border;
-              if (diff >= 0.75) icon = Icons.star;
-              else if (diff >= 0.25) icon = Icons.star_half;
-              
+              if (diff >= 0.75) {
+                icon = Icons.star;
+              } else if (diff >= 0.25) {
+                icon = Icons.star_half;
+              }
               return Icon(icon, color: Colors.amber, size: 16);
             }),
           ),
           const SizedBox(width: 8),
           Text(
             extRating.toStringAsFixed(1),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blueAccent),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.blueAccent,
+            ),
           ),
         ],
       ),
@@ -137,9 +162,11 @@ class DetailRatingSection extends StatelessWidget {
   }
 
   String _formatScore(double score) {
-    if (score == score.toInt()) {
-      return "${score.toInt()}/$ratingScale";
+    if (_ratingScale == 5) {
+      return '${score.toStringAsFixed(1)} / 5';
+    } else if (_ratingScale == 100) {
+      return '${score.toStringAsFixed(0)} / 100';
     }
-    return "${score.toStringAsFixed(1)}/$ratingScale";
+    return '${score.toStringAsFixed(1)} / 10';
   }
 }

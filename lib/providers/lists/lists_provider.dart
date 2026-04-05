@@ -57,7 +57,8 @@ class ListsProvider extends ChangeNotifier {
           if (serverList.icon == 'list' && localMatch.icon != 'list') {
             currentIcon = localMatch.icon;
           }
-          if (serverList.color == 'titanium' && localMatch.color != 'titanium') {
+          if (serverList.color == 'titanium' &&
+              localMatch.color != 'titanium') {
             currentColor = localMatch.color;
           }
 
@@ -67,10 +68,10 @@ class ListsProvider extends ChangeNotifier {
       }).toList();
 
       _lists.sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
-      
+
       // Persistir lo mezclado en local
       _localStorage.saveLibraries(_lists);
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -98,10 +99,13 @@ class ListsProvider extends ChangeNotifier {
     try {
       // 1. Guardar preventivamente en local (Persistencia optimista del diseño)
       _localStorage.saveLibrary(updatedList);
-      
+
       // 2. Intentar actualizar en servidor
-      final serverResponse = await _listsRepository.updateLibrary(id, updatedList);
-      
+      final serverResponse = await _listsRepository.updateLibrary(
+        id,
+        updatedList,
+      );
+
       // 3. Mezclar respuesta del servidor con nuestro diseño local (por si el servidor no lo guarda)
       final finalLibrary = serverResponse.copyWith(
         icon: updatedList.icon,
@@ -183,5 +187,13 @@ class ListsProvider extends ChangeNotifier {
       return false;
     }
   }
-}
 
+  Future<List<LibraryGenreModel>> getLibraryGenres(int libraryId) async {
+    return await _listsRepository.getLibraryGenres(libraryId);
+  }
+
+  Future<LibraryGenreModel> addLibraryGenre(int libraryId, String name) async {
+    final genre = LibraryGenreModel(libraryId: libraryId, name: name);
+    return await _listsRepository.addLibraryGenre(genre);
+  }
+}

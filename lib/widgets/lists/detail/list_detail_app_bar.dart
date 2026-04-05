@@ -57,11 +57,22 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
       flexibleSpace: AppTheme.appBarGradient(context),
       automaticallyImplyLeading: false,
       centerTitle: true,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 12.0),
+        child: IconButton(
+          icon: Icon(
+            widget.isSearchVisible ? Icons.search_off : Icons.search,
+            color: textColor,
+          ),
+          onPressed: widget.onSearchToggle,
+          tooltip: widget.isSearchVisible ? 'Ocultar búsqueda' : 'Buscar',
+        ),
+      ),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Image.asset(
-            'assets/images/logo.png',
+            'assets/images/logobiblio.png',
             height: 35,
             errorBuilder: (context, error, stackTrace) =>
                 Icon(Icons.bookmark_rounded, color: textColor, size: 28),
@@ -81,26 +92,6 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
         ],
       ),
       actions: [
-        IconButton(
-          icon: Icon(
-            widget.isSearchVisible ? Icons.search_off : Icons.search,
-            color: textColor,
-          ),
-          onPressed: widget.onSearchToggle,
-          tooltip: widget.isSearchVisible ? 'Ocultar búsqueda' : 'Buscar',
-        ),
-        if (widget.isCloud)
-          IconButton(
-            icon: Icon(Icons.person_add_alt_1, color: textColor),
-            onPressed: widget.onSharePressed,
-            tooltip: 'Compartir lista',
-          )
-        else if (widget.onUploadPressed != null)
-          IconButton(
-            icon: Icon(Icons.cloud_upload_outlined, color: textColor),
-            onPressed: widget.onUploadPressed,
-            tooltip: 'Subir a la nube',
-          ),
         PopupMenuButton<String>(
           icon: Icon(Icons.more_vert, color: textColor),
           onSelected: widget.onMenuSelected,

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../../data/items/item_model.dart';
 import '../../../../data/items/item_image_model.dart';
+import 'full_screen_image_viewer.dart';
 
 class DetailImageCarousel extends StatefulWidget {
   final ItemModel item;
   final List<ItemImageModel> images;
+  final VoidCallback? onImageUpdated;
 
   const DetailImageCarousel({
     super.key,
     required this.item,
     required this.images,
+    this.onImageUpdated,
   });
 
   @override
@@ -20,24 +23,55 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
 
-  @override
-  Widget build(BuildContext context) {
-    // Collect all valid image paths
+  List<String> get _imagePaths {
     final List<String> paths = [];
     if (widget.item.imagePath != null && widget.item.imagePath!.isNotEmpty) {
       paths.add(widget.item.imagePath!);
-    } else if (widget.item.remoteImageUrl != null && widget.item.remoteImageUrl!.isNotEmpty) {
+    } else if (widget.item.remoteImageUrl != null &&
+        widget.item.remoteImageUrl!.isNotEmpty) {
       paths.add(widget.item.remoteImageUrl!);
     }
     paths.addAll(widget.images.map((img) => img.imageUri).whereType<String>());
+    return paths;
+  }
+
+  void _showFullScreenImage(BuildContext context, int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FullScreenImageViewer(
+          imagePaths: _imagePaths,
+          initialIndex: index,
+          onDismiss: () => Navigator.pop(context),
+          onSetMain: (path) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Funcionalidad de portada en desarrollo"),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final paths = _imagePaths;
 
     if (paths.isEmpty) {
       return AspectRatio(
         aspectRatio: 1.0,
         child: Container(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           child: Center(
-            child: Icon(Icons.image_not_supported, size: 64, color: Colors.grey),
+            child: Icon(
+              Icons.image_not_supported,
+              size: 64,
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         ),
       );
@@ -53,23 +87,29 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
             onPageChanged: (idx) => setState(() => _currentIndex = idx),
             itemBuilder: (context, index) {
               final path = paths[index];
-              return Hero(
-                tag: index == 0 ? 'item_image_${widget.item.id}' : 'item_gallery_$index',
-                child: Image.network(
-                  path,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey[800],
-                    child: const Center(child: Icon(Icons.broken_image, color: Colors.white54)),
+              return GestureDetector(
+                onTap: () => _showFullScreenImage(context, index),
+                child: Hero(
+                  tag: index == 0
+                      ? 'item_image_${widget.item.id}'
+                      : 'item_gallery_$index',
+                  child: Image.network(
+                    path,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[800],
+                      child: const Center(
+                        child: Icon(Icons.broken_image, color: Colors.white54),
+                      ),
+                    ),
                   ),
                 ),
               );
             },
           ),
-          
           if (paths.length > 1)
             Positioned(
-              bottom: 16,
+              bottom: 110,
               left: 0,
               right: 0,
               child: Row(
@@ -82,12 +122,37 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
                     height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _currentIndex == index ? Colors.white : Colors.white.withValues(alpha: 0.4),
+                      color: _currentIndex == index
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
                 ),
               ),
             ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Theme.of(
+                        context,
+                      ).colorScheme.surface.withValues(alpha: 0.4),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Theme.of(
+                        context,
+                      ).colorScheme.surface.withValues(alpha: 0.8),
+                    ],
+                    stops: const [0.0, 0.2, 0.6, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

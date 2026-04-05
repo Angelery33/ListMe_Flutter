@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 
-class EntryStatusProgressSection extends StatelessWidget {
+class EntryStatusProgressSection extends StatefulWidget {
   final String status;
   final Function(String) onStatusChanged;
   final bool isCurrent;
   final Function(bool) onCurrentChanged;
   final bool supportsProgress;
-  final String? progressType; // "Libro", "Serie", "Manual", etc.
-  
-  // Controllers para progreso detallado
+  final String? progressType;
+
   final TextEditingController? currentProgressController;
   final TextEditingController? totalProgressController;
   final TextEditingController? seasonController;
   final TextEditingController? totalSeasonController;
   final TextEditingController? chapterController;
   final TextEditingController? totalChapterController;
+  final TextEditingController? pageController;
+  final TextEditingController? totalPageController;
+  final TextEditingController? volumeController;
+  final TextEditingController? totalVolumeController;
 
   const EntryStatusProgressSection({
     super.key,
@@ -30,8 +33,19 @@ class EntryStatusProgressSection extends StatelessWidget {
     this.totalSeasonController,
     this.chapterController,
     this.totalChapterController,
+    this.pageController,
+    this.totalPageController,
+    this.volumeController,
+    this.totalVolumeController,
   });
 
+  @override
+  State<EntryStatusProgressSection> createState() =>
+      _EntryStatusProgressSectionState();
+}
+
+class _EntryStatusProgressSectionState
+    extends State<EntryStatusProgressSection> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -39,10 +53,10 @@ class EntryStatusProgressSection extends StatelessWidget {
       children: [
         _buildSectionTitle(context, "Estado y Progreso"),
         const SizedBox(height: 16),
-        
+
         // Selector de Estado
         DropdownButtonFormField<String>(
-          initialValue: status,
+          value: widget.status,
           decoration: InputDecoration(
             labelText: "Estado actual",
             prefixIcon: const Icon(Icons.star_half_rounded),
@@ -55,23 +69,29 @@ class EntryStatusProgressSection extends StatelessWidget {
             DropdownMenuItem(value: "DROPPED", child: Text("Abandonado")),
             DropdownMenuItem(value: "PAUSED", child: Text("En Pausa")),
           ],
-          onChanged: (val) => onStatusChanged(val ?? "PENDING"),
+          onChanged: (val) {
+            if (val != null) widget.onStatusChanged(val);
+          },
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Toggle "Disfrutando ahora"
         SwitchListTile(
           title: const Text("Disfrutando ahora"),
           subtitle: const Text("Mostrar en la sección destacada de la lista"),
-          value: isCurrent,
-          onChanged: onCurrentChanged,
-          secondary: Icon(Icons.play_circle_outline_rounded, 
-            color: isCurrent ? Theme.of(context).colorScheme.primary : null),
+          value: widget.isCurrent,
+          onChanged: widget.onCurrentChanged,
+          secondary: Icon(
+            Icons.play_circle_outline_rounded,
+            color: widget.isCurrent
+                ? Theme.of(context).colorScheme.primary
+                : null,
+          ),
           contentPadding: EdgeInsets.zero,
         ),
 
-        if (supportsProgress) ...[
+        if (widget.supportsProgress) ...[
           const Divider(height: 32),
           _buildProgressFields(context),
         ],
@@ -80,23 +100,60 @@ class EntryStatusProgressSection extends StatelessWidget {
   }
 
   Widget _buildProgressFields(BuildContext context) {
-    // Adaptar campos según el tipo
+    final progressType = widget.progressType;
+
     if (progressType == "Serie" || progressType == "Anime") {
       return Column(
         children: [
-          _buildDoubleField("Temporada", seasonController, totalSeasonController),
+          _buildDoubleField(
+            "Temporada",
+            widget.seasonController,
+            widget.totalSeasonController,
+          ),
           const SizedBox(height: 12),
-          _buildDoubleField("Episodio", chapterController, totalChapterController),
+          _buildDoubleField(
+            "Episodio",
+            widget.chapterController,
+            widget.totalChapterController,
+          ),
         ],
       );
     } else if (progressType == "Libro" || progressType == "Manga") {
-      return _buildDoubleField("Página", currentProgressController, totalProgressController);
+      return Column(
+        children: [
+          _buildDoubleField(
+            "Página",
+            widget.pageController,
+            widget.totalPageController,
+          ),
+          const SizedBox(height: 12),
+          _buildDoubleField(
+            "Volumen",
+            widget.volumeController,
+            widget.totalVolumeController,
+          ),
+        ],
+      );
+    } else if (progressType == "Funko") {
+      return _buildDoubleField(
+        "Cantidad",
+        widget.currentProgressController,
+        widget.totalProgressController,
+      );
     } else {
-      return _buildDoubleField("Progreso", currentProgressController, totalProgressController);
+      return _buildDoubleField(
+        "Progreso",
+        widget.currentProgressController,
+        widget.totalProgressController,
+      );
     }
   }
 
-  Widget _buildDoubleField(String label, TextEditingController? current, TextEditingController? total) {
+  Widget _buildDoubleField(
+    String label,
+    TextEditingController? current,
+    TextEditingController? total,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -105,13 +162,18 @@ class EntryStatusProgressSection extends StatelessWidget {
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: "$label actual",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text("/", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          child: Text(
+            "/",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
         ),
         Expanded(
           child: TextFormField(
@@ -119,7 +181,9 @@ class EntryStatusProgressSection extends StatelessWidget {
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: "Total",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),

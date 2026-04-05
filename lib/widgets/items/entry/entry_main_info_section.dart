@@ -3,15 +3,27 @@ import 'package:flutter/material.dart';
 class EntryMainInfoSection extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController descController;
-  final String? itemNumberLabel;
   final TextEditingController? itemNumberController;
+  final TextEditingController? productTypeController;
+  final TextEditingController? editionController;
+  final VoidCallback? onImportPressed;
+  final bool showImportButton;
+  final bool showItemNumber;
+  final bool showProductType;
+  final bool showEdition;
 
   const EntryMainInfoSection({
     super.key,
     required this.nameController,
     required this.descController,
-    this.itemNumberLabel,
     this.itemNumberController,
+    this.productTypeController,
+    this.editionController,
+    this.onImportPressed,
+    this.showImportButton = false,
+    this.showItemNumber = false,
+    this.showProductType = false,
+    this.showEdition = false,
   });
 
   @override
@@ -22,9 +34,20 @@ class EntryMainInfoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle(context, "Información Principal"),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionTitle(context, "Información Principal"),
+            if (showImportButton && onImportPressed != null)
+              TextButton.icon(
+                onPressed: onImportPressed,
+                icon: const Icon(Icons.cloud_download, size: 18),
+                label: const Text("Importar"),
+              ),
+          ],
+        ),
         const SizedBox(height: 16),
-        
+
         // Campo Nombre
         TextFormField(
           controller: nameController,
@@ -34,7 +57,9 @@ class EntryMainInfoSection extends StatelessWidget {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           textCapitalization: TextCapitalization.sentences,
-          validator: (value) => (value == null || value.isEmpty) ? "El nombre es obligatorio" : null,
+          validator: (value) => (value == null || value.isEmpty)
+              ? "El nombre es obligatorio"
+              : null,
         ),
         const SizedBox(height: 16),
 
@@ -46,7 +71,10 @@ class EntryMainInfoSection extends StatelessWidget {
             alignLabelWithHint: true,
             prefixIcon: Padding(
               padding: const EdgeInsets.only(bottom: 40),
-              child: Icon(Icons.description_rounded, color: colorScheme.primary),
+              child: Icon(
+                Icons.description_rounded,
+                color: colorScheme.primary,
+              ),
             ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -54,15 +82,57 @@ class EntryMainInfoSection extends StatelessWidget {
           textCapitalization: TextCapitalization.sentences,
         ),
 
-        // Campo Especial (opcional, ej: Número de Funko)
-        if (itemNumberLabel != null && itemNumberController != null) ...[
+        // Campo Número de Item (ej: Funko)
+        if (showItemNumber && itemNumberController != null) ...[
           const SizedBox(height: 16),
           TextFormField(
             controller: itemNumberController,
+            keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: itemNumberLabel,
-              prefixIcon: Icon(Icons.numbers_rounded, color: colorScheme.primary),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              labelText: "Número de Item",
+              prefixIcon: Icon(
+                Icons.numbers_rounded,
+                color: colorScheme.primary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+
+        // Campo Tipo de Producto
+        if (showProductType && productTypeController != null) ...[
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: productTypeController,
+            decoration: InputDecoration(
+              labelText: "Tipo de Producto",
+              prefixIcon: Icon(
+                Icons.category_rounded,
+                color: colorScheme.primary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+
+        // Campo Edición
+        if (showEdition && editionController != null) ...[
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: editionController,
+            decoration: InputDecoration(
+              labelText: "Edición",
+              prefixIcon: Icon(
+                Icons.bookmark_rounded,
+                color: colorScheme.primary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],

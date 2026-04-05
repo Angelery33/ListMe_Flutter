@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../data/items/items_repository.dart';
 import '../../data/items/item_model.dart';
+import '../../data/items/item_image_model.dart';
+import '../../data/attributes/attribute_type_model.dart';
+import '../../data/attributes/attribute_item_model.dart';
+import '../../data/attributes/attributes_repository.dart';
 import '../../core/utils/item_grouping_helper.dart';
 
 class ItemsProvider extends ChangeNotifier {
   final ItemsRepository _itemsRepository;
+  final AttributesRepository _attributesRepository;
 
   bool _isLoading = false;
   List<ItemModel> _items = [];
@@ -20,7 +25,7 @@ class ItemsProvider extends ChangeNotifier {
   int? _currentParentId;
   String? _currentRemoteId;
 
-  ItemsProvider(this._itemsRepository);
+  ItemsProvider(this._itemsRepository, this._attributesRepository);
 
   bool get isLoading => _isLoading;
   List<ItemModel> get items => _items;
@@ -197,5 +202,17 @@ class ItemsProvider extends ChangeNotifier {
 
     final updated = item.copyWith(currentProgress: current + 1);
     await updateItem(item.id!, updated);
+  }
+
+  Future<List<AttributeTypeModel>> getAttributeTypes() async {
+    return await _attributesRepository.getAllAttributeTypes();
+  }
+
+  Future<List<AttributeItemModel>> getItemAttributes(int itemId) async {
+    return await _attributesRepository.getItemAttributes(itemId);
+  }
+
+  Future<List<ItemImageModel>> getItemImages(int itemId) async {
+    return await _itemsRepository.getItemImages(itemId);
   }
 }

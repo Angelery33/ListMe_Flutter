@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../core/services/image_picker_service.dart';
 import '../../shared/universal_image.dart';
 
 class EntryImagePicker extends StatelessWidget {
   final List<String> existingImages;
   final List<String> newImages;
-  final VoidCallback onPickImage;
+  final Function(String) onPickImage;
   final Function(int) onRemoveExisting;
   final Function(int) onRemoveNew;
 
@@ -17,6 +19,36 @@ class EntryImagePicker extends StatelessWidget {
     required this.onRemoveExisting,
     required this.onRemoveNew,
   });
+
+  void _showImageSourceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galería'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onPickImage('gallery');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Cámara'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onPickImage('camera');
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,42 +64,60 @@ class EntryImagePicker extends StatelessWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              // Botón Añadir
-              GestureDetector(
-                onTap: onPickImage,
-                child: Container(
-                  width: 100,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: colorScheme.primary.withValues(alpha: 0.2),
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: Icon(Icons.add_a_photo_rounded, color: colorScheme.primary, size: 30),
-                ),
-              ),
-              const SizedBox(width: 12),
-              
-              // Imágenes Existentes (URLs o paths previos)
+              // Existing Images
               ...existingImages.asMap().entries.map((entry) {
                 return _buildImageItem(
                   context,
                   imagePath: entry.value,
                   onRemove: () => onRemoveExisting(entry.key),
+                  isNetwork: entry.value.startsWith('http'),
                 );
               }),
 
-              // Nuevas Imágenes (Archivos locales temporales)
+              // New Images (local files)
               ...newImages.asMap().entries.map((entry) {
                 return _buildImageItem(
                   context,
                   imagePath: entry.value,
-                  isLocalFile: true,
                   onRemove: () => onRemoveNew(entry.key),
+                  isLocalFile: true,
                 );
               }),
+
+              // Add Button
+              GestureDetector(
+                onTap: () => _showImageSourceSheet(context),
+                child: Container(
+                  width: 100,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.3,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_a_photo_rounded,
+                        color: colorScheme.primary,
+                        size: 30,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Añadir",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -75,9 +125,11 @@ class EntryImagePicker extends StatelessWidget {
     );
   }
 
-  Widget _buildImageItem(BuildContext context, {
+  Widget _buildImageItem(
+    BuildContext context, {
     required String imagePath,
     required VoidCallback onRemove,
+    bool isNetwork = false,
     bool isLocalFile = false,
   }) {
     return Container(
@@ -85,11 +137,24 @@ class EntryImagePicker extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12),
       child: Stack(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: isLocalFile 
-                ? Image.file(File(imagePath), fit: BoxFit.cover, width: 100, height: 120)
-                : UniversalImage(imagePath, fit: BoxFit.cover),
+          Container(
+            width: 100,
+            height: 120,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: isLocalFile
+                  ? Image.file(
+                      File(imagePath),
+                      fit: BoxFit.cover,
+                      width: 100,
+                      height: 120,
+                    )
+                  : UniversalImage(imagePath, fit: BoxFit.cover),
+            ),
           ),
           Positioned(
             top: 4,
@@ -99,10 +164,10 @@ class EntryImagePicker extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(
-                  color: Colors.black54,
+                  color: Colors.red,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close_rounded, color: Colors.white, size: 16),
+                child: const Icon(Icons.close, color: Colors.white, size: 16),
               ),
             ),
           ),

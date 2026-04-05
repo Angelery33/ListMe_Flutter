@@ -19,7 +19,7 @@ import 'providers/items/items_provider.dart';
 void main() async {
   // Aseguramos que los bindings de Flutter estén inicializados para SharedPreferences
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicializar Persistencia Local (Hive)
   await LocalStorageService.instance.init();
 
@@ -48,7 +48,10 @@ void main() async {
           create: (context) => ListsProvider(context.read<ListsRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => ItemsProvider(context.read<ItemsRepository>()),
+          create: (context) => ItemsProvider(
+            context.read<ItemsRepository>(),
+            context.read<AttributesRepository>(),
+          ),
         ),
       ],
       child: const ListMeApp(),
@@ -66,8 +69,16 @@ class ListMeApp extends StatelessWidget {
         return MaterialApp(
           title: 'ListMe',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.getTheme(settings.accentColor, Brightness.light, settings.fontScale),
-          darkTheme: AppTheme.getTheme(settings.accentColor, Brightness.dark, settings.fontScale),
+          theme: AppTheme.getTheme(
+            settings.accentColor,
+            Brightness.light,
+            settings.fontScale,
+          ),
+          darkTheme: AppTheme.getTheme(
+            settings.accentColor,
+            Brightness.dark,
+            settings.fontScale,
+          ),
           themeMode: settings.themeMode,
           home: const AuthWrapper(),
           routes: AppRoutes.routes,
