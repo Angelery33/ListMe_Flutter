@@ -42,17 +42,28 @@ class _ListsScreenState extends State<ListsScreen> {
         onTap: (index) {
           if (index == 1) Navigator.pushNamed(context, AppRoutes.profile);
           if (index == 2) Navigator.pushNamed(context, AppRoutes.settings);
+          if (index == 3) Navigator.pushNamed(context, AppRoutes.social);
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.pushNamed(context, AppRoutes.listConfig);
-        },
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-        icon: const Icon(Icons.add_rounded, size: 18),
-        label: const Text('NUEVA LISTA', style: TextStyle(fontSize: 16)),
+      floatingActionButton: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.listConfig),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: theme.colorScheme.onPrimary,
+          child: const Icon(Icons.add_rounded, size: 28),
+        ),
       ),
       body: listsProvider.lists.isEmpty
           ? const EmptyListsState()

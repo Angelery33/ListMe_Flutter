@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../data/items/item_model.dart';
 
-
 class DetailHeaderTags extends StatelessWidget {
   final ItemModel item;
 
@@ -51,7 +50,12 @@ class DetailHeaderTags extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactTag(BuildContext context, String label, Color color, IconData icon) {
+  Widget _buildCompactTag(
+    BuildContext context,
+    String label,
+    Color color,
+    IconData icon,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -68,11 +72,11 @@ class DetailHeaderTags extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  fontSize: 10,
-                ),
+              color: color,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+              fontSize: 10,
+            ),
           ),
         ],
       ),
@@ -81,31 +85,52 @@ class DetailHeaderTags extends StatelessWidget {
 
   String _getStatusLabel(String status) {
     switch (status) {
-      case 'PENDING': return 'Pendiente';
-      case 'IN_PROGRESS': return 'En Curso';
-      case 'COMPLETED': return 'Completado';
-      case 'DROPPED': return 'Abandonado';
-      default: return status;
+      case 'PENDING':
+        return 'Pendiente';
+      case 'IN_PROGRESS':
+        return 'En Progreso';
+      case 'COMPLETED':
+        return 'Completado';
+      case 'DROPPED':
+        return 'Abandonado';
+      case 'PAUSED':
+        return 'En Pausa';
+      default:
+        return status;
     }
   }
 
   Color _getStatusColor(String? status) {
     switch (status) {
-      case 'PENDING': return Colors.blue;
-      case 'IN_PROGRESS': return Colors.green;
-      case 'COMPLETED': return Colors.purple;
-      case 'DROPPED': return Colors.red;
-      default: return Colors.grey;
+      case 'PENDING':
+        return Colors.blue;
+      case 'IN_PROGRESS':
+        return Colors.green;
+      case 'COMPLETED':
+        return Colors.purple;
+      case 'DROPPED':
+        return Colors.red;
+      case 'PAUSED':
+        return Colors.orange;
+      default:
+        return Colors.grey;
     }
   }
 
   IconData _getStatusIcon(String? status) {
     switch (status) {
-      case 'PENDING': return Icons.schedule;
-      case 'IN_PROGRESS': return Icons.play_circle_outline;
-      case 'COMPLETED': return Icons.check_circle_outline;
-      case 'DROPPED': return Icons.cancel_outlined;
-      default: return Icons.info_outline;
+      case 'PENDING':
+        return Icons.schedule;
+      case 'IN_PROGRESS':
+        return Icons.play_circle_outline;
+      case 'COMPLETED':
+        return Icons.check_circle_outline;
+      case 'DROPPED':
+        return Icons.cancel_outlined;
+      case 'PAUSED':
+        return Icons.pause_circle_outline;
+      default:
+        return Icons.info_outline;
     }
   }
 }

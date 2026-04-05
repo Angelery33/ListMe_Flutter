@@ -83,6 +83,8 @@ class ItemGroupingHelper {
     grouped['En Progreso'] = items
         .where((i) => i.status == 'IN_PROGRESS')
         .toList();
+    grouped['En Pausa'] = items.where((i) => i.status == 'PAUSED').toList();
+    grouped['Abandonados'] = items.where((i) => i.status == 'DROPPED').toList();
     grouped['Completados'] = items
         .where((i) => i.status == 'COMPLETED')
         .toList();

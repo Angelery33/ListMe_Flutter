@@ -25,11 +25,12 @@ class SettingsScreen extends StatelessWidget {
         showBackButton: false,
       ),
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 2, // Ajustes = 2
+        currentIndex: 2,
         onTap: (index) {
           if (index == 0)
             Navigator.pushReplacementNamed(context, AppRoutes.lists);
           if (index == 1) Navigator.pushNamed(context, AppRoutes.profile);
+          if (index == 3) Navigator.pushNamed(context, AppRoutes.social);
         },
       ),
       body: ListView(
@@ -166,7 +167,9 @@ class SettingsScreen extends StatelessWidget {
 
     Color cardColor;
     if (isTitanium) {
-      cardColor = isDark ? const Color.fromARGB(255, 75, 75, 78) : const Color.fromARGB(255, 226, 224, 224);
+      cardColor = isDark
+          ? const Color.fromARGB(255, 75, 75, 78)
+          : const Color.fromARGB(255, 226, 224, 224);
     } else {
       cardColor = isDark
           ? scheme.onSurfaceVariant.withValues(alpha: 0.25)

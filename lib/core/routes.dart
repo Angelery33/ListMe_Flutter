@@ -8,6 +8,7 @@ import '../screens/lists/list_config_screen.dart';
 import '../screens/info/info_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/social/social_screen.dart';
 import '../screens/items/item_entry_screen.dart';
 import '../screens/items/item_detail_screen.dart';
 import '../data/items/item_model.dart';
@@ -26,6 +27,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String settings = '/settings';
   static const String info = '/info';
+  static const String social = '/social';
   static const String itemEntry = '/item-entry';
   static const String itemDetail = '/item-detail';
 
@@ -73,11 +75,15 @@ class AppRoutes {
     profile: (_) => const ProfileScreen(),
     settings: (_) => const SettingsScreen(),
     info: (_) => const InfoScreen(),
+    social: (_) => const SocialScreen(),
     itemEntry: (_) => const ItemEntryScreen(),
     itemDetail: (context) {
       final args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      return ItemDetailScreen(item: args['item'] as ItemModel);
+      return ItemDetailScreen(
+        item: args['item'] as ItemModel,
+        list: args['list'] as ListModel?,
+      );
     },
   };
 }

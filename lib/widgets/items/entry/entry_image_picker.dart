@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import '../../../core/services/image_picker_service.dart';
 import '../../shared/universal_image.dart';
 
 class EntryImagePicker extends StatelessWidget {
@@ -54,74 +52,82 @@ class EntryImagePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(context, "Galería de Imágenes"),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 120,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              // Existing Images
-              ...existingImages.asMap().entries.map((entry) {
-                return _buildImageItem(
-                  context,
-                  imagePath: entry.value,
-                  onRemove: () => onRemoveExisting(entry.key),
-                  isNetwork: entry.value.startsWith('http'),
-                );
-              }),
+    return Card(
+      color: colorScheme.surfaceContainerLowest,
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle(context, "Galería de Imágenes"),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 120,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  // Existing Images
+                  ...existingImages.asMap().entries.map((entry) {
+                    return _buildImageItem(
+                      context,
+                      imagePath: entry.value,
+                      onRemove: () => onRemoveExisting(entry.key),
+                      isNetwork: entry.value.startsWith('http'),
+                    );
+                  }),
 
-              // New Images (local files)
-              ...newImages.asMap().entries.map((entry) {
-                return _buildImageItem(
-                  context,
-                  imagePath: entry.value,
-                  onRemove: () => onRemoveNew(entry.key),
-                  isLocalFile: true,
-                );
-              }),
+                  // New Images (local files)
+                  ...newImages.asMap().entries.map((entry) {
+                    return _buildImageItem(
+                      context,
+                      imagePath: entry.value,
+                      onRemove: () => onRemoveNew(entry.key),
+                      isLocalFile: true,
+                    );
+                  }),
 
-              // Add Button
-              GestureDetector(
-                onTap: () => _showImageSourceSheet(context),
-                child: Container(
-                  width: 100,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.3,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: colorScheme.primary.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.add_a_photo_rounded,
-                        color: colorScheme.primary,
-                        size: 30,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "Añadir",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onSurfaceVariant,
+                  // Add Button
+                  GestureDetector(
+                    onTap: () => _showImageSourceSheet(context),
+                    child: Container(
+                      width: 100,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.3,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.2),
                         ),
                       ),
-                    ],
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_a_photo_rounded,
+                            color: colorScheme.primary,
+                            size: 30,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Añadir",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

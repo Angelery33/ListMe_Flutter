@@ -208,6 +208,11 @@ class ItemsProvider extends ChangeNotifier {
     return await _attributesRepository.getAllAttributeTypes();
   }
 
+  Future<AttributeTypeModel> createAttributeType(String name) async {
+    final newType = AttributeTypeModel(name: name, dataType: "TEXT");
+    return await _attributesRepository.createAttributeType(newType);
+  }
+
   Future<List<AttributeItemModel>> getItemAttributes(int itemId) async {
     return await _attributesRepository.getItemAttributes(itemId);
   }

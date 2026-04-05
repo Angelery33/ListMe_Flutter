@@ -7,6 +7,7 @@ class EntryAttributesSection extends StatefulWidget {
   final List<AttributeTypeModel> allTypes;
   final Function(AttributeItemModel) onAdd;
   final Function(int) onRemove;
+  final Future<String?> Function()? onCreateAttributeType;
 
   const EntryAttributesSection({
     super.key,
@@ -14,6 +15,7 @@ class EntryAttributesSection extends StatefulWidget {
     required this.allTypes,
     required this.onAdd,
     required this.onRemove,
+    this.onCreateAttributeType,
   });
 
   @override
@@ -94,59 +96,117 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildSectionTitle(context, "Atributos Personalizados"),
-            IconButton(
-              onPressed: () => _showAddAttributeDialog(context),
-              icon: const Icon(Icons.add_circle_outline_rounded),
-              color: Theme.of(context).colorScheme.primary,
+  void _showCreateTypeDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Nuevo Tipo de Atributo"),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: "Nombre del tipo"),
+            textCapitalization: TextCapitalization.sentences,
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = controller.text.trim();
+                if (name.isNotEmpty && widget.onCreateAttributeType != null) {
+                  final newType = await widget.onCreateAttributeType!();
+                  if (newType != null && dialogContext.mounted) {
+                    Navigator.pop(dialogContext);
+                  } else if (dialogContext.mounted) {
+                    Navigator.pop(dialogContext);
+                  }
+                }
+              },
+              child: const Text("Crear"),
             ),
           ],
-        ),
+        );
+      },
+    );
+  }
 
-        if (widget.attributes.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              "No hay atributos añadidos.",
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
-            ),
-          )
-        else
-          ...widget.attributes.asMap().entries.map((entry) {
-            final index = entry.key;
-            final attr = entry.value;
-            final type = widget.allTypes.firstWhere(
-              (t) => t.id == attr.attributeTypeId,
-              orElse: () =>
-                  AttributeTypeModel(name: "Desconocido", dataType: "TEXT"),
-            );
-
-            return ListTile(
-              leading: const Icon(Icons.label_outline_rounded, size: 20),
-              title: Text(type.name),
-              subtitle: Text(attr.value),
-              trailing: IconButton(
-                icon: const Icon(
-                  Icons.remove_circle_outline_rounded,
-                  size: 20,
-                  color: Colors.redAccent,
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 1,
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSectionTitle(context, "Atributos Personalizados"),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.onCreateAttributeType != null)
+                      IconButton(
+                        onPressed: () => _showCreateTypeDialog(context),
+                        icon: const Icon(Icons.add_rounded),
+                        color: Theme.of(context).colorScheme.secondary,
+                        tooltip: 'Crear nuevo tipo',
+                      ),
+                    IconButton(
+                      onPressed: () => _showAddAttributeDialog(context),
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
                 ),
-                onPressed: () => widget.onRemove(index),
-              ),
-              contentPadding: EdgeInsets.zero,
-            );
-          }),
-      ],
+              ],
+            ),
+
+            if (widget.attributes.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  "No hay atributos añadidos.",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                ),
+              )
+            else
+              ...widget.attributes.asMap().entries.map((entry) {
+                final index = entry.key;
+                final attr = entry.value;
+                final type = widget.allTypes.firstWhere(
+                  (t) => t.id == attr.attributeTypeId,
+                  orElse: () =>
+                      AttributeTypeModel(name: "Desconocido", dataType: "TEXT"),
+                );
+
+                return ListTile(
+                  leading: const Icon(Icons.label_outline_rounded, size: 20),
+                  title: Text(type.name),
+                  subtitle: Text(attr.value),
+                  trailing: IconButton(
+                    icon: const Icon(
+                      Icons.remove_circle_outline_rounded,
+                      size: 20,
+                      color: Colors.redAccent,
+                    ),
+                    onPressed: () => widget.onRemove(index),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                );
+              }),
+          ],
+        ),
+      ),
     );
   }
 

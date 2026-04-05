@@ -23,15 +23,23 @@ class DetailRatingSection extends StatelessWidget {
 
     if (!showPersonal && !showExternal) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         children: [
           if (showPersonal)
             _buildPersonalRating(context, provider, item.score!),
           if (showExternal)
             Padding(
-              padding: EdgeInsets.only(top: showPersonal ? 12 : 0),
+              padding: EdgeInsets.only(top: showPersonal ? 16 : 0),
               child: _buildExternalRating(context, item.externalRating!),
             ),
         ],

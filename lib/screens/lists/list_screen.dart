@@ -89,6 +89,7 @@ class _ListScreenState extends State<ListScreen> {
   Widget build(BuildContext context) {
     final itemsProvider = context.watch<ItemsProvider>();
     final isSearching = itemsProvider.searchQuery.isNotEmpty;
+    final theme = Theme.of(context);
 
     final groupedItems = ItemGroupingHelper.groupItems(
       items: itemsProvider.items,
@@ -125,9 +126,25 @@ class _ListScreenState extends State<ListScreen> {
         isCloud: widget.remoteId != null,
         canEdit: widget.listId != 0 && widget.remoteId == null,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddItem,
-        child: const Icon(Icons.add_rounded),
+      floatingActionButton: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => _navigateToAddItem(),
+          backgroundColor: theme.colorScheme.primary,
+          foregroundColor: theme.colorScheme.onPrimary,
+          child: const Icon(Icons.add_rounded, size: 28),
+        ),
       ),
       body: Column(
         children: [

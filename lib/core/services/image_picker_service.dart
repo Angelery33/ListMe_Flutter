@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -37,6 +38,12 @@ class ImagePickerService {
         maxHeight: 1920,
       );
       if (image == null) return null;
+
+      if (cropToSquare) {
+        final croppedFile = await _cropImage(image.path);
+        return croppedFile;
+      }
+
       return File(image.path);
     } on PlatformException catch (e) {
       debugPrint('PlatformException picking image: ${e.code} - ${e.message}');
@@ -44,6 +51,36 @@ class ImagePickerService {
     } catch (e) {
       debugPrint('Error picking image: $e');
       return null;
+    }
+  }
+
+  Future<File?> _cropImage(String imagePath) async {
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: imagePath,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Recortar Portada',
+            toolbarColor: Colors.white,
+            toolbarWidgetColor: Colors.black,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Recortar Portada',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        return File(croppedFile.path);
+      }
+      return File(imagePath);
+    } catch (e) {
+      debugPrint('Error cropping image: $e');
+      return File(imagePath);
     }
   }
 

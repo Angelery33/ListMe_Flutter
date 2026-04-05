@@ -16,6 +16,7 @@ import '../../widgets/items/entry/entry_status_progress_section.dart';
 import '../../widgets/items/entry/entry_properties_section.dart';
 import '../../widgets/items/entry/entry_dates_section.dart';
 import '../../widgets/items/entry/entry_attributes_section.dart';
+import '../../widgets/shared/custom_gradient_app_bar.dart';
 
 class ItemEntryScreen extends StatefulWidget {
   const ItemEntryScreen({super.key});
@@ -243,6 +244,38 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     );
   }
 
+  Future<String?> _showCreateAttributeTypeDialog() async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Nuevo Tipo de Atributo"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: "Nombre del tipo"),
+          textCapitalization: TextCapitalization.sentences,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isNotEmpty) {
+                Navigator.pop(dialogContext, name);
+              }
+            },
+            child: const Text("Crear"),
+          ),
+        ],
+      ),
+    );
+    return result;
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_isSaving) return;
@@ -348,8 +381,9 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_item == null ? "Nuevo Item" : "Editar Item"),
+      appBar: CustomGradientAppBar(
+        title: _item == null ? "Nuevo Item" : "Editar Item",
+        showBackButton: true,
         actions: [
           if (_isSaving)
             const Center(
@@ -380,7 +414,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 },
                 onRemoveNew: (idx) => setState(() => _newImages.removeAt(idx)),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               EntryMainInfoSection(
                 nameController: _nameController,
                 descController: _descController,
@@ -397,7 +431,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 showProductType: _list.type == "Funko",
                 showEdition: _list.type == "Funko",
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               EntryStatusProgressSection(
                 status: _status,
                 onStatusChanged: (val) => setState(() => _status = val),
@@ -416,7 +450,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 volumeController: _volumeController,
                 totalVolumeController: _totalVolumeController,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               EntryPropertiesSection(
                 genre: _genre,
                 availableGenres: _libraryGenres,
@@ -424,24 +458,16 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 onGenreSaved: (val) => _genre = val,
                 onAddGenrePressed: _showAddGenreDialog,
                 priceController: _priceController,
-                wishlist: _wishlist,
-                onWishlistChanged: (val) => setState(() => _wishlist = val),
                 score: _score,
                 onScoreChanged: (val) =>
                     setState(() => _score = double.tryParse(val) ?? 0),
                 onStarTap: (val) => setState(() => _score = val),
                 supportsPrice: _list.supportsPrice,
                 isGradeable: _list.gradeable,
-                supportsCompletion: _list.supportsCompletion,
                 isThematic: _list.thematic,
-                status: _status,
-                onStatusChanged: (val) =>
-                    setState(() => _status = val ?? "PENDING"),
-                isCurrent: _isCurrent,
-                onCurrentChanged: (val) => setState(() => _isCurrent = val),
                 ratingScale: _list.ratingScale ?? 10,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               EntryDatesSection(
                 acquisitionDate: _acquisitionDate,
                 startDate: _startDate,
@@ -459,14 +485,26 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 onCollectionChanged: (val) =>
                     setState(() => _isCollection = val),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               EntryAttributesSection(
                 attributes: _attributes,
                 allTypes: _attributeTypes,
                 onAdd: (attr) => setState(() => _attributes.add(attr)),
                 onRemove: (idx) => setState(() => _attributes.removeAt(idx)),
+                onCreateAttributeType: () async {
+                  final result = await _showCreateAttributeTypeDialog();
+                  if (result != null) {
+                    final itemsProvider = context.read<ItemsProvider>();
+                    final newType = await itemsProvider.createAttributeType(
+                      result,
+                    );
+                    setState(() => _attributeTypes.add(newType));
+                    return result;
+                  }
+                  return null;
+                },
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
             ],
           ),
         ),

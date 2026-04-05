@@ -8,19 +8,12 @@ class EntryPropertiesSection extends StatelessWidget {
   final Function(String?) onGenreSaved;
   final VoidCallback? onAddGenrePressed;
   final TextEditingController priceController;
-  final bool wishlist;
-  final Function(bool) onWishlistChanged;
   final double score;
   final Function(String) onScoreChanged;
   final Function(double) onStarTap;
   final bool supportsPrice;
   final bool isGradeable;
-  final bool supportsCompletion;
   final bool isThematic;
-  final String status;
-  final Function(String?) onStatusChanged;
-  final bool isCurrent;
-  final Function(bool) onCurrentChanged;
   final int ratingScale;
 
   const EntryPropertiesSection({
@@ -31,19 +24,12 @@ class EntryPropertiesSection extends StatelessWidget {
     required this.onGenreSaved,
     required this.onAddGenrePressed,
     required this.priceController,
-    required this.wishlist,
-    required this.onWishlistChanged,
     required this.score,
     required this.onScoreChanged,
     required this.onStarTap,
     this.supportsPrice = false,
     this.isGradeable = false,
-    this.supportsCompletion = false,
     this.isThematic = false,
-    required this.status,
-    required this.onStatusChanged,
-    required this.isCurrent,
-    required this.onCurrentChanged,
     this.ratingScale = 10,
   });
 
@@ -51,98 +37,48 @@ class EntryPropertiesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(context, "Categorización y Valoración"),
-        const SizedBox(height: 16),
+    return Card(
+      elevation: 1,
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle(context, "Categorización y Valoración"),
+            const SizedBox(height: 16),
 
-        // Score (Rating)
-        if (isGradeable) ...[
-          _buildScoreSection(context),
-          const SizedBox(height: 16),
-        ],
-
-        // Status (Estado)
-        if (supportsCompletion) ...[
-          DropdownButtonFormField<String>(
-            value: status,
-            decoration: InputDecoration(
-              labelText: "Estado",
-              prefixIcon: const Icon(Icons.info_outline),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            items: const [
-              DropdownMenuItem(value: "PENDING", child: Text("Pendiente")),
-              DropdownMenuItem(
-                value: "IN_PROGRESS",
-                child: Text("En Progreso"),
-              ),
-              DropdownMenuItem(value: "COMPLETED", child: Text("Completado")),
-              DropdownMenuItem(value: "DROPPED", child: Text("Abandonado")),
-              DropdownMenuItem(value: "PAUSED", child: Text("En Pausa")),
+            if (isGradeable) ...[
+              _buildScoreSection(context),
+              const SizedBox(height: 16),
             ],
-            onChanged: onStatusChanged,
-          ),
-          const SizedBox(height: 12),
-          SwitchListTile(
-            title: const Text("Disfrutando ahora"),
-            subtitle: Text(
-              (status == "PENDING" || status == "COMPLETED")
-                  ? "Solo disponible en 'En Progreso'"
-                  : "Destacar en la parte superior",
-            ),
-            secondary: Icon(
-              Icons.play_circle_outline,
-              color: isCurrent ? colorScheme.primary : null,
-            ),
-            value: isCurrent,
-            onChanged: (status == "PENDING" || status == "COMPLETED")
-                ? null
-                : onCurrentChanged,
-            contentPadding: EdgeInsets.zero,
-          ),
-          const SizedBox(height: 16),
-        ],
 
-        // Genre / Category
-        if (isThematic) ...[
-          _buildGenreDropdown(context),
-          const SizedBox(height: 16),
-        ],
+            if (isThematic) ...[
+              _buildGenreDropdown(context),
+              const SizedBox(height: 16),
+            ],
 
-        // Price
-        if (supportsPrice) ...[
-          TextFormField(
-            controller: priceController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: "Precio pagado",
-              prefixIcon: const Icon(Icons.euro_rounded),
-              suffixText: "€",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+            if (supportsPrice) ...[
+              TextFormField(
+                controller: priceController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: "Precio pagado",
+                  prefixIcon: const Icon(Icons.euro_rounded),
+                  suffixText: "€",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-
-        // Wishlist Toggle
-        SwitchListTile(
-          title: const Text("En lista de deseos"),
-          subtitle: const Text("Marcar si aún no lo has adquirido"),
-          value: wishlist,
-          onChanged: onWishlistChanged,
-          secondary: Icon(
-            Icons.wallet_giftcard_rounded,
-            color: wishlist ? Colors.orangeAccent : null,
-          ),
-          contentPadding: EdgeInsets.zero,
+              const SizedBox(height: 16),
+            ],
+          ],
         ),
-      ],
+      ),
     );
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../data/attributes/attribute_item_model.dart';
-import '../../../../data/attributes/attribute_type_model.dart';
 import '../../../../providers/items/item_details_provider.dart';
 
 class DetailAttributesSection extends StatelessWidget {
@@ -14,22 +13,31 @@ class DetailAttributesSection extends StatelessWidget {
 
     if (attributes.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          'DETALLES ADICIONALES',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.outline,
-            letterSpacing: 1.2,
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'DETALLES ADICIONALES',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+              letterSpacing: 1.2,
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        ...attributes.map((attr) => _buildAttributeItem(context, attr)),
-        const SizedBox(height: 16),
-      ],
+          const SizedBox(height: 12),
+          ...attributes.map((attr) => _buildAttributeItem(context, attr)),
+        ],
+      ),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../data/items/item_model.dart';
 import '../../../../data/items/item_image_model.dart';
+import '../../../../widgets/shared/universal_image.dart';
 import 'full_screen_image_viewer.dart';
 
 class DetailImageCarousel extends StatefulWidget {
@@ -93,7 +94,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
                   tag: index == 0
                       ? 'item_image_${widget.item.id}'
                       : 'item_gallery_$index',
-                  child: Image.network(
+                  child: UniversalImage(
                     path,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(

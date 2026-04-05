@@ -12,12 +12,17 @@ class ProfileScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const CustomGradientAppBar(title: 'Mi Perfil', showBackButton: false),
+      appBar: const CustomGradientAppBar(
+        title: 'Mi Perfil',
+        showBackButton: false,
+      ),
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1, // Perfil = 2
+        currentIndex: 1,
         onTap: (index) {
-          if (index == 0) Navigator.pushReplacementNamed(context, AppRoutes.lists);
+          if (index == 0)
+            Navigator.pushReplacementNamed(context, AppRoutes.lists);
           if (index == 2) Navigator.pushNamed(context, AppRoutes.settings);
+          if (index == 3) Navigator.pushNamed(context, AppRoutes.social);
         },
       ),
       body: Center(

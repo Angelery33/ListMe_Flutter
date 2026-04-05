@@ -107,60 +107,70 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
           final library = widget.list;
 
           return Scaffold(
-            body: CustomScrollView(
-              slivers: [
-                _buildSliverAppBar(context, item),
-                SliverToBoxAdapter(
-                  child: Padding(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                item.name,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _onEditTapped(context, item),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => _onDeleteTapped(context),
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DetailImageCarousel(
+                    item: item,
+                    images: _detailsProvider.images,
+                  ),
+                  Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         DetailInfoSection(item: item, library: library),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         DetailProgressSection(library: library),
+                        SizedBox(height: 16),
                         DetailRatingSection(library: library),
+                        SizedBox(height: 16),
                         DetailDescriptionSection(item: item),
+                        SizedBox(height: 16),
                         DetailCollectionSection(library: library),
+                        SizedBox(height: 16),
                         DetailDatesSection(item: item),
+                        SizedBox(height: 16),
                         DetailAttributesSection(),
+                        SizedBox(height: 16),
                         DetailGallerySection(item: item),
                         const SizedBox(height: 32),
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildSliverAppBar(BuildContext context, ItemModel item) {
-    return SliverAppBar(
-      expandedHeight: 300,
-      pinned: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () => _onEditTapped(context, item),
-        ),
-        IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () => _onDeleteTapped(context),
-        ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          item.name,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        background: DetailImageCarousel(
-          item: item,
-          images: _detailsProvider.images,
-        ),
       ),
     );
   }

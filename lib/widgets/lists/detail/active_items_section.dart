@@ -59,14 +59,14 @@ class ActiveItemsSection extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: isCompact ? 160 : 120,
+          height: isCompact ? 200 : 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
               return Container(
-                width: isCompact ? 140 : 280,
+                width: isCompact ? 150 : 300,
                 margin: const EdgeInsets.only(right: 12),
                 child: ItemCard(
                   item: item,
@@ -78,7 +78,9 @@ class ActiveItemsSection extends StatelessWidget {
                   isThematic: isThematic,
                   supportsPrice: supportsPrice,
                   supportsProgress: supportsProgress,
-                  onIncrement: onIncrement != null ? () => onIncrement!(item) : null,
+                  onIncrement: onIncrement != null
+                      ? () => onIncrement!(item)
+                      : null,
                 ),
               );
             },

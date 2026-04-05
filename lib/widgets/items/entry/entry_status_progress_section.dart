@@ -48,54 +48,88 @@ class _EntryStatusProgressSectionState
     extends State<EntryStatusProgressSection> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(context, "Estado y Progreso"),
-        const SizedBox(height: 16),
+    return Card(
+      elevation: 1,
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle(context, "Estado y Progreso"),
+            const SizedBox(height: 16),
 
-        // Selector de Estado
-        DropdownButtonFormField<String>(
-          value: widget.status,
-          decoration: InputDecoration(
-            labelText: "Estado actual",
-            prefixIcon: const Icon(Icons.star_half_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          items: const [
-            DropdownMenuItem(value: "PENDING", child: Text("Pendiente")),
-            DropdownMenuItem(value: "IN_PROGRESS", child: Text("En Progreso")),
-            DropdownMenuItem(value: "COMPLETED", child: Text("Completado")),
-            DropdownMenuItem(value: "DROPPED", child: Text("Abandonado")),
-            DropdownMenuItem(value: "PAUSED", child: Text("En Pausa")),
+            DropdownButtonFormField<String>(
+              value: widget.status,
+              decoration: InputDecoration(
+                labelText: "Estado actual",
+                prefixIcon: const Icon(Icons.star_half_rounded),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              items: const [
+                DropdownMenuItem(value: "PENDING", child: Text("Pendiente")),
+                DropdownMenuItem(
+                  value: "IN_PROGRESS",
+                  child: Text("En Progreso"),
+                ),
+                DropdownMenuItem(value: "COMPLETED", child: Text("Completado")),
+                DropdownMenuItem(value: "DROPPED", child: Text("Abandonado")),
+                DropdownMenuItem(value: "PAUSED", child: Text("En Pausa")),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  widget.onStatusChanged(val);
+                  // Si el nuevo estado no es IN_PROGRESS, desactivar "Disfrutando ahora"
+                  if (val != "IN_PROGRESS" && widget.isCurrent) {
+                    widget.onCurrentChanged(false);
+                  }
+                }
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: SwitchListTile(
+                title: const Text("Disfrutando ahora"),
+                subtitle: Text(
+                  widget.status == "IN_PROGRESS"
+                      ? "Mostrar en la sección destacada de la lista"
+                      : "Solo disponible en 'En Progreso'",
+                ),
+                value: widget.isCurrent,
+                onChanged: widget.status == "IN_PROGRESS"
+                    ? widget.onCurrentChanged
+                    : null,
+                secondary: Icon(
+                  Icons.play_circle_outline_rounded,
+                  color: widget.isCurrent
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+              ),
+            ),
+
+            if (widget.supportsProgress) ...[
+              const Divider(height: 32),
+              _buildProgressFields(context),
+            ],
           ],
-          onChanged: (val) {
-            if (val != null) widget.onStatusChanged(val);
-          },
         ),
-
-        const SizedBox(height: 16),
-
-        // Toggle "Disfrutando ahora"
-        SwitchListTile(
-          title: const Text("Disfrutando ahora"),
-          subtitle: const Text("Mostrar en la sección destacada de la lista"),
-          value: widget.isCurrent,
-          onChanged: widget.onCurrentChanged,
-          secondary: Icon(
-            Icons.play_circle_outline_rounded,
-            color: widget.isCurrent
-                ? Theme.of(context).colorScheme.primary
-                : null,
-          ),
-          contentPadding: EdgeInsets.zero,
-        ),
-
-        if (widget.supportsProgress) ...[
-          const Divider(height: 32),
-          _buildProgressFields(context),
-        ],
-      ],
+      ),
     );
   }
 
