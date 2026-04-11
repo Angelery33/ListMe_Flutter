@@ -1,9 +1,7 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import '../../core/services/image_picker_service.dart';
 import '../../core/services/firebase_storage_service.dart';
 import '../../data/items/item_model.dart';
@@ -556,6 +554,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 favoriteIndex: _favoriteImageIndex,
                 onPickImage: _pickImage,
                 onRemoveExisting: (idx) {
+                  if (idx < 0 || idx >= _existingImages.length) return;
                   final img = _existingImages.removeAt(idx);
                   if (img.id != null) _deletedImageIds.add(img.id!);
                   if (_favoriteImageIndex == idx) {

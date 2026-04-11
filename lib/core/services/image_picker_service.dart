@@ -43,11 +43,6 @@ class ImagePickerService {
       );
       if (image == null) return null;
 
-      if (cropToSquare) {
-        final croppedFile = await _cropImage(image.path);
-        return croppedFile;
-      }
-
       return File(image.path);
     } on PlatformException catch (e) {
       _logger.error('PlatformException picking image', e);
@@ -65,14 +60,16 @@ class ImagePickerService {
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'Recortar Portada',
-            toolbarColor: Colors.white,
-            toolbarWidgetColor: Colors.black,
+            toolbarTitle: 'Recortar',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
             lockAspectRatio: true,
+            backgroundColor: Colors.white,
+            statusBarColor: Colors.black,
           ),
           IOSUiSettings(
-            title: 'Recortar Portada',
+            title: 'Recortar',
             aspectRatioLockEnabled: true,
             resetAspectRatioEnabled: false,
           ),

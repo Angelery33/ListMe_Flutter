@@ -26,13 +26,49 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
 
   List<String> get _imagePaths {
     final List<String> paths = [];
-    if (widget.item.imagePath != null && widget.item.imagePath!.isNotEmpty) {
-      paths.add(widget.item.imagePath!);
-    } else if (widget.item.remoteImageUrl != null &&
-        widget.item.remoteImageUrl!.isNotEmpty) {
-      paths.add(widget.item.remoteImageUrl!);
+    final Set<String> addedPaths = {};
+
+    String? getUniquePath(String? remoteUrl, String? localPath) {
+      if (remoteUrl != null && remoteUrl.isNotEmpty) {
+        if (!addedPaths.contains(remoteUrl)) {
+          addedPaths.add(remoteUrl);
+          return remoteUrl;
+        }
+      }
+      if (localPath != null &&
+          localPath.isNotEmpty &&
+          !localPath.startsWith('http')) {
+        if (!addedPaths.contains(localPath)) {
+          addedPaths.add(localPath);
+          return localPath;
+        }
+      }
+      return null;
     }
-    paths.addAll(widget.images.map((img) => img.imageUri).whereType<String>());
+
+    final favoriteImages = widget.images
+        .where((img) => img.isFavorite == true)
+        .toList();
+    final otherImages = widget.images
+        .where((img) => img.isFavorite != true)
+        .toList();
+
+    for (final img in favoriteImages) {
+      final path = getUniquePath(img.remoteImageUrl, img.imageUri);
+      if (path != null) paths.add(path);
+    }
+
+    for (final img in otherImages) {
+      final path = getUniquePath(img.remoteImageUrl, img.imageUri);
+      if (path != null) paths.add(path);
+    }
+
+    final mainPath = getUniquePath(
+      widget.item.remoteImageUrl,
+      widget.item.imagePath,
+    );
+    if (mainPath != null) paths.add(mainPath);
+
     return paths;
   }
 
