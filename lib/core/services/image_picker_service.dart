@@ -4,9 +4,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'logger_service.dart';
+import 'firebase_storage_service.dart';
 
 class ImagePickerService {
   static final ImagePickerService _instance = ImagePickerService._internal();
+  final LoggerService _logger = LoggerService.instance;
+  final FirebaseStorageService _firebaseStorage = FirebaseStorageService();
   factory ImagePickerService() => _instance;
   ImagePickerService._internal();
 
@@ -19,13 +23,13 @@ class ImagePickerService {
     if (source == ImageSource.camera) {
       final cameraStatus = await Permission.camera.request();
       if (!cameraStatus.isGranted) {
-        debugPrint('Camera permission denied');
+        _logger.warning('Camera permission denied');
         return null;
       }
     } else if (source == ImageSource.gallery) {
       final photosStatus = await Permission.photos.request();
       if (!photosStatus.isGranted && !photosStatus.isLimited) {
-        debugPrint('Photos permission denied');
+        _logger.warning('Photos permission denied');
         return null;
       }
     }
@@ -46,10 +50,10 @@ class ImagePickerService {
 
       return File(image.path);
     } on PlatformException catch (e) {
-      debugPrint('PlatformException picking image: ${e.code} - ${e.message}');
+      _logger.error('PlatformException picking image', e);
       return null;
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      _logger.error('Error picking image', e);
       return null;
     }
   }
@@ -79,7 +83,7 @@ class ImagePickerService {
       }
       return File(imagePath);
     } catch (e) {
-      debugPrint('Error cropping image: $e');
+      _logger.error('Error cropping image', e);
       return File(imagePath);
     }
   }

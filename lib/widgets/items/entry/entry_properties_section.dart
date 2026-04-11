@@ -188,7 +188,7 @@ class EntryPropertiesSection extends StatelessWidget {
         Expanded(
           child: availableGenres.isNotEmpty
               ? DropdownButtonFormField<String>(
-                  value:
+                  initialValue:
                       (genre != null &&
                           availableGenres.any((g) => g.name == genre))
                       ? genre
@@ -237,7 +237,7 @@ class EntryPropertiesSection extends StatelessWidget {
             child: IconButton(
               onPressed: onAddGenrePressed,
               icon: const Icon(Icons.add_circle_outline),
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
               tooltip: 'Añadir nuevo género',
             ),
           ),

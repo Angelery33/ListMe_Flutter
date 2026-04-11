@@ -22,12 +22,12 @@ class ConfigTypeSection extends StatelessWidget {
             Text(
               "Tipo de Lista",
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: selectedCategory,
+              initialValue: selectedCategory,
               decoration: const InputDecoration(
                 labelText: 'Categoría para Importar',
                 prefixIcon: Icon(Icons.import_contacts),

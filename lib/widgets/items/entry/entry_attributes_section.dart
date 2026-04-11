@@ -45,7 +45,7 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<AttributeTypeModel>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: "Tipo de atributo",
@@ -146,7 +146,7 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildSectionTitle(context, "Atributos Personalizados"),
                 Row(
@@ -213,10 +213,10 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+      style: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: Theme.of(context).colorScheme.primary,
         fontWeight: FontWeight.bold,
-        letterSpacing: 1.2,
+        letterSpacing: 1,
       ),
     );
   }

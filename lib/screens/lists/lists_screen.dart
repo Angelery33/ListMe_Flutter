@@ -23,7 +23,9 @@ class _ListsScreenState extends State<ListsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ListsProvider>().fetchLists();
+      if (mounted) {
+        context.read<ListsProvider>().fetchLists();
+      }
     });
   }
 
@@ -60,8 +62,8 @@ class _ListsScreenState extends State<ListsScreen> {
         ),
         child: FloatingActionButton(
           onPressed: () => Navigator.pushNamed(context, AppRoutes.listConfig),
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: theme.colorScheme.onPrimary,
+          backgroundColor: theme.colorScheme.primary,
+          foregroundColor: theme.colorScheme.onPrimary,
           child: const Icon(Icons.add_rounded, size: 28),
         ),
       ),

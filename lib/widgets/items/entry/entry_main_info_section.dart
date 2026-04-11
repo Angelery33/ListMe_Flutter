@@ -51,6 +51,16 @@ class EntryMainInfoSection extends StatelessWidget {
                   Icons.title_rounded,
                   color: colorScheme.primary,
                 ),
+                suffixIcon: showImportButton
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.cloud_download_rounded,
+                          color: colorScheme.primary,
+                        ),
+                        onPressed: onImportPressed,
+                        tooltip: 'Importar desde API',
+                      )
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

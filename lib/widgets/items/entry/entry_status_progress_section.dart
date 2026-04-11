@@ -61,7 +61,7 @@ class _EntryStatusProgressSectionState
             const SizedBox(height: 16),
 
             DropdownButtonFormField<String>(
-              value: widget.status,
+              initialValue: widget.status,
               decoration: InputDecoration(
                 labelText: "Estado actual",
                 prefixIcon: const Icon(Icons.star_half_rounded),

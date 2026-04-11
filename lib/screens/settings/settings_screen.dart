@@ -113,6 +113,28 @@ class SettingsScreen extends StatelessWidget {
             FontScaleSelector(settings: settings),
           ]),
           const SizedBox(height: 24),
+          _buildSection(context, 'APIs Externas', [
+            _buildApiKeyField(
+              context,
+              settings: settings,
+              title: 'OMDb API Key',
+              subtitle: 'Para buscar películas y series',
+              value: settings.omdbApiKey,
+              hint: 'Clave de OMDb (opcional)',
+              onSave: (value) => settings.setOmdbApiKey(value),
+            ),
+            const SizedBox(height: 16),
+            _buildApiKeyField(
+              context,
+              settings: settings,
+              title: 'TMDb API Key',
+              subtitle: 'Para buscar películas y series',
+              value: settings.tmdbApiKey,
+              hint: 'Clave de TMDb (opcional)',
+              onSave: (value) => settings.setTmdbApiKey(value),
+            ),
+          ]),
+          const SizedBox(height: 24),
           _buildSection(context, 'Cuenta', [
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
@@ -285,5 +307,59 @@ class SettingsScreen extends StatelessWidget {
       default:
         return 'Desconocido';
     }
+  }
+
+  Widget _buildApiKeyField(
+    BuildContext context, {
+    required SettingsProvider settings,
+    required String title,
+    required String subtitle,
+    required String value,
+    required String hint,
+    required Function(String) onSave,
+  }) {
+    final controller = TextEditingController(text: value);
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 2),
+        Text(subtitle, style: theme.textTheme.bodySmall),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: hint,
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.save_outlined),
+              onPressed: () {
+                onSave(controller.text.trim());
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Guardado')));
+              },
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

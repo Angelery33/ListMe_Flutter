@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
-import '../screens/home/home_screen.dart';
 import '../screens/lists/lists_screen.dart';
 import '../screens/lists/list_screen.dart';
 import '../screens/lists/list_config_screen.dart';
@@ -20,7 +19,6 @@ class AppRoutes {
 
   static const String login = '/login';
   static const String register = '/register';
-  static const String home = '/home';
   static const String lists = '/lists';
   static const String list = '/list';
   static const String listConfig = '/list-config';
@@ -31,17 +29,9 @@ class AppRoutes {
   static const String itemEntry = '/item-entry';
   static const String itemDetail = '/item-detail';
 
-  /// Argumentos para la ruta list.
-  /// Se usa un mapa con:
-  ///   - 'id': int (required) - ID de la lista
-  ///   - 'name': String (required) - Nombre de la lista
-  ///   - 'list': ListModel (optional) - Objeto lista completo
-  ///   - 'remoteId': String (optional) - ID remoto para listas compartidas
-  ///   - 'parentId': int (optional) - ID padre para subcollections
   static Map<String, WidgetBuilder> get routes => {
     login: (_) => const LoginScreen(),
     register: (_) => const RegisterScreen(),
-    home: (_) => const HomeScreen(),
     lists: (_) => const ListsScreen(),
     list: (context) {
       final args = ModalRoute.of(context)!.settings.arguments;
@@ -78,11 +68,24 @@ class AppRoutes {
     social: (_) => const SocialScreen(),
     itemEntry: (_) => const ItemEntryScreen(),
     itemDetail: (context) {
-      final args =
-          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is! Map<String, dynamic>) {
+        return const ItemDetailScreen(
+          item: ItemModel(idLibrary: 0, name: 'Error'),
+          list: null,
+        );
+      }
+      final item = args['item'];
+      final list = args['list'];
+      if (item is! ItemModel) {
+        return const ItemDetailScreen(
+          item: ItemModel(idLibrary: 0, name: 'Error'),
+          list: null,
+        );
+      }
       return ItemDetailScreen(
-        item: args['item'] as ItemModel,
-        list: args['list'] as ListModel?,
+        item: item,
+        list: list is ListModel ? list : null,
       );
     },
   };

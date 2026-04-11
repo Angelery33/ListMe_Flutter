@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/items/item_model.dart';
-import '../../data/items/items_repository.dart';
 import '../../data/lists/list_model.dart';
 import '../../providers/items/item_details_provider.dart';
 import '../../providers/items/items_provider.dart';
@@ -28,20 +27,15 @@ class ItemDetailScreen extends StatefulWidget {
 }
 
 class _ItemDetailScreenState extends State<ItemDetailScreen> {
-  late ItemDetailsProvider _detailsProvider;
-
   @override
   void initState() {
     super.initState();
-    final repository = context.read<ItemsRepository>();
-    _detailsProvider = ItemDetailsProvider(repository);
-    _detailsProvider.loadItemDetails(widget.item.id!, initialItem: widget.item);
-  }
-
-  @override
-  void dispose() {
-    _detailsProvider.dispose();
-    super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final provider = context.read<ItemDetailsProvider>();
+        provider.loadItemDetails(widget.item.id!, initialItem: widget.item);
+      }
+    });
   }
 
   void _onEditTapped(BuildContext context, ItemModel currentItem) async {
@@ -51,8 +45,9 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       arguments: {'list': widget.list, 'item': currentItem},
     );
 
-    if (context.mounted && widget.item.id != null) {
-      _detailsProvider.loadItemDetails(widget.item.id!);
+    if (mounted && widget.item.id != null) {
+      final provider = context.read<ItemDetailsProvider>();
+      provider.loadItemDetails(widget.item.id!);
       final listId = currentItem.idLibrary;
       context.read<ItemsProvider>().fetchItemsByLibrary(listId);
     }
@@ -79,13 +74,13 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       ),
     );
 
-    if (confirm == true && context.mounted) {
+    if (confirm == true && mounted) {
       final itemsProvider = context.read<ItemsProvider>();
       final success = await itemsProvider.deleteItem(widget.item.id!);
 
-      if (success && context.mounted) {
+      if (success && mounted) {
         Navigator.pop(context, true);
-      } else if (context.mounted) {
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -99,78 +94,66 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _detailsProvider,
-      child: Consumer<ItemDetailsProvider>(
-        builder: (context, provider, child) {
-          final item = provider.item ?? widget.item;
-          final library = widget.list;
+    final detailsProvider = context.watch<ItemDetailsProvider>();
+    final item = detailsProvider.item ?? widget.item;
+    final library = widget.list;
 
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              ),
-              title: Text(
-                item.name,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _onEditTapped(context, item),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _onDeleteTapped(context),
-                ),
-              ],
-            ),
-            body: SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          item.name,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _onEditTapped(context, item),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _onDeleteTapped(context),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DetailImageCarousel(item: item, images: detailsProvider.images),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DetailImageCarousel(
-                    item: item,
-                    images: _detailsProvider.images,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DetailInfoSection(item: item, library: library),
-                        SizedBox(height: 16),
-                        DetailProgressSection(library: library),
-                        SizedBox(height: 16),
-                        DetailRatingSection(library: library),
-                        SizedBox(height: 16),
-                        DetailDescriptionSection(item: item),
-                        SizedBox(height: 16),
-                        DetailCollectionSection(library: library),
-                        SizedBox(height: 16),
-                        DetailDatesSection(item: item),
-                        SizedBox(height: 16),
-                        DetailAttributesSection(),
-                        SizedBox(height: 16),
-                        DetailGallerySection(item: item),
-                        const SizedBox(height: 32),
-                      ],
-                    ),
-                  ),
+                  DetailInfoSection(item: item, library: library),
+                  const SizedBox(height: 16),
+                  DetailProgressSection(library: library),
+                  const SizedBox(height: 16),
+                  DetailRatingSection(library: library),
+                  const SizedBox(height: 16),
+                  DetailDescriptionSection(item: item),
+                  const SizedBox(height: 16),
+                  DetailCollectionSection(library: library),
+                  const SizedBox(height: 16),
+                  DetailDatesSection(item: item),
+                  const SizedBox(height: 16),
+                  DetailAttributesSection(),
+                  const SizedBox(height: 16),
+                  DetailGallerySection(item: item),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

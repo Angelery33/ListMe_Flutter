@@ -5,17 +5,21 @@ import '../../shared/universal_image.dart';
 class EntryImagePicker extends StatelessWidget {
   final List<String> existingImages;
   final List<String> newImages;
+  final int? favoriteIndex;
   final Function(String) onPickImage;
   final Function(int) onRemoveExisting;
   final Function(int) onRemoveNew;
+  final Function(int) onSetFavorite;
 
   const EntryImagePicker({
     super.key,
     required this.existingImages,
     required this.newImages,
+    this.favoriteIndex,
     required this.onPickImage,
     required this.onRemoveExisting,
     required this.onRemoveNew,
+    required this.onSetFavorite,
   });
 
   void _showImageSourceSheet(BuildContext context) {
@@ -48,9 +52,15 @@ class EntryImagePicker extends StatelessWidget {
     );
   }
 
+  bool _isFavorite(int index) {
+    if (favoriteIndex == null) return index == 0;
+    return index == favoriteIndex;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final totalExisting = existingImages.length;
 
     return Card(
       color: colorScheme.surfaceContainerLowest,
@@ -72,18 +82,25 @@ class EntryImagePicker extends StatelessWidget {
                   ...existingImages.asMap().entries.map((entry) {
                     return _buildImageItem(
                       context,
+                      index: entry.key,
                       imagePath: entry.value,
                       onRemove: () => onRemoveExisting(entry.key),
+                      isFavorite: _isFavorite(entry.key),
+                      onSetFavorite: () => onSetFavorite(entry.key),
                       isNetwork: entry.value.startsWith('http'),
                     );
                   }),
 
                   // New Images (local files)
                   ...newImages.asMap().entries.map((entry) {
+                    final index = totalExisting + entry.key;
                     return _buildImageItem(
                       context,
+                      index: index,
                       imagePath: entry.value,
                       onRemove: () => onRemoveNew(entry.key),
+                      isFavorite: _isFavorite(index),
+                      onSetFavorite: () => onSetFavorite(index),
                       isLocalFile: true,
                     );
                   }),
@@ -133,8 +150,11 @@ class EntryImagePicker extends StatelessWidget {
 
   Widget _buildImageItem(
     BuildContext context, {
+    required int index,
     required String imagePath,
     required VoidCallback onRemove,
+    required VoidCallback onSetFavorite,
+    bool isFavorite = false,
     bool isNetwork = false,
     bool isLocalFile = false,
   }) {
@@ -149,6 +169,12 @@ class EntryImagePicker extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              border: isFavorite
+                  ? Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 3,
+                    )
+                  : null,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
@@ -162,6 +188,21 @@ class EntryImagePicker extends StatelessWidget {
                   : UniversalImage(imagePath, fit: BoxFit.cover),
             ),
           ),
+          // Favorite badge
+          if (isFavorite)
+            Positioned(
+              top: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.star, color: Colors.white, size: 16),
+              ),
+            ),
+          // Remove button
           Positioned(
             top: 4,
             right: 4,
@@ -177,6 +218,27 @@ class EntryImagePicker extends StatelessWidget {
               ),
             ),
           ),
+          // Set as favorite button
+          if (!isFavorite)
+            Positioned(
+              bottom: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: onSetFavorite,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.star_border,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

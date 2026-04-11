@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../data/auth/auth_repository.dart';
 import '../../data/auth/auth_models.dart';
+import '../../core/services/logger_service.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository;
-  
+  final LoggerService _logger = LoggerService.instance;
+
   AuthStatus _status = AuthStatus.initial;
   String? _errorMessage;
 
@@ -20,8 +22,32 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> checkAuthStatus() async {
     final isLoggedIn = await _authRepository.isLoggedIn();
-    _status = isLoggedIn ? AuthStatus.authenticated : AuthStatus.unauthenticated;
+    _status = isLoggedIn
+        ? AuthStatus.authenticated
+        : AuthStatus.unauthenticated;
     notifyListeners();
+  }
+
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  String _extractUserFriendlyError(dynamic error) {
+    final errorStr = error.toString().toLowerCase();
+    if (errorStr.contains('connection') || errorStr.contains('socket')) {
+      return 'Error de conexión. Verifica tu internet.';
+    }
+    if (errorStr.contains('401') || errorStr.contains('unauthorized')) {
+      return 'Usuario o contraseña incorrectos.';
+    }
+    if (errorStr.contains('timeout')) {
+      return 'Tiempo de espera agotado. Intenta de nuevo.';
+    }
+    if (errorStr.contains('username')) {
+      return 'El usuario ya existe.';
+    }
+    return 'Error al iniciar sesión. Intenta de nuevo.';
   }
 
   Future<bool> login(String username, String password) async {
@@ -30,16 +56,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authRepository.login(LoginRequest(
-        username: username,
-        password: password,
-      ));
+      await _authRepository.login(
+        LoginRequest(username: username, password: password),
+      );
       _status = AuthStatus.authenticated;
+      _logger.info('Login exitoso para usuario: $username');
       notifyListeners();
       return true;
     } catch (e) {
       _status = AuthStatus.error;
-      _errorMessage = e.toString();
+      _errorMessage = _extractUserFriendlyError(e);
+      _logger.error('Error en login para $username', e);
       notifyListeners();
       return false;
     }
@@ -51,17 +78,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authRepository.register(RegisterRequest(
-        username: username,
-        password: password,
-        email: email,
-      ));
+      await _authRepository.register(
+        RegisterRequest(username: username, password: password, email: email),
+      );
       _status = AuthStatus.unauthenticated;
+      _logger.info('Registro exitoso para usuario: $username');
       notifyListeners();
       return true;
     } catch (e) {
       _status = AuthStatus.error;
-      _errorMessage = e.toString();
+      _errorMessage = _extractUserFriendlyError(e);
+      _logger.error('Error en registro para $username', e);
       notifyListeners();
       return false;
     }

@@ -109,6 +109,22 @@ class ItemsRepository {
     }
   }
 
+  Future<ItemImageModel> createItemImage(ItemImageModel image) async {
+    try {
+      _logger.debug(
+        'ItemsRepository: Creando imagen para item ${image.idItem}',
+      );
+      final response = await _apiClient.dio.post(
+        '/images',
+        data: image.toJson(),
+      );
+      return ItemImageModel.fromJson(response.data);
+    } catch (e) {
+      _logger.error('ItemsRepository: Error al crear imagen', e);
+      rethrow;
+    }
+  }
+
   Future<List<ItemModel>> getSubCollections(int parentId, int libraryId) async {
     try {
       _logger.debug(

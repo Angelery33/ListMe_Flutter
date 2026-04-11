@@ -44,10 +44,9 @@ class ListsProvider extends ChangeNotifier {
 
       // MEZCLA INTELIGENTE: Preservar iconos/colores locales si el servidor manda valores por defecto
       _lists = serverLists.map((serverList) {
-        final localMatch = localLibraries.cast<ListModel?>().firstWhere(
-          (l) => l?.id == serverList.id,
-          orElse: () => null,
-        );
+        final localMatch = localLibraries
+            .where((l) => l.id == serverList.id)
+            .firstOrNull;
 
         if (localMatch != null) {
           // Si el servidor manda los valores por defecto, pero nosotros tenemos algo personalizado localmente, lo mantenemos.

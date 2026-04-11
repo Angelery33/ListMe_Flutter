@@ -1,30 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
+import 'firebase_options.dart';
 import 'core/theme.dart';
 import 'core/routes.dart';
 import 'data/auth/auth_repository.dart';
 import 'data/lists/lists_repository.dart';
+import 'data/items/items_repository.dart';
+import 'data/attributes/attributes_repository.dart';
+import 'data/profile/profile_repository.dart';
 import 'providers/auth/auth_provider.dart';
 import 'providers/lists/lists_provider.dart';
 import 'providers/settings/settings_provider.dart';
+import 'providers/items/items_provider.dart';
+import 'providers/items/item_details_provider.dart';
+import 'providers/profile/profile_provider.dart';
 
 import 'core/services/local_storage_service.dart';
 import 'core/auth_wrapper.dart';
 import 'core/api_client.dart';
-import 'data/items/items_repository.dart';
-import 'data/attributes/attributes_repository.dart';
-import 'providers/items/items_provider.dart';
 
 void main() async {
-  // Aseguramos que los bindings de Flutter estén inicializados para SharedPreferences
+  // Aseguramos que los bindings de Flutter estén inicializados
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Inicializar Persistencia Local (Hive)
   await LocalStorageService.instance.init();
 
-  // Inicializamos el cliente API único
-  final apiClient = ApiClient();
+  // Inicializamos el cliente API único (singleton)
+  final apiClient = ApiClient.instance;
 
   // Cargamos los ajustes del usuario antes de arrancar la interfaz
   final settingsProvider = SettingsProvider();
@@ -38,6 +46,7 @@ void main() async {
         Provider(create: (_) => ListsRepository(apiClient)),
         Provider(create: (_) => ItemsRepository(apiClient)),
         Provider(create: (_) => AttributesRepository(apiClient)),
+        Provider(create: (_) => ProfileRepository(apiClient)),
 
         // Providers de Estado
         ChangeNotifierProvider(
@@ -52,6 +61,14 @@ void main() async {
             context.read<ItemsRepository>(),
             context.read<AttributesRepository>(),
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ItemDetailsProvider(context.read<ItemsRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ProfileProvider(context.read<ProfileRepository>()),
         ),
       ],
       child: const ListMeApp(),

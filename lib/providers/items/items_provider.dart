@@ -13,6 +13,7 @@ class ItemsProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   List<ItemModel> _items = [];
+  List<ItemImageModel> _itemImages = [];
   String? _errorMessage;
 
   // Filtros y Ordenación
@@ -219,5 +220,32 @@ class ItemsProvider extends ChangeNotifier {
 
   Future<List<ItemImageModel>> getItemImages(int itemId) async {
     return await _itemsRepository.getItemImages(itemId);
+  }
+
+  Future<bool> createItemImage(ItemImageModel image) async {
+    try {
+      await _itemsRepository.createItemImage(image);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateItemImageUrl(int itemId, String remoteUrl) async {
+    try {
+      final index = _items.indexWhere((i) => i.id == itemId);
+      if (index != -1) {
+        final updated = _items[index].copyWith(remoteImageUrl: remoteUrl);
+        await updateItem(itemId, updated);
+      }
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
 }

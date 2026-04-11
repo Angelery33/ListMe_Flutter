@@ -36,12 +36,12 @@ class ConfigRatingProgressSection extends StatelessWidget {
               Text(
                 "Configuración de Puntuación",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                value: ratingScale,
+                initialValue: ratingScale,
                 isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Escala de Puntuación',
@@ -49,9 +49,18 @@ class ConfigRatingProgressSection extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 5, child: Text("Sobre 5 Estrellas (1-5)")),
-                  DropdownMenuItem(value: 10, child: Text("Sobre 10 (Estándar)")),
-                  DropdownMenuItem(value: 100, child: Text("Sobre 100 (Porcentaje)")),
+                  DropdownMenuItem(
+                    value: 5,
+                    child: Text("Sobre 5 Estrellas (1-5)"),
+                  ),
+                  DropdownMenuItem(
+                    value: 10,
+                    child: Text("Sobre 10 (Estándar)"),
+                  ),
+                  DropdownMenuItem(
+                    value: 100,
+                    child: Text("Sobre 100 (Porcentaje)"),
+                  ),
                 ],
                 onChanged: (val) {
                   if (val != null) onRatingScaleChanged(val);
@@ -59,17 +68,17 @@ class ConfigRatingProgressSection extends StatelessWidget {
               ),
               if (supportsProgress) const SizedBox(height: 24),
             ],
-            
+
             if (supportsProgress) ...[
               Text(
                 "Configuración de Progreso",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: progressType,
+                initialValue: progressType,
                 decoration: const InputDecoration(
                   labelText: 'Tipo de seguimiento',
                   prefixIcon: Icon(Icons.settings_overscan),

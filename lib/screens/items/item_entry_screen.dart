@@ -1,7 +1,11 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../core/services/image_picker_service.dart';
+import '../../core/services/firebase_storage_service.dart';
 import '../../data/items/item_model.dart';
 import '../../data/items/item_image_model.dart';
 import '../../data/lists/list_model.dart';
@@ -17,6 +21,7 @@ import '../../widgets/items/entry/entry_properties_section.dart';
 import '../../widgets/items/entry/entry_dates_section.dart';
 import '../../widgets/items/entry/entry_attributes_section.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
+import 'search_import/search_import_screen.dart';
 
 class ItemEntryScreen extends StatefulWidget {
   const ItemEntryScreen({super.key});
@@ -28,6 +33,7 @@ class ItemEntryScreen extends StatefulWidget {
 class _ItemEntryScreenState extends State<ItemEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePickerService();
+  final _firebaseStorage = FirebaseStorageService();
 
   late ListModel _list;
   ItemModel? _item;
@@ -61,10 +67,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
   int? _acquisitionDate;
   int? _startDate;
   int? _completionDate;
+  String? _importedRemoteImageUrl;
+  double? _importedExternalRating;
 
   final List<String> _newImages = [];
   List<ItemImageModel> _existingImages = [];
   final Set<int> _deletedImageIds = {};
+  int? _favoriteImageIndex;
 
   List<LibraryGenreModel> _libraryGenres = [];
   List<AttributeTypeModel> _attributeTypes = [];
@@ -74,8 +83,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      final args =
-          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is! Map<String, dynamic>) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context).pop();
+        });
+        return;
+      }
       _list = args['list'] as ListModel;
       _item = args['item'] as ItemModel?;
       _initControllers();
@@ -166,7 +180,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
         try {
           final images = await itemsProvider.getItemImages(_item!.id!);
-          if (mounted) setState(() => _existingImages = images);
+          if (mounted) {
+            setState(() {
+              _existingImages = images;
+              final favIdx = images.indexWhere((img) => img.isFavorite);
+              _favoriteImageIndex = favIdx >= 0 ? favIdx : null;
+            });
+          }
         } catch (_) {}
       }
     }
@@ -193,12 +213,112 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     super.dispose();
   }
 
+  Future<void> _deleteOldImages() async {
+    if (_existingImages.isEmpty && _item?.imagePath != null) {
+      await _firebaseStorage.deleteImage(_item!.imagePath);
+    }
+
+    for (final deletedId in _deletedImageIds) {
+      final existingImg = _existingImages.firstWhere(
+        (img) => img.id == deletedId,
+        orElse: () => ItemImageModel(idItem: 0, imageUri: ''),
+      );
+      if (existingImg.imageUri != null && existingImg.imageUri!.isNotEmpty) {
+        await _firebaseStorage.deleteImage(existingImg.imageUri);
+      }
+    }
+  }
+
+  Future<void> _uploadImagesToCloud(int itemDbId) async {
+    if (_newImages.isEmpty) return;
+
+    debugPrint('_uploadImagesToCloud: Starting for item $itemDbId');
+    debugPrint('_uploadImagesToCloud: ${_newImages.length} images to upload');
+
+    for (int i = 0; i < _newImages.length; i++) {
+      final file = File(_newImages[i]);
+      debugPrint('_uploadImagesToCloud: Uploading image $i: ${_newImages[i]}');
+
+      final remoteUrl = await _firebaseStorage.uploadImage(
+        file,
+        '${itemDbId}_$i',
+      );
+
+      debugPrint('_uploadImagesToCloud: URL result: $remoteUrl');
+
+      if (remoteUrl != null && mounted) {
+        final isFavorite = _favoriteImageIndex == _existingImages.length + i;
+        final newImage = ItemImageModel(
+          idItem: itemDbId,
+          imageUri: _newImages[i],
+          remoteImageUrl: remoteUrl,
+          isFavorite: isFavorite,
+        );
+        final imagesProvider = context.read<ItemsProvider>();
+        final success = await imagesProvider.createItemImage(newImage);
+        debugPrint('_uploadImagesToCloud: API result: $success');
+      }
+    }
+  }
+
   Future<void> _pickImage(String source) async {
     final image = await _imagePicker.pickImage(
       source: source == 'camera' ? ImageSource.camera : ImageSource.gallery,
     );
     if (image != null && mounted) {
       setState(() => _newImages.add(image.path));
+    }
+  }
+
+  Future<void> _openSearchImport() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SearchImportScreen(category: _list.type ?? "Generico"),
+      ),
+    );
+
+    if (result != null && result is Map<String, dynamic> && mounted) {
+      if (result.containsKey('name')) {
+        _nameController.text = result['name'];
+      } else if (result.containsKey('title')) {
+        _nameController.text = result['title'];
+      }
+
+      if (result.containsKey('description')) {
+        _descController.text = result['description'];
+      }
+
+      if (result.containsKey('remoteImageUrl')) {
+        final url = result['remoteImageUrl'] ?? result['imageUrl'];
+        if (url != null && url.isNotEmpty) {
+          setState(() {
+            _importedRemoteImageUrl = url;
+            _existingImages.insert(
+              0,
+              ItemImageModel(
+                idItem: _item?.id ?? 0,
+                imageUri: url,
+                remoteImageUrl: url,
+              ),
+            );
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Imagen importada añadida")),
+          );
+        }
+      }
+
+      if (result.containsKey('externalRating')) {
+        final rating = result['externalRating'];
+        if (rating != null && rating is double) {
+          setState(() => _importedExternalRating = rating);
+        }
+      }
+
+      if (result.containsKey('genre') && _genre == null) {
+        setState(() => _genre = result['genre']);
+      }
     }
   }
 
@@ -305,6 +425,17 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         finalTotal = int.tryParse(_totalProgressController.text);
       }
 
+      String? finalImagePath = _newImages.isNotEmpty
+          ? _newImages.first
+          : (_item?.imagePath != null && !_deletedImageIds.contains(_item?.id)
+                ? _item?.imagePath
+                : null);
+      String? finalRemoteUrl = _item?.remoteImageUrl;
+
+      setState(() => _isSaving = true);
+
+      _deleteOldImages();
+
       final newItem = ItemModel(
         id: _item?.id,
         idLibrary: _list.id!,
@@ -319,9 +450,9 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         current: _isCurrent,
         collection: _isCollection,
         price: double.tryParse(_priceController.text.replaceAll(',', '.')),
-        imagePath: _newImages.isNotEmpty
-            ? _newImages.first
-            : (_item?.imagePath),
+        imagePath: finalImagePath,
+        remoteImageUrl:
+            finalRemoteUrl ?? _item?.remoteImageUrl ?? _importedRemoteImageUrl,
         progressUnit: progressUnit,
         currentProgress: finalCurrent,
         totalProgress: finalTotal,
@@ -345,21 +476,36 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         acquisitionDate: _acquisitionDate,
         startDate: _startDate,
         completionDate: _completionDate,
+        externalRating: _importedExternalRating,
       );
 
       bool success;
+      int? savedItemId;
       if (_item == null) {
         success = await itemsProvider.createItem(newItem);
         if (!success)
           throw Exception(
             itemsProvider.errorMessage ?? "Error creando el artículo",
           );
+        savedItemId = itemsProvider.items.isNotEmpty
+            ? itemsProvider.items.last.id
+            : null;
       } else {
         success = await itemsProvider.updateItem(_item!.id!, newItem);
         if (!success)
           throw Exception(
             itemsProvider.errorMessage ?? "Error actualizando el artículo",
           );
+        savedItemId = _item!.id;
+      }
+
+      if (savedItemId != null && _newImages.isNotEmpty) {
+        debugPrint(
+          'Calling _uploadImagesToCloud with savedItemId: $savedItemId',
+        );
+        await _uploadImagesToCloud(savedItemId);
+      } else {
+        debugPrint('No images to upload or no savedItemId');
       }
 
       if (mounted) Navigator.pop(context, true);
@@ -407,12 +553,28 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                     .map((e) => e.imageUri ?? '')
                     .toList(),
                 newImages: _newImages,
+                favoriteIndex: _favoriteImageIndex,
                 onPickImage: _pickImage,
                 onRemoveExisting: (idx) {
                   final img = _existingImages.removeAt(idx);
                   if (img.id != null) _deletedImageIds.add(img.id!);
+                  if (_favoriteImageIndex == idx) {
+                    _favoriteImageIndex = null;
+                  }
                 },
-                onRemoveNew: (idx) => setState(() => _newImages.removeAt(idx)),
+                onRemoveNew: (idx) {
+                  setState(() {
+                    _newImages.removeAt(idx);
+                    final totalExisting = _existingImages.length;
+                    if (_favoriteImageIndex != null &&
+                        _favoriteImageIndex! >= totalExisting &&
+                        _favoriteImageIndex! - totalExisting == idx) {
+                      _favoriteImageIndex = null;
+                    }
+                  });
+                },
+                onSetFavorite: (idx) =>
+                    setState(() => _favoriteImageIndex = idx),
               ),
               const SizedBox(height: 16),
               EntryMainInfoSection(
@@ -427,6 +589,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 editionController: _list.type == "Funko"
                     ? _editionController
                     : null,
+                showImportButton: true,
+                onImportPressed: _openSearchImport,
                 showItemNumber: _list.type == "Funko",
                 showProductType: _list.type == "Funko",
                 showEdition: _list.type == "Funko",

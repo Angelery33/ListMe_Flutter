@@ -4,10 +4,11 @@ import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/core/token_storage.dart';
 
 class ApiClient {
+  static final ApiClient instance = ApiClient._();
   static final LoggerService _logger = LoggerService.instance;
   late final Dio _dio;
 
-  ApiClient() {
+  ApiClient._() {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.baseUrl,
