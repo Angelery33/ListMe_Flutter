@@ -18,40 +18,38 @@ class ConfigDisplaySection extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Configuración de Visualización",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+      child: RadioGroup<int>(
+        groupValue: genreLayoutMode,
+        onChanged: onGenreLayoutModeChanged,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "Configuración de Visualización",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
-          ),
-          RadioListTile<int>(
-            title: const Text("Ignorar Temáticas"),
-            subtitle: const Text("Estándar / Mezclado"),
-            value: 0,
-            groupValue: genreLayoutMode,
-            onChanged: onGenreLayoutModeChanged,
-          ),
-          RadioListTile<int>(
-            title: const Text("Secciones con Cabeceras"),
-            subtitle: const Text("Agrupar ítems por su tema con un título"),
-            value: 1,
-            groupValue: genreLayoutMode,
-            onChanged: onGenreLayoutModeChanged,
-          ),
-          RadioListTile<int>(
-            title: const Text("Agrupado sin Cabeceras"),
-            subtitle: const Text("Ordenados por tema pero de forma continua"),
-            value: 2,
-            groupValue: genreLayoutMode,
-            onChanged: onGenreLayoutModeChanged,
-          ),
-          const SizedBox(height: 8),
-        ],
+            const RadioListTile<int>(
+              title: Text("Ignorar Temáticas"),
+              subtitle: Text("Estándar / Mezclado"),
+              value: 0,
+            ),
+            const RadioListTile<int>(
+              title: Text("Secciones con Cabeceras"),
+              subtitle: Text("Agrupar ítems por su tema con un título"),
+              value: 1,
+            ),
+            const RadioListTile<int>(
+              title: Text("Agrupado sin Cabeceras"),
+              subtitle: Text("Ordenados por tema pero de forma continua"),
+              value: 2,
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

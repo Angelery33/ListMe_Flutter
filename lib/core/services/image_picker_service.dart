@@ -5,12 +5,10 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'logger_service.dart';
-import 'firebase_storage_service.dart';
 
 class ImagePickerService {
   static final ImagePickerService _instance = ImagePickerService._internal();
   final LoggerService _logger = LoggerService.instance;
-  final FirebaseStorageService _firebaseStorage = FirebaseStorageService();
   factory ImagePickerService() => _instance;
   ImagePickerService._internal();
 
@@ -42,7 +40,10 @@ class ImagePickerService {
         maxHeight: 1920,
       );
       if (image == null) return null;
-
+      
+      if (cropToSquare) {
+        return await _cropImage(image.path);
+      }
       return File(image.path);
     } on PlatformException catch (e) {
       _logger.error('PlatformException picking image', e);
@@ -66,7 +67,7 @@ class ImagePickerService {
             initAspectRatio: CropAspectRatioPreset.square,
             lockAspectRatio: true,
             backgroundColor: Colors.white,
-            statusBarColor: Colors.black,
+            statusBarLight: true,
           ),
           IOSUiSettings(
             title: 'Recortar',

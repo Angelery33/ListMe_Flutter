@@ -530,10 +530,23 @@ class _ListScreenState extends State<ListScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Subiendo a la nube...')),
+              final success = await context.read<ListsProvider>().updateList(
+                _currentList.id!,
+                _currentList.copyWith(shared: true),
               );
-              // TODO: Implementar upload a la API
+              
+              if (mounted) {
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('¡Lista publicada con éxito!')),
+                  );
+                  _refreshItems();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error al publicar la lista')),
+                  );
+                }
+              }
             },
             child: const Text('PUBLICAR'),
           ),

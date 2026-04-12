@@ -13,7 +13,6 @@ class ItemsProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   List<ItemModel> _items = [];
-  List<ItemImageModel> _itemImages = [];
   String? _errorMessage;
 
   // Filtros y Ordenación
