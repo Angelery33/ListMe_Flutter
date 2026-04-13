@@ -65,12 +65,15 @@ class StandardItemCard extends StatelessWidget {
                 aspectRatio: 1.0,
                 child: Container(
                   width: 100,
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       _buildImage(context),
-                      if (item.itemNumber != null && item.itemNumber!.isNotEmpty)
+                      if (item.itemNumber != null &&
+                          item.itemNumber!.isNotEmpty)
                         Positioned(
                           top: 4,
                           left: 4,
@@ -87,12 +90,15 @@ class StandardItemCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(context),
-                      if (isThematic && item.genre != null && item.genre!.isNotEmpty)
+                      if (isThematic &&
+                          item.genre != null &&
+                          item.genre!.isNotEmpty)
                         _buildGenre(context),
                       if (item.edition != null && item.edition!.isNotEmpty)
                         _buildEditionBadge(context),
                       const SizedBox(height: 6),
-                      if (item.description != null && item.description!.isNotEmpty)
+                      if (item.description != null &&
+                          item.description!.isNotEmpty)
                         _buildDescription(context),
                       const Spacer(),
                       _buildStatusRow(context, statusColor, statusText),
@@ -112,13 +118,11 @@ class StandardItemCard extends StatelessWidget {
   Widget _buildImage(BuildContext context) {
     final alignmentX = item.imageAlignmentX ?? 0.0;
     final alignmentY = item.imageAlignmentY ?? 0.0;
-    
+
     return UniversalImage(
-      (item.imagePath != null && item.imagePath!.isNotEmpty)
-          ? item.imagePath!
-          : (item.remoteImageUrl ?? ""),
+      item.imagePath ?? "",
+      remoteImageUrl: item.remoteImageUrl,
       fit: BoxFit.cover,
-      alignment: Alignment(alignmentX, alignmentY),
     );
   }
 
@@ -132,10 +136,7 @@ class StandardItemCard extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 1),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 2,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 2),
         ],
       ),
       child: Center(
@@ -158,7 +159,9 @@ class StandardItemCard extends StatelessWidget {
         Expanded(
           child: Text(
             item.name,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -182,9 +185,9 @@ class StandardItemCard extends StatelessWidget {
       child: Text(
         item.genre!,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.secondary,
-              fontWeight: FontWeight.w500,
-            ),
+          color: Theme.of(context).colorScheme.secondary,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -202,10 +205,10 @@ class StandardItemCard extends StatelessWidget {
         child: Text(
           item.edition!,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSecondaryContainer,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-              ),
+            color: colorScheme.onSecondaryContainer,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -217,24 +220,27 @@ class StandardItemCard extends StatelessWidget {
       child: Text(
         item.description!,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 12,
-              height: 1.2,
-            ),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontSize: 12,
+          height: 1.2,
+        ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  Widget _buildStatusRow(BuildContext context, Color statusColor, String statusText) {
+  Widget _buildStatusRow(
+    BuildContext context,
+    Color statusColor,
+    String statusText,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
-            if (item.current)
-              _buildFollowingBadge(context),
+            if (item.current) _buildFollowingBadge(context),
             if (showStatus) ...[
               Container(
                 width: 6,
@@ -248,17 +254,16 @@ class StandardItemCard extends StatelessWidget {
               Text(
                 statusText.toUpperCase(),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: statusColor,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
+                  color: statusColor,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
               ),
             ],
           ],
         ),
-        if (isGradeable && (item.score ?? 0) > 0)
-          _buildScoreBadge(context),
+        if (isGradeable && (item.score ?? 0) > 0) _buildScoreBadge(context),
       ],
     );
   }
@@ -323,17 +328,17 @@ class StandardItemCard extends StatelessWidget {
             Text(
               "${item.progressUnit ?? 'Progreso'} ${item.currentProgress}${item.totalProgress != null ? ' / ${item.totalProgress}' : ''}",
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
+              ),
             ),
             if (item.totalProgress != null && item.totalProgress! > 0)
               Text(
                 "${(progress * 100).toStringAsFixed(0)}%",
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 9,
-                      color: colorScheme.primary,
-                    ),
+                  fontSize: 9,
+                  color: colorScheme.primary,
+                ),
               ),
           ],
         ),

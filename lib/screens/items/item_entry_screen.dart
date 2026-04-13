@@ -148,9 +148,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     _startDate = item?.startDate;
     _completionDate = item?.completionDate;
 
-    if (item?.imagePath != null) {
+    if (item?.imagePath != null || item?.remoteImageUrl != null) {
       _existingImages.add(
-        ItemImageModel(idItem: item!.id ?? 0, imageUri: item.imagePath),
+        ItemImageModel(
+          idItem: item!.id ?? 0,
+          imageUri: item.imagePath ?? "",
+          remoteImageUrl: item.remoteImageUrl,
+        ),
       );
     }
   }
@@ -235,7 +239,15 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
     for (int i = 0; i < _newImages.length; i++) {
       final file = File(_newImages[i]);
-      debugPrint('_uploadImagesToCloud: Uploading image $i: ${_newImages[i]}');
+      final exists = await file.exists();
+      debugPrint(
+        '_uploadImagesToCloud: Uploading image $i: ${_newImages[i]}, exists: $exists',
+      );
+
+      if (!exists) {
+        debugPrint('_uploadImagesToCloud: File does not exist, skipping');
+        continue;
+      }
 
       final remoteUrl = await _firebaseStorage.uploadImage(
         file,
@@ -244,7 +256,12 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
       debugPrint('_uploadImagesToCloud: URL result: $remoteUrl');
 
-      if (remoteUrl != null && mounted) {
+      if (remoteUrl == null) {
+        debugPrint('_uploadImagesToCloud: FAILED - remoteUrl is null');
+        continue;
+      }
+
+      if (mounted) {
         final isFavorite = _favoriteImageIndex == _existingImages.length + i;
         final newImage = ItemImageModel(
           idItem: itemDbId,
@@ -257,6 +274,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         debugPrint('_uploadImagesToCloud: API result: $success');
       }
     }
+    debugPrint('_uploadImagesToCloud: Completed');
   }
 
   Future<void> _pickImage(String source) async {
@@ -423,12 +441,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         finalTotal = int.tryParse(_totalProgressController.text);
       }
 
-      String? finalImagePath = _newImages.isNotEmpty
+      String finalImagePath = _newImages.isNotEmpty
           ? _newImages.first
           : (_item?.imagePath != null && !_deletedImageIds.contains(_item?.id)
-                ? _item?.imagePath
-                : null);
-      String? finalRemoteUrl = _item?.remoteImageUrl;
+                ? _item?.imagePath ?? ''
+                : '');
+      String itemRemoteImageUrl =
+          _item?.remoteImageUrl ?? _importedRemoteImageUrl ?? '';
 
       setState(() => _isSaving = true);
 
@@ -449,8 +468,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         collection: _isCollection,
         price: double.tryParse(_priceController.text.replaceAll(',', '.')),
         imagePath: finalImagePath,
-        remoteImageUrl:
-            finalRemoteUrl ?? _item?.remoteImageUrl ?? _importedRemoteImageUrl,
+        remoteImageUrl: itemRemoteImageUrl,
         progressUnit: progressUnit,
         currentProgress: finalCurrent,
         totalProgress: finalTotal,
@@ -549,6 +567,9 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
               EntryImagePicker(
                 existingImages: _existingImages
                     .map((e) => e.imageUri ?? '')
+                    .toList(),
+                existingRemoteUrls: _existingImages
+                    .map((e) => e.remoteImageUrl ?? '')
                     .toList(),
                 newImages: _newImages,
                 favoriteIndex: _favoriteImageIndex,

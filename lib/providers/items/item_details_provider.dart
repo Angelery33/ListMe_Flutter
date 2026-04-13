@@ -47,8 +47,8 @@ class ItemDetailsProvider extends ChangeNotifier {
           // If the backend doesn't have a direct /items/parent/{id} endpoint yet,
           // we might just fetch library items and filter, or assume it's added.
           // For now we will await adding that endpoint, or filtering locally.
-          final libraryItems = await _itemsRepository.getItemsByLibrary(
-            _item!.idLibrary,
+          final libraryItems = await _itemsRepository.getAllItems(
+            libraryId: _item!.idLibrary,
           );
           _subItems = libraryItems
               .where((i) => i.parentId == _item!.id)
@@ -151,8 +151,8 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   Future<void> loadSubItems() async {
     if (_item != null && _item!.collection) {
-      final libraryItems = await _itemsRepository.getItemsByLibrary(
-        _item!.idLibrary,
+      final libraryItems = await _itemsRepository.getAllItems(
+        libraryId: _item!.idLibrary,
       );
       _subItems = libraryItems.where((i) => i.parentId == _item!.id).toList();
       notifyListeners();

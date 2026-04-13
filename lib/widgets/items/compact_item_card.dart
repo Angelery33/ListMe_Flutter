@@ -21,15 +21,12 @@ class CompactItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return AspectRatio(
       aspectRatio: 1.0,
       child: Card(
         elevation: 2,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
@@ -42,7 +39,9 @@ class CompactItemCard extends StatelessWidget {
               // Edition Tag (Bottom Right)
               if (item.edition != null && item.edition!.isNotEmpty)
                 Positioned(
-                  bottom: (supportsProgress && (item.currentProgress ?? 0) > 0) ? 46 : 32,
+                  bottom: (supportsProgress && (item.currentProgress ?? 0) > 0)
+                      ? 46
+                      : 32,
                   right: 6,
                   child: _buildEditionBadge(context),
                 ),
@@ -60,11 +59,7 @@ class CompactItemCard extends StatelessWidget {
 
               // Score Overlay (Top Right)
               if (isGradeable && (item.score ?? 0) > 0)
-                Positioned(
-                  top: 6,
-                  right: 6,
-                  child: _buildScoreBadge(context),
-                ),
+                Positioned(top: 6, right: 6, child: _buildScoreBadge(context)),
 
               // Siguiendo Badge Overlay
               if (item.current)
@@ -85,7 +80,9 @@ class CompactItemCard extends StatelessWidget {
 
               // Name Overlay
               Positioned(
-                bottom: (supportsProgress && (item.currentProgress ?? 0) > 0) ? 22 : 8,
+                bottom: (supportsProgress && (item.currentProgress ?? 0) > 0)
+                    ? 22
+                    : 8,
                 left: 0,
                 right: 0,
                 child: _buildNameOverlay(context),
@@ -99,11 +96,9 @@ class CompactItemCard extends StatelessWidget {
 
   Widget _buildImage(BuildContext context) {
     return UniversalImage(
-      (item.imagePath != null && item.imagePath!.isNotEmpty)
-          ? item.imagePath!
-          : (item.remoteImageUrl ?? ""),
+      item.imagePath ?? "",
+      remoteImageUrl: item.remoteImageUrl,
       fit: BoxFit.cover,
-      alignment: Alignment(item.imageAlignmentX ?? 0.0, item.imageAlignmentY ?? 0.0),
     );
   }
 
@@ -115,10 +110,7 @@ class CompactItemCard extends StatelessWidget {
         color: colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 2,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 2),
         ],
       ),
       child: Text(
@@ -161,10 +153,7 @@ class CompactItemCard extends StatelessWidget {
         color: colorScheme.tertiary,
         shape: BoxShape.circle,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 4,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4),
         ],
         border: Border.all(color: Colors.white, width: 1.5),
       ),
@@ -196,10 +185,7 @@ class CompactItemCard extends StatelessWidget {
           width: 1,
         ),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 4,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4),
         ],
       ),
       child: Row(
@@ -227,17 +213,10 @@ class CompactItemCard extends StatelessWidget {
         color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 4,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4),
         ],
       ),
-      child: const Icon(
-        Icons.play_circle_fill,
-        size: 14,
-        color: Colors.white,
-      ),
+      child: const Icon(Icons.play_circle_fill, size: 14, color: Colors.white),
     );
   }
 
@@ -294,17 +273,17 @@ class CompactItemCard extends StatelessWidget {
           child: Text(
             item.name,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                  shadows: [
-                    const Shadow(
-                      blurRadius: 4,
-                      color: Colors.black,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              shadows: [
+                const Shadow(
+                  blurRadius: 4,
+                  color: Colors.black,
+                  offset: Offset(0, 1),
                 ),
+              ],
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,

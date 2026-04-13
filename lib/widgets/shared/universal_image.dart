@@ -2,74 +2,68 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-/// Un widget de imagen que maneja automáticamente orígenes locales y remotos.
 class UniversalImage extends StatelessWidget {
   final String imagePath;
+  final String? remoteImageUrl;
   final BoxFit fit;
-  final Alignment alignment;
   final double? width;
   final double? height;
-  final Widget Function(BuildContext, Object, StackTrace?)? errorBuilder;
 
   const UniversalImage(
     this.imagePath, {
     super.key,
+    this.remoteImageUrl,
     this.fit = BoxFit.cover,
-    this.alignment = Alignment.center,
     this.width,
     this.height,
-    this.errorBuilder,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (imagePath.isEmpty) {
-      return _buildError(context);
+    String url = _getBestUrl();
+
+    if (url.isEmpty) {
+      return _placeholder(context);
     }
 
-    if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
+    if (url.startsWith('http')) {
       return Image.network(
-        imagePath,
+        url,
         fit: fit,
-        alignment: alignment,
         width: width,
         height: height,
-        errorBuilder:
-            errorBuilder ??
-            (context, error, stackTrace) => _buildError(context),
+        errorBuilder: (_, __, ___) => _placeholder(context),
       );
     }
 
-    // Para archivos locales
-    if (!kIsWeb) {
-      final file = File(imagePath);
-      if (file.existsSync()) {
-        return Image.file(
-          file,
-          fit: fit,
-          alignment: alignment,
-          width: width,
-          height: height,
-          errorBuilder:
-              errorBuilder ??
-              (context, error, stackTrace) => _buildError(context),
-        );
-      }
-    }
+    // Archivo local
+    if (kIsWeb) return _placeholder(context);
 
-    // Por defecto, intentar como asset si no es URL ni archivo
-    return Image.asset(
-      imagePath,
-      fit: fit,
-      alignment: alignment,
-      width: width,
-      height: height,
-      errorBuilder:
-          errorBuilder ?? (context, error, stackTrace) => _buildError(context),
-    );
+    final file = File(url);
+    if (file.existsSync()) {
+      return Image.file(file, fit: fit);
+    }
+    return _placeholder(context);
   }
 
-  Widget _buildError(BuildContext context) {
+  String _getBestUrl() {
+    // Web: usar remote si está disponible
+    if (kIsWeb) {
+      if (remoteImageUrl?.isNotEmpty == true) {
+        return remoteImageUrl!;
+      }
+      // Si es ruta local en web, no sirve
+      if (imagePath.startsWith('/data') || imagePath.startsWith('assets/')) {
+        return '';
+      }
+      return imagePath;
+    }
+    // Móvil: preferir local
+    if (imagePath.isNotEmpty) return imagePath;
+    return remoteImageUrl ?? '';
+  }
+
+  Widget _placeholder(BuildContext context) {
     return Container(
       color: Theme.of(
         context,

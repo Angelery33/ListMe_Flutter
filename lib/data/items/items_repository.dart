@@ -9,10 +9,14 @@ class ItemsRepository {
 
   ItemsRepository(this._apiClient);
 
-  Future<List<ItemModel>> getAllItems() async {
+  Future<List<ItemModel>> getAllItems({int? libraryId}) async {
     try {
       _logger.debug('ItemsRepository: Obteniendo todos los items');
-      final response = await _apiClient.dio.get('/items');
+      String endpoint = '/items';
+      if (libraryId != null) {
+        endpoint = '/items/library/$libraryId';
+      }
+      final response = await _apiClient.dio.get(endpoint);
       final result = (response.data as List)
           .map((json) => ItemModel.fromJson(json))
           .toList();
@@ -20,26 +24,6 @@ class ItemsRepository {
       return result;
     } catch (e) {
       _logger.error('ItemsRepository: Error al obtener items', e);
-      rethrow;
-    }
-  }
-
-  Future<List<ItemModel>> getItemsByLibrary(int libraryId) async {
-    try {
-      _logger.debug('ItemsRepository: Obteniendo items de lista $libraryId');
-      final response = await _apiClient.dio.get('/items/library/$libraryId');
-      final result = (response.data as List)
-          .map((json) => ItemModel.fromJson(json))
-          .toList();
-      _logger.debug(
-        'ItemsRepository: Obtenidos ${result.length} items de lista $libraryId',
-      );
-      return result;
-    } catch (e) {
-      _logger.error(
-        'ItemsRepository: Error al obtener items de lista $libraryId',
-        e,
-      );
       rethrow;
     }
   }
@@ -121,6 +105,31 @@ class ItemsRepository {
       return ItemImageModel.fromJson(response.data);
     } catch (e) {
       _logger.error('ItemsRepository: Error al crear imagen', e);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteItemImage(int imageId) async {
+    try {
+      _logger.debug('ItemsRepository: Eliminando imagen $imageId');
+      await _apiClient.dio.delete('/images/$imageId');
+      _logger.info('ItemsRepository: Imagen $imageId eliminada');
+    } catch (e) {
+      _logger.error('ItemsRepository: Error al eliminar imagen $imageId', e);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteItemImagesByItemId(int itemId) async {
+    try {
+      _logger.debug('ItemsRepository: Eliminando imágenes del item $itemId');
+      await _apiClient.dio.delete('/images/item/$itemId');
+      _logger.info('ItemsRepository: Imágenes del item $itemId eliminadas');
+    } catch (e) {
+      _logger.error(
+        'ItemsRepository: Error al eliminar imágenes del item $itemId',
+        e,
+      );
       rethrow;
     }
   }

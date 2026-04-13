@@ -54,7 +54,10 @@ void main() async {
         ),
         ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(
-          create: (context) => ListsProvider(context.read<ListsRepository>()),
+          create: (context) => ListsProvider(
+            context.read<ListsRepository>(),
+            context.read<ItemsRepository>(),
+          ),
         ),
         ChangeNotifierProvider(
           create: (context) => ItemsProvider(

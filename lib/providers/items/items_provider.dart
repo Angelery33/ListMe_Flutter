@@ -128,7 +128,7 @@ class ItemsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _items = await _itemsRepository.getItemsByLibrary(libraryId);
+      _items = await _itemsRepository.getAllItems(libraryId: libraryId);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -142,7 +142,7 @@ class ItemsProvider extends ChangeNotifier {
   /// Úsalo al volver de crear/editar un item para evitar el flash de lista vacía.
   Future<void> refreshItems(int libraryId) async {
     try {
-      _items = await _itemsRepository.getItemsByLibrary(libraryId);
+      _items = await _itemsRepository.getAllItems(libraryId: libraryId);
       notifyListeners();
     } catch (_) {
       // En caso de error silencioso, mantenemos lo que tenemos
@@ -219,6 +219,10 @@ class ItemsProvider extends ChangeNotifier {
 
   Future<List<ItemImageModel>> getItemImages(int itemId) async {
     return await _itemsRepository.getItemImages(itemId);
+  }
+
+  List<ItemModel> getItemsByLibrary(int libraryId) {
+    return _items.where((i) => i.idLibrary == libraryId).toList();
   }
 
   Future<bool> createItemImage(ItemImageModel image) async {

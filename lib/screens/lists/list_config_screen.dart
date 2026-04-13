@@ -395,6 +395,11 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    ConfigTypeSection(
+                      selectedCategory: _defaultCategory,
+                      onChanged: _onCategoryChanged,
+                    ),
+                    const SizedBox(height: 16),
                     ConfigMainInfoSection(
                       nameController: _nameController,
                       descController: _descController,
@@ -405,11 +410,6 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
                       selectedColor: _selectedColor,
                       onIconChanged: (v) => setState(() => _selectedIcon = v),
                       onColorChanged: (v) => setState(() => _selectedColor = v),
-                    ),
-                    const SizedBox(height: 16),
-                    ConfigTypeSection(
-                      selectedCategory: _defaultCategory,
-                      onChanged: _onCategoryChanged,
                     ),
                     const SizedBox(height: 16),
                     ConfigFeaturesSection(

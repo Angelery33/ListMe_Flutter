@@ -2,22 +2,26 @@ import 'package:flutter/material.dart';
 import '../../data/lists/lists_repository.dart';
 import '../../data/lists/list_model.dart';
 import '../../data/lists/library_genre_model.dart';
+import '../../data/items/items_repository.dart';
 import '../../core/services/local_storage_service.dart';
 import '../../core/services/logger_service.dart';
+import '../../core/services/firebase_storage_service.dart';
 
 /// Proveedor de estado para la gestión de listas del usuario.
 ///
 /// Gestiona la carga, creación, edición, eliminación y reordenación de listas.
 class ListsProvider extends ChangeNotifier {
   final ListsRepository _listsRepository;
+  final ItemsRepository _itemsRepository;
   final LocalStorageService _localStorage = LocalStorageService.instance;
   final LoggerService _logger = LoggerService.instance;
+  final FirebaseStorageService _firebaseStorage = FirebaseStorageService();
 
   bool _isLoading = false;
   List<ListModel> _lists = [];
   String? _errorMessage;
 
-  ListsProvider(this._listsRepository) {
+  ListsProvider(this._listsRepository, this._itemsRepository) {
     _loadFromLocal();
     fetchLists();
   }
@@ -127,6 +131,23 @@ class ListsProvider extends ChangeNotifier {
 
   Future<bool> deleteList(int id) async {
     try {
+      final libraryItems = await _itemsRepository.getAllItems(libraryId: id);
+
+      for (final item in libraryItems) {
+        if (item.id != null) {
+          final images = await _itemsRepository.getItemImages(item.id!);
+          for (final img in images) {
+            if (img.imageUri?.isNotEmpty ?? false) {
+              await _firebaseStorage.deleteImage(img.imageUri);
+            }
+          }
+          if (item.imagePath?.isNotEmpty ?? false) {
+            await _firebaseStorage.deleteImage(item.imagePath);
+          }
+          await _itemsRepository.deleteItem(item.id!);
+        }
+      }
+
       await _listsRepository.deleteLibrary(id);
       _lists.removeWhere((l) => l.id == id);
       _localStorage.deleteLibrary(id);

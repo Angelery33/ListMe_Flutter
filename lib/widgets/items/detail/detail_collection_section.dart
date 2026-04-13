@@ -147,20 +147,7 @@ class DetailCollectionSection extends StatelessWidget {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            UniversalImage(
-                              imagePath,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    color: Colors.grey[800],
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.broken_image,
-                                        color: Colors.white54,
-                                      ),
-                                    ),
-                                  ),
-                            ),
+                            UniversalImage(imagePath, fit: BoxFit.cover),
                             Positioned.fill(
                               child: DecoratedBox(
                                 decoration: BoxDecoration(

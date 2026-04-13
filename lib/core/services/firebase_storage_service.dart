@@ -44,6 +44,8 @@ class FirebaseStorageService {
 
   Future<void> deleteImage(String? imageUrl) async {
     if (imageUrl == null || imageUrl.isEmpty) return;
+    if (!imageUrl.startsWith('https://') && !imageUrl.startsWith('http://'))
+      return;
 
     try {
       final ref = _storage.refFromURL(imageUrl);

@@ -69,33 +69,38 @@ class _ListsScreenState extends State<ListsScreen> {
       ),
       body: listsProvider.lists.isEmpty
           ? const EmptyListsState()
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth > 600) {
-                  return GridView.builder(
+          : RefreshIndicator(
+              onRefresh: () async {
+                await context.read<ListsProvider>().fetchLists();
+              },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 600) {
+                    return GridView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 400,
+                            mainAxisExtent: 80,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                      itemCount: listsProvider.lists.length,
+                      itemBuilder: (context, index) =>
+                          _buildListCard(listsProvider.lists[index]),
+                    );
+                  }
+                  return ReorderableListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 400,
-                          mainAxisExtent: 80,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
                     itemCount: listsProvider.lists.length,
+                    onReorder: (oldIndex, newIndex) {
+                      listsProvider.reorderLists(oldIndex, newIndex);
+                    },
                     itemBuilder: (context, index) =>
                         _buildListCard(listsProvider.lists[index]),
                   );
-                }
-                return ReorderableListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                  itemCount: listsProvider.lists.length,
-                  onReorder: (oldIndex, newIndex) {
-                    listsProvider.reorderLists(oldIndex, newIndex);
-                  },
-                  itemBuilder: (context, index) =>
-                      _buildListCard(listsProvider.lists[index]),
-                );
-              },
+                },
+              ),
             ),
     );
   }

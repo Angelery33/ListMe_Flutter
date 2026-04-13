@@ -130,16 +130,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
                   tag: index == 0
                       ? 'item_image_${widget.item.id}'
                       : 'item_gallery_$index',
-                  child: UniversalImage(
-                    path,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[800],
-                      child: const Center(
-                        child: Icon(Icons.broken_image, color: Colors.white54),
-                      ),
-                    ),
-                  ),
+                  child: UniversalImage(path, fit: BoxFit.cover),
                 ),
               );
             },

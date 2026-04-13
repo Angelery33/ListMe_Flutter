@@ -55,17 +55,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               return InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 4.0,
-                child: Center(
-                  child: UniversalImage(
-                    path,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.broken_image,
-                      color: Colors.white,
-                      size: 50,
-                    ),
-                  ),
-                ),
+                child: Center(child: UniversalImage(path, fit: BoxFit.contain)),
               );
             },
           ),

@@ -4,6 +4,7 @@ import '../../shared/universal_image.dart';
 
 class EntryImagePicker extends StatelessWidget {
   final List<String> existingImages;
+  final List<String> existingRemoteUrls;
   final List<String> newImages;
   final int? favoriteIndex;
   final Function(String) onPickImage;
@@ -14,6 +15,7 @@ class EntryImagePicker extends StatelessWidget {
   const EntryImagePicker({
     super.key,
     required this.existingImages,
+    this.existingRemoteUrls = const [],
     required this.newImages,
     this.favoriteIndex,
     required this.onPickImage,
@@ -79,15 +81,17 @@ class EntryImagePicker extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 children: [
                   // Existing Images
-                  ...existingImages.asMap().entries.map((entry) {
+                  ...List.generate(existingImages.length, (index) {
                     return _buildImageItem(
                       context,
-                      index: entry.key,
-                      imagePath: entry.value,
-                      onRemove: () => onRemoveExisting(entry.key),
-                      isFavorite: _isFavorite(entry.key),
-                      onSetFavorite: () => onSetFavorite(entry.key),
-                      isNetwork: entry.value.startsWith('http'),
+                      index: index,
+                      imagePath: existingImages[index],
+                      remoteImageUrl: index < existingRemoteUrls.length
+                          ? existingRemoteUrls[index]
+                          : null,
+                      onRemove: () => onRemoveExisting(index),
+                      isFavorite: _isFavorite(index),
+                      onSetFavorite: () => onSetFavorite(index),
                     );
                   }),
 
@@ -101,7 +105,6 @@ class EntryImagePicker extends StatelessWidget {
                       onRemove: () => onRemoveNew(entry.key),
                       isFavorite: _isFavorite(index),
                       onSetFavorite: () => onSetFavorite(index),
-                      isLocalFile: true,
                     );
                   }),
 
@@ -152,11 +155,10 @@ class EntryImagePicker extends StatelessWidget {
     BuildContext context, {
     required int index,
     required String imagePath,
+    String? remoteImageUrl,
     required VoidCallback onRemove,
     required VoidCallback onSetFavorite,
     bool isFavorite = false,
-    bool isNetwork = false,
-    bool isLocalFile = false,
   }) {
     return Container(
       width: 100,
@@ -178,12 +180,11 @@ class EntryImagePicker extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: isLocalFile
-                  ? Image.file(
-                      File(imagePath),
+              child: remoteImageUrl?.isNotEmpty == true
+                  ? UniversalImage(
+                      imagePath,
+                      remoteImageUrl: remoteImageUrl,
                       fit: BoxFit.cover,
-                      width: 100,
-                      height: 120,
                     )
                   : UniversalImage(imagePath, fit: BoxFit.cover),
             ),
