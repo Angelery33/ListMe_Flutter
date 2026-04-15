@@ -1,12 +1,14 @@
 import 'package:dio/dio.dart';
-import 'package:list_me/core/constants.dart';
+import 'package:list_me/core/services/auth_service.dart';
+import 'package:list_me/core/config/constants.dart';
 import 'package:list_me/core/services/logger_service.dart';
-import 'package:list_me/core/token_storage.dart';
+import 'package:list_me/core/services/token_storage.dart';
 
 class ApiClient {
   static final ApiClient instance = ApiClient._();
   static final LoggerService _logger = LoggerService.instance;
   late final Dio _dio;
+  final AuthService _authService = AuthService.instance;
 
   ApiClient._() {
     _dio = Dio(
@@ -30,7 +32,19 @@ class ApiClient {
         onError: (DioException e, handler) async {
           _logger.error('API Error: ${e.message}', e, e.stackTrace);
           if (e.response?.statusCode == 401) {
-            _logger.warning('Token expirado o inválido');
+            _logger.warning('Token expirado o inválido, intentando refresh...');
+
+            final refreshed = await _authService.refreshToken();
+
+            if (refreshed) {
+              final newToken = await TokenStorage.getAccessToken();
+              e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+
+              final retryResponse = await _dio.fetch(e.requestOptions);
+              return handler.resolve(retryResponse);
+            } else {
+              _logger.warning('No se pudo refrescar el token');
+            }
           }
           return handler.next(e);
         },

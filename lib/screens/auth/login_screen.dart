@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth/auth_provider.dart';
-import '../../core/routes.dart';
+import '../../core/config/routes.dart';
 import '../../widgets/shared/app_logo_title.dart';
 
 /// Pantalla de inicio de sesión con diseño Premium (Glassmorphism).

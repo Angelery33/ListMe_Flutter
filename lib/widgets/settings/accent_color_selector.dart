@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme.dart';
+import '../../core/theme/theme.dart';
 import '../../providers/settings/settings_provider.dart';
 
 /// Widget especializado para seleccionar el color de acento (gemas).

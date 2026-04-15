@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/lists/list_model.dart';
-import '../../core/theme.dart';
+import '../../core/theme/theme.dart';
 
 /// Tarjeta visual que representa una lista del usuario en el listado principal.
 class ListCard extends StatelessWidget {

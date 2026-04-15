@@ -98,11 +98,14 @@ class ExternalApiService {
 
         _sortResults(results, query);
         return results;
+      } else {
+        throw Exception('Error de Google Books (${response.statusCode})');
       }
     } catch (e) {
       _logger.error('Error searching books: $e');
+      if (e is Exception) rethrow;
+      throw Exception('Error al buscar libros: $e');
     }
-    return [];
   }
 
   Future<List<Map<String, dynamic>>> searchAnime({

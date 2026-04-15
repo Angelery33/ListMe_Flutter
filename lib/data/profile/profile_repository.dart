@@ -1,4 +1,4 @@
-import 'package:list_me/core/api_client.dart';
+import 'package:list_me/core/services/api_client.dart';
 import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/data/auth/user_model.dart';
 

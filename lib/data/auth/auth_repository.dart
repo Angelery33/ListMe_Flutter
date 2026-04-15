@@ -1,6 +1,6 @@
-import 'package:list_me/core/api_client.dart';
+import 'package:list_me/core/services/api_client.dart';
 import 'package:list_me/core/services/logger_service.dart';
-import 'package:list_me/core/token_storage.dart';
+import 'package:list_me/core/services/token_storage.dart';
 import 'package:list_me/data/auth/auth_models.dart';
 
 class AuthRepository {

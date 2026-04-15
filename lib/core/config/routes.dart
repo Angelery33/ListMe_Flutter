@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../screens/auth/login_screen.dart';
-import '../screens/auth/register_screen.dart';
-import '../screens/lists/lists_screen.dart';
-import '../screens/lists/list_screen.dart';
-import '../screens/lists/list_config_screen.dart';
-import '../screens/info/info_screen.dart';
-import '../screens/profile/profile_screen.dart';
-import '../screens/settings/settings_screen.dart';
-import '../screens/social/social_screen.dart';
-import '../screens/items/item_entry_screen.dart';
-import '../screens/items/item_detail_screen.dart';
-import '../data/items/item_model.dart';
-import '../data/lists/list_model.dart';
+import '../../screens/auth/login_screen.dart';
+import '../../screens/auth/register_screen.dart';
+import '../../screens/lists/lists_screen.dart';
+import '../../screens/lists/list_screen.dart';
+import '../../screens/lists/list_config_screen.dart';
+import '../../screens/info/info_screen.dart';
+import '../../screens/profile/profile_screen.dart';
+import '../../screens/settings/settings_screen.dart';
+import '../../screens/social/social_screen.dart';
+import '../../screens/items/item_entry_screen.dart';
+import '../../screens/items/item_detail_screen.dart';
+import '../../data/items/item_model.dart';
+import '../../data/lists/list_model.dart';
 
 /// Gestión centralizada de las rutas de la aplicación.
 class AppRoutes {

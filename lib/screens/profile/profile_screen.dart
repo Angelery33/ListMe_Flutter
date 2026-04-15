@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:list_me/core/routes.dart';
+import 'package:list_me/core/config/routes.dart';
 import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:list_me/providers/profile/profile_provider.dart';
 import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';

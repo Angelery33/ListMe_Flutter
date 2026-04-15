@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/routes.dart';
+import '../../core/config/routes.dart';
 import '../../data/lists/list_model.dart';
 import '../../providers/lists/lists_provider.dart';
 import '../../widgets/lists/list_card.dart';
@@ -61,7 +61,10 @@ class _ListsScreenState extends State<ListsScreen> {
           ],
         ),
         child: FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.listConfig),
+          onPressed: () async {
+            await Navigator.pushNamed(context, AppRoutes.listConfig);
+            if (mounted) context.read<ListsProvider>().fetchLists();
+          },
           backgroundColor: theme.colorScheme.primary,
           foregroundColor: theme.colorScheme.onPrimary,
           child: const Icon(Icons.add_rounded, size: 28),
@@ -112,8 +115,13 @@ class _ListsScreenState extends State<ListsScreen> {
       onTap: () {
         Navigator.pushNamed(context, AppRoutes.list, arguments: list);
       },
-      onEdit: () {
-        Navigator.pushNamed(context, AppRoutes.listConfig, arguments: list);
+      onEdit: () async {
+        await Navigator.pushNamed(
+          context,
+          AppRoutes.listConfig,
+          arguments: list,
+        );
+        if (mounted) context.read<ListsProvider>().fetchLists();
       },
       onDelete: () => _confirmDeleteList(list),
     );

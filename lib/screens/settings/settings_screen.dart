@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:provider/provider.dart';
-import '../../core/routes.dart';
+import '../../core/config/routes.dart';
 import '../../providers/settings/settings_provider.dart';
 import '../../widgets/settings/accent_color_selector.dart';
 import '../../widgets/settings/font_scale_selector.dart';

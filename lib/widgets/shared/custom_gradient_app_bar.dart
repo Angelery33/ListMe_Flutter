@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme.dart';
+import '../../core/theme/theme.dart';
 
 /// Un AppBar personalizado con un fondo degradado basado en el tema elegido.
 /// 

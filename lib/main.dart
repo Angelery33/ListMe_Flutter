@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
-import 'core/theme.dart';
-import 'core/routes.dart';
+import 'core/theme/theme.dart';
+import 'core/config/routes.dart';
 import 'data/auth/auth_repository.dart';
 import 'data/lists/lists_repository.dart';
 import 'data/items/items_repository.dart';
@@ -18,8 +18,8 @@ import 'providers/items/item_details_provider.dart';
 import 'providers/profile/profile_provider.dart';
 
 import 'core/services/local_storage_service.dart';
-import 'core/auth_wrapper.dart';
-import 'core/api_client.dart';
+import 'core/auth/auth_wrapper.dart';
+import 'core/services/api_client.dart';
 
 void main() async {
   // Aseguramos que los bindings de Flutter estén inicializados

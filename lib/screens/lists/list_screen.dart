@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
-import '../../core/routes.dart';
+import '../../core/config/routes.dart';
 import '../../providers/items/items_provider.dart';
 import '../../providers/lists/lists_provider.dart';
 import '../../core/utils/item_grouping_helper.dart';
@@ -351,7 +351,7 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  void _refreshItems() {
+  void _refreshItems() async {
     final itemsProvider = context.read<ItemsProvider>();
     if (widget.remoteId != null) {
       itemsProvider.loadByRemoteId(widget.remoteId!);
@@ -359,6 +359,19 @@ class _ListScreenState extends State<ListScreen> {
       itemsProvider.loadSubCollections(widget.parentId!, widget.listId);
     } else if (widget.listId != 0) {
       itemsProvider.loadData(widget.listId);
+    }
+
+    if (widget.listId != 0 && widget.listId != null) {
+      final listsProvider = context.read<ListsProvider>();
+      final updatedList = listsProvider.lists.firstWhere(
+        (l) => l.id == widget.listId,
+        orElse: () => _currentList,
+      );
+      if (mounted) {
+        setState(() {
+          _currentList = updatedList;
+        });
+      }
     }
   }
 
@@ -534,11 +547,13 @@ class _ListScreenState extends State<ListScreen> {
                 _currentList.id!,
                 _currentList.copyWith(shared: true),
               );
-              
+
               if (mounted) {
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('¡Lista publicada con éxito!')),
+                    const SnackBar(
+                      content: Text('¡Lista publicada con éxito!'),
+                    ),
                   );
                   _refreshItems();
                 } else {

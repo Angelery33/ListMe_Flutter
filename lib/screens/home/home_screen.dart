@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/routes.dart';
+import '../../core/config/routes.dart';
 import '../../widgets/home/menu_card.dart';
 import '../../widgets/shared/app_logo_title.dart';
 
