@@ -27,17 +27,20 @@ jobs:
           flutter pub get
           flutter build web --release
 
+      - name: Configure SSH for Cloudflare Tunnel
+        run: |
+          mkdir -p ~/.ssh
+          echo "Host ${{ secrets.NAS_HOST }}" >> ~/.ssh/config
+          echo "  ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h" >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
       - name: Deploy to NAS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
-          key: ${{ secrets.NAS_SSH_KEY }} # <-- REVISA QUE SE LLAME ASÍ EN GITHUB SECRETS
-          port: ${{ secrets.NAS_PORT }}
-          proxy_host: ${{ secrets.NAS_HOST }} # Usamos parámetros nativos de la v0.1.7
-          proxy_username: ${{ secrets.NAS_USER }}
-          proxy_key: ${{ secrets.NAS_SSH_KEY }}
-          proxy_command: "cloudflared access ssh --hostname ${{ secrets.NAS_HOST }}"
+          key: ${{ secrets.NAS_SSH_KEY }}
+          port: 22
           source: "build/web/*"
           target: "/DATA/AppData/flutter_web"
           strip_components: 2
