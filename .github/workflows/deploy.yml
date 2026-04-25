@@ -35,12 +35,23 @@ jobs:
           chmod 600 ~/.ssh/config
 
       - name: Deploy to NAS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.NAS_HOST }}
-          username: ${{ secrets.NAS_USER }}
-          key: ${{ secrets.NAS_SSH_KEY }}
-          port: 22
-          source: "build/web/*"
-          target: "/DATA/AppData/flutter_web"
-          strip_components: 2
+        env:
+          SSH_KEY: ${{ secrets.NAS_SSH_KEY }}
+          NAS_HOST: ${{ secrets.NAS_HOST }}
+          NAS_USER: ${{ secrets.NAS_USER }}
+        run: |
+          # 1. Configurar la clave privada
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # 2. Configurar el túnel en el SSH nativo
+          cat >> ~/.ssh/config <<EOF
+          Host $NAS_HOST
+            ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h
+            StrictHostKeyChecking no
+          EOF
+
+          # 3. Enviar los archivos usando SCP estándar
+          # Usamos -r para carpetas y apuntamos al build de flutter
+          scp -r build/web/* $NAS_USER@$NAS_HOST:/DATA/AppData/flutter_web/
