@@ -116,8 +116,6 @@ class StandardItemCard extends StatelessWidget {
   }
 
   Widget _buildImage(BuildContext context) {
-    final alignmentX = item.imageAlignmentX ?? 0.0;
-    final alignmentY = item.imageAlignmentY ?? 0.0;
 
     return UniversalImage(
       item.imagePath ?? "",

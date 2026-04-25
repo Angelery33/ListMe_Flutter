@@ -361,7 +361,7 @@ class _ListScreenState extends State<ListScreen> {
       itemsProvider.loadData(widget.listId);
     }
 
-    if (widget.listId != 0 && widget.listId != null) {
+    if (widget.listId != 0) {
       final listsProvider = context.read<ListsProvider>();
       final updatedList = listsProvider.lists.firstWhere(
         (l) => l.id == widget.listId,
