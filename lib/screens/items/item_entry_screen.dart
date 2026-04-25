@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -69,6 +68,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
   double? _importedExternalRating;
 
   final List<String> _newImages = [];
+  final List<XFile> _newImageFiles = [];
   List<ItemImageModel> _existingImages = [];
   final Set<int> _deletedImageIds = {};
   int? _favoriteImageIndex;
@@ -232,34 +232,15 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
   }
 
   Future<void> _uploadImagesToCloud(int itemDbId) async {
-    if (_newImages.isEmpty) return;
+    if (_newImageFiles.isEmpty) return;
 
-    debugPrint('_uploadImagesToCloud: Starting for item $itemDbId');
-    debugPrint('_uploadImagesToCloud: ${_newImages.length} images to upload');
-
-    for (int i = 0; i < _newImages.length; i++) {
-      final file = File(_newImages[i]);
-      final exists = await file.exists();
-      debugPrint(
-        '_uploadImagesToCloud: Uploading image $i: ${_newImages[i]}, exists: $exists',
-      );
-
-      if (!exists) {
-        debugPrint('_uploadImagesToCloud: File does not exist, skipping');
-        continue;
-      }
-
+    for (int i = 0; i < _newImageFiles.length; i++) {
       final remoteUrl = await _firebaseStorage.uploadImage(
-        file,
+        _newImageFiles[i],
         '${itemDbId}_$i',
       );
 
-      debugPrint('_uploadImagesToCloud: URL result: $remoteUrl');
-
-      if (remoteUrl == null) {
-        debugPrint('_uploadImagesToCloud: FAILED - remoteUrl is null');
-        continue;
-      }
+      if (remoteUrl == null) continue;
 
       if (mounted) {
         final isFavorite = _favoriteImageIndex == _existingImages.length + i;
@@ -269,12 +250,9 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
           remoteImageUrl: remoteUrl,
           isFavorite: isFavorite,
         );
-        final imagesProvider = context.read<ItemsProvider>();
-        final success = await imagesProvider.createItemImage(newImage);
-        debugPrint('_uploadImagesToCloud: API result: $success');
+        await context.read<ItemsProvider>().createItemImage(newImage);
       }
     }
-    debugPrint('_uploadImagesToCloud: Completed');
   }
 
   Future<void> _pickImage(String source) async {
@@ -282,7 +260,10 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       source: source == 'camera' ? ImageSource.camera : ImageSource.gallery,
     );
     if (image != null && mounted) {
-      setState(() => _newImages.add(image.path));
+      setState(() {
+        _newImages.add(image.path);
+        _newImageFiles.add(image);
+      });
     }
   }
 
@@ -585,6 +566,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 onRemoveNew: (idx) {
                   setState(() {
                     _newImages.removeAt(idx);
+                    if (idx < _newImageFiles.length) _newImageFiles.removeAt(idx);
                     final totalExisting = _existingImages.length;
                     if (_favoriteImageIndex != null &&
                         _favoriteImageIndex! >= totalExisting &&

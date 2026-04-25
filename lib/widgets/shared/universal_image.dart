@@ -26,7 +26,7 @@ class UniversalImage extends StatelessWidget {
       return _placeholder(context);
     }
 
-    if (url.startsWith('http')) {
+    if (url.startsWith('http') || url.startsWith('blob:')) {
       return Image.network(
         url,
         fit: fit,
@@ -52,6 +52,7 @@ class UniversalImage extends StatelessWidget {
       if (remoteImageUrl?.isNotEmpty == true) {
         return remoteImageUrl!;
       }
+      if (imagePath.startsWith('blob:')) return imagePath;
       // Si es ruta local en web, no sirve
       if (imagePath.startsWith('/data') || imagePath.startsWith('assets/')) {
         return '';

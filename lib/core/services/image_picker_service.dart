@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -12,23 +13,25 @@ class ImagePickerService {
   factory ImagePickerService() => _instance;
   ImagePickerService._internal();
 
-  Future<File?> pickImage({
+  Future<XFile?> pickImage({
     required ImageSource source,
     bool cropToSquare = true,
   }) async {
     final ImagePicker picker = ImagePicker();
 
-    if (source == ImageSource.camera) {
-      final cameraStatus = await Permission.camera.request();
-      if (!cameraStatus.isGranted) {
-        _logger.warning('Camera permission denied');
-        return null;
-      }
-    } else if (source == ImageSource.gallery) {
-      final photosStatus = await Permission.photos.request();
-      if (!photosStatus.isGranted && !photosStatus.isLimited) {
-        _logger.warning('Photos permission denied');
-        return null;
+    if (!kIsWeb) {
+      if (source == ImageSource.camera) {
+        final cameraStatus = await Permission.camera.request();
+        if (!cameraStatus.isGranted) {
+          _logger.warning('Camera permission denied');
+          return null;
+        }
+      } else if (source == ImageSource.gallery) {
+        final photosStatus = await Permission.photos.request();
+        if (!photosStatus.isGranted && !photosStatus.isLimited) {
+          _logger.warning('Photos permission denied');
+          return null;
+        }
       }
     }
 
@@ -40,11 +43,13 @@ class ImagePickerService {
         maxHeight: 1920,
       );
       if (image == null) return null;
-      
-      if (cropToSquare) {
-        return await _cropImage(image.path);
+
+      if (!kIsWeb && cropToSquare) {
+        final File? cropped = await _cropImage(image.path);
+        if (cropped != null) return XFile(cropped.path);
       }
-      return File(image.path);
+
+      return image;
     } on PlatformException catch (e) {
       _logger.error('PlatformException picking image', e);
       return null;
@@ -88,7 +93,7 @@ class ImagePickerService {
 
   Future<void> showImageSourceDialog(
     BuildContext context, {
-    required Function(File?) onImagePicked,
+    required Function(XFile?) onImagePicked,
   }) {
     return showModalBottomSheet(
       context: context,

@@ -1,6 +1,5 @@
-import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart' as path;
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 
 class FirebaseStorageService {
@@ -11,20 +10,17 @@ class FirebaseStorageService {
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  Future<String?> uploadImage(File imageFile, String itemId) async {
-    if (!await imageFile.exists()) {
-      debugPrint('FirebaseStorage: File no existe: ${imageFile.path}');
-      return null;
-    }
-
+  Future<String?> uploadImage(XFile imageFile, String itemId) async {
     try {
-      final fileName =
-          '${itemId}_${DateTime.now().millisecondsSinceEpoch}${path.extension(imageFile.path)}';
+      final name = imageFile.name;
+      final ext = name.contains('.') ? '.${name.split('.').last}' : '.jpg';
+      final fileName = '${itemId}_${DateTime.now().millisecondsSinceEpoch}$ext';
       debugPrint('FirebaseStorage: Subiendo $fileName');
       final ref = _storage.ref().child('items').child(fileName);
 
-      final uploadTask = ref.putFile(
-        imageFile,
+      final bytes = await imageFile.readAsBytes();
+      final uploadTask = ref.putData(
+        bytes,
         SettableMetadata(
           contentType: 'image/jpeg',
           cacheControl: 'public, max-age=31536000',
