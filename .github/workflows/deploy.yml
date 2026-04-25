@@ -23,12 +23,12 @@ jobs:
           channel: 'stable'
 
       - name: Restore Firebase config
-        run: echo "${{ secrets.FIREBASE_OPTIONS }}" > lib/firebase_options.dart
+        run: printf "%s" '${{ secrets.FIREBASE_OPTIONS }}' > lib/firebase_options.dart
 
       - name: Build Web
         run: |
           flutter pub get
-          flutter build web --release
+          flutter build web --release --no-wasm-dry-run
 
       - name: Configure SSH for Cloudflare Tunnel
         run: |
