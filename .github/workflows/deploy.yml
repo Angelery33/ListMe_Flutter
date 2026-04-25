@@ -23,7 +23,11 @@ jobs:
           channel: 'stable'
 
       - name: Restore Firebase config
-        run: printf "%s" '${{ secrets.FIREBASE_OPTIONS }}' > lib/firebase_options.dart
+        run: |
+          mkdir -p lib
+          cat << 'EOF' > lib/firebase_options.dart
+          ${{ secrets.FIREBASE_OPTIONS }}
+          EOF
 
       - name: Build Web
         run: |
