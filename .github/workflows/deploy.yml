@@ -3,7 +3,7 @@ name: Deploy Flutter Web to CasaOS
 on:
   push:
     branches:
-      - main  # Asegúrate de que este es el nombre de tu rama principal
+      - main
 
 jobs:
   build-and-deploy:
@@ -27,14 +27,17 @@ jobs:
           flutter pub get
           flutter build web --release
 
-      - name: Deploy to NAS via Cloudflare Tunnel
-        uses: appleboy/scp-action@master
+      - name: Deploy to NAS
+        uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.NAS_HOST }} # Aquí debe estar ssh.angelcantero.store
+          host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
-          key: ${{ secrets.NAS_SSH_KEY }}
+          key: ${{ secrets.NAS_SSH_KEY }} # <-- REVISA QUE SE LLAME ASÍ EN GITHUB SECRETS
           port: ${{ secrets.NAS_PORT }}
-          proxy_command: cloudflared access ssh --hostname ${{ secrets.NAS_HOST }}
+          proxy_host: ${{ secrets.NAS_HOST }} # Usamos parámetros nativos de la v0.1.7
+          proxy_username: ${{ secrets.NAS_USER }}
+          proxy_key: ${{ secrets.NAS_SSH_KEY }}
+          proxy_command: "cloudflared access ssh --hostname ${{ secrets.NAS_HOST }}"
           source: "build/web/*"
           target: "/DATA/AppData/flutter_web"
           strip_components: 2
