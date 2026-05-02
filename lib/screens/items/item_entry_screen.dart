@@ -231,8 +231,10 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     }
   }
 
-  Future<void> _uploadImagesToCloud(int itemDbId) async {
-    if (_newImageFiles.isEmpty) return;
+  Future<String?> _uploadImagesToCloud(int itemDbId) async {
+    if (_newImageFiles.isEmpty) return null;
+
+    String? favoriteRemoteUrl;
 
     for (int i = 0; i < _newImageFiles.length; i++) {
       final remoteUrl = await _firebaseStorage.uploadImage(
@@ -242,8 +244,10 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
       if (remoteUrl == null) continue;
 
+      final isFavorite = _favoriteImageIndex == _existingImages.length + i;
+      if (isFavorite || favoriteRemoteUrl == null) favoriteRemoteUrl = remoteUrl;
+
       if (mounted) {
-        final isFavorite = _favoriteImageIndex == _existingImages.length + i;
         final newImage = ItemImageModel(
           idItem: itemDbId,
           imageUri: _newImages[i],
@@ -253,6 +257,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         await context.read<ItemsProvider>().createItemImage(newImage);
       }
     }
+
+    return favoriteRemoteUrl;
   }
 
   Future<void> _pickImage(String source) async {
@@ -496,13 +502,17 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         savedItemId = _item!.id;
       }
 
-      if (savedItemId != null && _newImages.isNotEmpty) {
-        debugPrint(
-          'Calling _uploadImagesToCloud with savedItemId: $savedItemId',
-        );
-        await _uploadImagesToCloud(savedItemId);
-      } else {
-        debugPrint('No images to upload or no savedItemId');
+      if (savedItemId != null && _newImageFiles.isNotEmpty) {
+        final uploadedUrl = await _uploadImagesToCloud(savedItemId);
+
+        // Sync ItemModel.remoteImageUrl so the card shows the image cross-platform
+        if (uploadedUrl != null && mounted) {
+          final updatedItem = newItem.copyWith(
+            id: savedItemId,
+            remoteImageUrl: uploadedUrl,
+          );
+          await itemsProvider.updateItem(savedItemId, updatedItem);
+        }
       }
 
       if (mounted) Navigator.pop(context, true);

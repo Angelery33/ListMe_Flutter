@@ -37,7 +37,8 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
       }
       if (localPath != null &&
           localPath.isNotEmpty &&
-          !localPath.startsWith('http')) {
+          !localPath.startsWith('http') &&
+          !localPath.startsWith('blob:')) {
         if (!addedPaths.contains(localPath)) {
           addedPaths.add(localPath);
           return localPath;
@@ -63,11 +64,14 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
       if (path != null) paths.add(path);
     }
 
-    final mainPath = getUniquePath(
-      widget.item.remoteImageUrl,
-      widget.item.imagePath,
-    );
-    if (mainPath != null) paths.add(mainPath);
+    // Only use the item's direct fields as fallback when there are no gallery images
+    if (widget.images.isEmpty) {
+      final mainPath = getUniquePath(
+        widget.item.remoteImageUrl,
+        widget.item.imagePath,
+      );
+      if (mainPath != null) paths.add(mainPath);
+    }
 
     return paths;
   }

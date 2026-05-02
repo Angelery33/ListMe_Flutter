@@ -45,18 +45,24 @@ class DetailGallerySection extends StatelessWidget {
               itemCount: images.length,
               itemBuilder: (context, index) {
                 final img = images[index];
+                final url = img.remoteImageUrl?.isNotEmpty == true
+                    ? img.remoteImageUrl!
+                    : img.imageUri ?? '';
+                final isNetwork = url.startsWith('http') || url.startsWith('blob:');
                 return Padding(
                   padding: const EdgeInsets.only(right: 12.0),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: AspectRatio(
                       aspectRatio: 3 / 4,
-                      child: Image.network(
-                        img.imageUri!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            Container(color: Colors.grey),
-                      ),
+                      child: isNetwork
+                          ? Image.network(
+                              url,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  Container(color: Colors.grey),
+                            )
+                          : Container(color: Colors.grey),
                     ),
                   ),
                 );

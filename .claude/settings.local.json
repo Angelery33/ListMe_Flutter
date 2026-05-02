@@ -4,7 +4,8 @@
       "Read(//c/Users/Angel/Desktop/Comparacion apis/listme/src/**)",
       "Read(//c/Users/Angel/Desktop/Comparacion apis/listme/**)",
       "Bash(grep -E \"\\\\.\\(java|kt\\)$\")",
-      "Bash(dart analyze *)"
+      "Bash(dart analyze *)",
+      "PowerShell(head -20)"
     ]
   }
 }
