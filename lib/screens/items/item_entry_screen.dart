@@ -70,7 +70,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
   final List<String> _newImages = [];
   final List<XFile> _newImageFiles = [];
   List<ItemImageModel> _existingImages = [];
-  final Set<int> _deletedImageIds = {};
+  final List<ItemImageModel> _deletedImages = [];
   int? _favoriteImageIndex;
 
   List<LibraryGenreModel> _libraryGenres = [];
@@ -184,8 +184,10 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
           final images = await itemsProvider.getItemImages(_item!.id!);
           if (mounted) {
             setState(() {
-              _existingImages = images;
-              final favIdx = images.indexWhere((img) => img.isFavorite);
+              // Only replace if gallery has records; otherwise keep the initial
+              // entry from _initControllers (item's remoteImageUrl as fallback)
+              if (images.isNotEmpty) _existingImages = images;
+              final favIdx = _existingImages.indexWhere((img) => img.isFavorite);
               _favoriteImageIndex = favIdx >= 0 ? favIdx : null;
             });
           }
@@ -215,19 +217,14 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     super.dispose();
   }
 
-  Future<void> _deleteOldImages() async {
-    if (_existingImages.isEmpty && _item?.imagePath != null) {
-      await _firebaseStorage.deleteImage(_item!.imagePath);
-    }
-
-    for (final deletedId in _deletedImageIds) {
-      final existingImg = _existingImages.firstWhere(
-        (img) => img.id == deletedId,
-        orElse: () => ItemImageModel(idItem: 0, imageUri: ''),
-      );
-      if (existingImg.imageUri != null && existingImg.imageUri!.isNotEmpty) {
-        await _firebaseStorage.deleteImage(existingImg.imageUri);
+  Future<void> _deleteOldImages(ItemsProvider itemsProvider) async {
+    for (final img in _deletedImages) {
+      // Delete from database
+      if (img.id != null) {
+        try { await itemsProvider.deleteItemImage(img.id!); } catch (_) {}
       }
+      // Delete from Firebase Storage
+      await _firebaseStorage.deleteImage(img.remoteImageUrl);
     }
   }
 
@@ -430,15 +427,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
       String finalImagePath = _newImages.isNotEmpty
           ? _newImages.first
-          : (_item?.imagePath != null && !_deletedImageIds.contains(_item?.id)
-                ? _item?.imagePath ?? ''
-                : '');
+          : (_item?.imagePath != null ? _item?.imagePath ?? '' : '');
       String itemRemoteImageUrl =
           _item?.remoteImageUrl ?? _importedRemoteImageUrl ?? '';
 
       setState(() => _isSaving = true);
 
-      _deleteOldImages();
+      await _deleteOldImages(itemsProvider);
 
       final newItem = ItemModel(
         id: _item?.id,
@@ -482,19 +477,16 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         externalRating: _importedExternalRating,
       );
 
-      bool success;
       int? savedItemId;
       if (_item == null) {
-        success = await itemsProvider.createItem(newItem);
-        if (!success)
+        final createdItem = await itemsProvider.createItem(newItem);
+        if (createdItem == null)
           throw Exception(
             itemsProvider.errorMessage ?? "Error creando el artículo",
           );
-        savedItemId = itemsProvider.items.isNotEmpty
-            ? itemsProvider.items.last.id
-            : null;
+        savedItemId = createdItem.id;
       } else {
-        success = await itemsProvider.updateItem(_item!.id!, newItem);
+        final success = await itemsProvider.updateItem(_item!.id!, newItem);
         if (!success)
           throw Exception(
             itemsProvider.errorMessage ?? "Error actualizando el artículo",
@@ -502,16 +494,55 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         savedItemId = _item!.id;
       }
 
-      if (savedItemId != null && _newImageFiles.isNotEmpty) {
-        final uploadedUrl = await _uploadImagesToCloud(savedItemId);
+      if (savedItemId != null) {
+        // Persist existing images that have no gallery record yet (e.g. imported
+        // IMDB images stored only in ItemModel fields, never in ItemImageModel)
+        for (int i = 0; i < _existingImages.length; i++) {
+          final img = _existingImages[i];
+          if (img.id != null) continue;
+          final url = img.remoteImageUrl?.isNotEmpty == true
+              ? img.remoteImageUrl!
+              : (img.imageUri?.isNotEmpty == true ? img.imageUri! : '');
+          if (url.isEmpty) continue;
+          try {
+            await itemsProvider.createItemImage(ItemImageModel(
+              idItem: savedItemId,
+              imageUri: url,
+              remoteImageUrl: img.remoteImageUrl,
+              isFavorite: (_favoriteImageIndex ?? 0) == i,
+            ));
+          } catch (_) {}
+        }
 
-        // Sync ItemModel.remoteImageUrl so the card shows the image cross-platform
-        if (uploadedUrl != null && mounted) {
-          final updatedItem = newItem.copyWith(
-            id: savedItemId,
-            remoteImageUrl: uploadedUrl,
-          );
-          await itemsProvider.updateItem(savedItemId, updatedItem);
+        // Upload new images and collect the favorite remote URL
+        String? uploadedFavoriteUrl;
+        if (_newImageFiles.isNotEmpty) {
+          uploadedFavoriteUrl = await _uploadImagesToCloud(savedItemId);
+        }
+
+        // Determine the best remoteImageUrl for the card (favorite image wins)
+        final int favIdx = _favoriteImageIndex ?? 0;
+        String? bestRemoteUrl;
+        if (favIdx < _existingImages.length) {
+          // Favorite is an existing image
+          final favImg = _existingImages[favIdx];
+          bestRemoteUrl = favImg.remoteImageUrl?.isNotEmpty == true
+              ? favImg.remoteImageUrl
+              : favImg.imageUri;
+        } else {
+          // Favorite is a new uploaded image
+          bestRemoteUrl = uploadedFavoriteUrl;
+        }
+        bestRemoteUrl ??= uploadedFavoriteUrl ?? itemRemoteImageUrl;
+
+        // Best-effort: sync ItemModel.remoteImageUrl for card display
+        if (bestRemoteUrl.isNotEmpty && mounted) {
+          try {
+            await itemsProvider.updateItem(
+              savedItemId,
+              newItem.copyWith(id: savedItemId, remoteImageUrl: bestRemoteUrl),
+            );
+          } catch (_) {}
         }
       }
 
@@ -566,12 +597,12 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 favoriteIndex: _favoriteImageIndex,
                 onPickImage: _pickImage,
                 onRemoveExisting: (idx) {
-                  if (idx < 0 || idx >= _existingImages.length) return;
-                  final img = _existingImages.removeAt(idx);
-                  if (img.id != null) _deletedImageIds.add(img.id!);
-                  if (_favoriteImageIndex == idx) {
-                    _favoriteImageIndex = null;
-                  }
+                  setState(() {
+                    if (idx < 0 || idx >= _existingImages.length) return;
+                    final img = _existingImages.removeAt(idx);
+                    _deletedImages.add(img);
+                    if (_favoriteImageIndex == idx) _favoriteImageIndex = null;
+                  });
                 },
                 onRemoveNew: (idx) {
                   setState(() {

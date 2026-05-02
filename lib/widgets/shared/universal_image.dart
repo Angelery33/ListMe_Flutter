@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -20,10 +21,19 @@ class UniversalImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String url = _getBestUrl();
+    final url = _getBestUrl();
 
-    if (url.isEmpty) {
-      return _placeholder(context);
+    if (url.isEmpty) return _placeholder(context);
+
+    // On web, Firebase Storage URLs must go through the SDK to bypass CORS
+    if (kIsWeb && _isFirebaseStorageUrl(url)) {
+      return _WebFirebaseImage(
+        url: url,
+        fit: fit,
+        width: width,
+        height: height,
+        placeholder: _placeholder(context),
+      );
     }
 
     if (url.startsWith('http') || url.startsWith('blob:')) {
@@ -36,12 +46,12 @@ class UniversalImage extends StatelessWidget {
       );
     }
 
-    // Archivo local
+    // Local file — only valid on mobile, on the same device it was picked
     if (kIsWeb) return _placeholder(context);
 
     final file = File(url);
     if (file.existsSync()) {
-      return Image.file(file, fit: fit);
+      return Image.file(file, fit: fit, width: width, height: height);
     }
     return _placeholder(context);
   }
@@ -58,6 +68,9 @@ class UniversalImage extends StatelessWidget {
     return imagePath;
   }
 
+  bool _isFirebaseStorageUrl(String url) =>
+      url.contains('firebasestorage.googleapis.com');
+
   Widget _placeholder(BuildContext context) {
     return Container(
       color: Theme.of(
@@ -66,6 +79,92 @@ class UniversalImage extends StatelessWidget {
       child: const Center(
         child: Icon(Icons.broken_image_rounded, color: Colors.white24),
       ),
+    );
+  }
+}
+
+// In-memory cache so each URL is only fetched once per session
+final Map<String, Uint8List> _firebaseImageCache = {};
+
+class _WebFirebaseImage extends StatefulWidget {
+  final String url;
+  final BoxFit fit;
+  final double? width;
+  final double? height;
+  final Widget placeholder;
+
+  const _WebFirebaseImage({
+    required this.url,
+    required this.fit,
+    this.width,
+    this.height,
+    required this.placeholder,
+  });
+
+  @override
+  State<_WebFirebaseImage> createState() => _WebFirebaseImageState();
+}
+
+class _WebFirebaseImageState extends State<_WebFirebaseImage> {
+  Uint8List? _bytes;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    // Serve from cache if available
+    if (_firebaseImageCache.containsKey(widget.url)) {
+      if (mounted) {
+        setState(() {
+          _bytes = _firebaseImageCache[widget.url];
+          _loading = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final ref = FirebaseStorage.instance.refFromURL(widget.url);
+      final bytes = await ref.getData(10 * 1024 * 1024); // 10 MB max
+      if (bytes != null) {
+        _firebaseImageCache[widget.url] = bytes;
+        if (mounted) setState(() { _bytes = bytes; _loading = false; });
+      } else {
+        if (mounted) setState(() => _loading = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return Container(
+        width: widget.width,
+        height: widget.height,
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+    if (_bytes == null) return widget.placeholder;
+    return Image.memory(
+      _bytes!,
+      fit: widget.fit,
+      width: widget.width,
+      height: widget.height,
     );
   }
 }

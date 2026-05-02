@@ -149,16 +149,16 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createItem(ItemModel newItem) async {
+  Future<ItemModel?> createItem(ItemModel newItem) async {
     try {
       final createdItem = await _itemsRepository.createItem(newItem);
       _items.add(createdItem);
       notifyListeners();
-      return true;
+      return createdItem;
     } catch (e) {
       _errorMessage = e.toString();
       notifyListeners();
-      return false;
+      return null;
     }
   }
 
@@ -176,6 +176,10 @@ class ItemsProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<void> deleteItemImage(int imageId) async {
+    await _itemsRepository.deleteItemImage(imageId);
   }
 
   Future<bool> deleteItem(int id) async {
