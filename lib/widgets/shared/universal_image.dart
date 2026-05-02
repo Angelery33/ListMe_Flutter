@@ -47,21 +47,15 @@ class UniversalImage extends StatelessWidget {
   }
 
   String _getBestUrl() {
-    // Web: usar remote si está disponible
-    if (kIsWeb) {
-      if (remoteImageUrl?.isNotEmpty == true) {
-        return remoteImageUrl!;
-      }
-      if (imagePath.startsWith('blob:')) return imagePath;
-      // Si es ruta local en web, no sirve
-      if (imagePath.startsWith('/data') || imagePath.startsWith('assets/')) {
-        return '';
-      }
-      return imagePath;
-    }
-    // Móvil: preferir local
-    if (imagePath.isNotEmpty) return imagePath;
-    return remoteImageUrl ?? '';
+    // Remote URL always takes priority — works across all devices and platforms
+    if (remoteImageUrl?.isNotEmpty == true) return remoteImageUrl!;
+
+    // Blob URL from web image picker (before upload)
+    if (imagePath.startsWith('blob:')) return imagePath;
+
+    // Local paths are only valid on the same device they were picked
+    if (kIsWeb) return '';
+    return imagePath;
   }
 
   Widget _placeholder(BuildContext context) {
