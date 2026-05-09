@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/providers/responsive_provider.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
 import '../../providers/items/item_details_provider.dart';
 import '../../providers/items/items_provider.dart';
+import '../../widgets/shared/custom_gradient_app_bar.dart';
+import '../../widgets/shared/app_shell.dart';
 
 import '../../widgets/items/detail/detail_image_carousel.dart';
 import '../../widgets/items/detail/detail_info_section.dart';
@@ -92,38 +95,50 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     }
   }
 
+  List<Widget> _detailSections(ItemModel item, ListModel? library) => [
+    DetailInfoSection(item: item, library: library),
+    const SizedBox(height: 16),
+    DetailProgressSection(library: library),
+    const SizedBox(height: 16),
+    DetailRatingSection(library: library),
+    const SizedBox(height: 16),
+    DetailDescriptionSection(item: item),
+    const SizedBox(height: 16),
+    DetailCollectionSection(library: library),
+    const SizedBox(height: 16),
+    DetailDatesSection(item: item),
+    const SizedBox(height: 16),
+    DetailAttributesSection(),
+    const SizedBox(height: 16),
+    DetailGallerySection(item: item),
+    const SizedBox(height: 32),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final detailsProvider = context.watch<ItemDetailsProvider>();
+    final responsive = context.watch<ResponsiveProvider>();
     final item = detailsProvider.item ?? widget.item;
     final library = widget.list;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+    final appBar = CustomGradientAppBar(
+      title: item.name,
+      showBackButton: true,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () => _onEditTapped(context, item),
         ),
-        title: Text(
-          item.name,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () => _onDeleteTapped(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => _onEditTapped(context, item),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => _onDeleteTapped(context),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
+      ],
+    );
+
+    Widget body;
+    if (responsive.isCompact) {
+      body = SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -132,29 +147,43 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DetailInfoSection(item: item, library: library),
-                  const SizedBox(height: 16),
-                  DetailProgressSection(library: library),
-                  const SizedBox(height: 16),
-                  DetailRatingSection(library: library),
-                  const SizedBox(height: 16),
-                  DetailDescriptionSection(item: item),
-                  const SizedBox(height: 16),
-                  DetailCollectionSection(library: library),
-                  const SizedBox(height: 16),
-                  DetailDatesSection(item: item),
-                  const SizedBox(height: 16),
-                  DetailAttributesSection(),
-                  const SizedBox(height: 16),
-                  DetailGallerySection(item: item),
-                  const SizedBox(height: 32),
-                ],
+                children: _detailSections(item, library),
               ),
             ),
           ],
         ),
-      ),
+      );
+    } else {
+      final imageWidth = responsive.isMedium ? 320.0 : 400.0;
+      body = Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: imageWidth,
+            child: DetailImageCarousel(item: item, images: detailsProvider.images),
+          ),
+          VerticalDivider(
+            width: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(responsive.horizontalPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _detailSections(item, library),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return AppShell(
+      currentIndex: 0,
+      appBar: appBar,
+      body: body,
     );
   }
 }

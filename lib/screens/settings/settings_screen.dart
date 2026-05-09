@@ -6,7 +6,7 @@ import '../../providers/settings/settings_provider.dart';
 import '../../widgets/settings/accent_color_selector.dart';
 import '../../widgets/settings/font_scale_selector.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
-import '../../widgets/shared/app_bottom_nav_bar.dart';
+import '../../widgets/shared/app_shell.dart';
 
 /// Pantalla de ajustes de la aplicación.
 ///
@@ -19,19 +19,11 @@ class SettingsScreen extends StatelessWidget {
     final settings = context.watch<SettingsProvider>();
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return AppShell(
+      currentIndex: 2,
       appBar: const CustomGradientAppBar(
         title: 'Ajustes',
         showBackButton: false,
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 2,
-        onTap: (index) {
-          if (index == 0)
-            Navigator.pushReplacementNamed(context, AppRoutes.lists);
-          if (index == 1) Navigator.pushNamed(context, AppRoutes.profile);
-          if (index == 3) Navigator.pushNamed(context, AppRoutes.social);
-        },
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),

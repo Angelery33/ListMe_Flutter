@@ -65,7 +65,18 @@ class ListsProvider extends ChangeNotifier {
             currentColor = localMatch.color;
           }
 
-          return serverList.copyWith(icon: currentIcon, color: currentColor);
+          return serverList.copyWith(
+            icon: currentIcon,
+            color: currentColor,
+            compact: localMatch.compact,
+            thematic: localMatch.thematic,
+            gradeable: localMatch.gradeable,
+            supportsWishlist: localMatch.supportsWishlist,
+            supportsPrice: localMatch.supportsPrice,
+            tracksDates: localMatch.tracksDates,
+            supportsProgress: localMatch.supportsProgress,
+            progressType: localMatch.progressType,
+          );
         }
         return serverList;
       }).toList();
@@ -109,10 +120,18 @@ class ListsProvider extends ChangeNotifier {
         updatedList,
       );
 
-      // 3. Mezclar respuesta del servidor con nuestro diseño local (por si el servidor no lo guarda)
+      // 3. Mezclar respuesta del servidor con nuestra configuración local (por si el servidor no lo guarda)
       final finalLibrary = serverResponse.copyWith(
         icon: updatedList.icon,
         color: updatedList.color,
+        compact: updatedList.compact,
+        thematic: updatedList.thematic,
+        gradeable: updatedList.gradeable,
+        supportsWishlist: updatedList.supportsWishlist,
+        supportsPrice: updatedList.supportsPrice,
+        tracksDates: updatedList.tracksDates,
+        supportsProgress: updatedList.supportsProgress,
+        progressType: updatedList.progressType,
       );
 
       final index = _lists.indexWhere((l) => l.id == id);

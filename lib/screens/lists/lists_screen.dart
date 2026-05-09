@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/config/routes.dart';
+import '../../core/providers/responsive_provider.dart';
 import '../../data/lists/list_model.dart';
 import '../../providers/lists/lists_provider.dart';
 import '../../widgets/lists/list_card.dart';
 import '../../widgets/lists/empty_lists_state.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
-import '../../widgets/shared/app_bottom_nav_bar.dart';
+import '../../widgets/shared/app_shell.dart';
 
-/// Pantalla principal que muestra el listado de listas del usuario.
-///
-/// Permite reordenar mediante drag & drop, editar, eliminar y crear nuevas listas.
 class ListsScreen extends StatefulWidget {
   const ListsScreen({super.key});
 
@@ -23,29 +21,21 @@ class _ListsScreenState extends State<ListsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<ListsProvider>().fetchLists();
-      }
+      if (mounted) context.read<ListsProvider>().fetchLists();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final listsProvider = context.watch<ListsProvider>();
+    final responsive = context.watch<ResponsiveProvider>();
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return AppShell(
+      currentIndex: 0,
       appBar: const CustomGradientAppBar(
         title: 'Mis Listas',
         showBackButton: false,
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 0,
-        onTap: (index) {
-          if (index == 1) Navigator.pushNamed(context, AppRoutes.profile);
-          if (index == 2) Navigator.pushNamed(context, AppRoutes.settings);
-          if (index == 3) Navigator.pushNamed(context, AppRoutes.social);
-        },
       ),
       floatingActionButton: Container(
         width: 64,
@@ -76,35 +66,43 @@ class _ListsScreenState extends State<ListsScreen> {
               onRefresh: () async {
                 await context.read<ListsProvider>().fetchLists();
               },
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth > 600) {
-                    return GridView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 400,
-                            mainAxisExtent: 80,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                      itemCount: listsProvider.lists.length,
-                      itemBuilder: (context, index) =>
-                          _buildListCard(listsProvider.lists[index]),
-                    );
-                  }
-                  return ReorderableListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                    itemCount: listsProvider.lists.length,
-                    onReorder: (oldIndex, newIndex) {
-                      listsProvider.reorderLists(oldIndex, newIndex);
-                    },
-                    itemBuilder: (context, index) =>
-                        _buildListCard(listsProvider.lists[index]),
-                  );
-                },
-              ),
+              child: _buildListBody(listsProvider, responsive),
             ),
+    );
+  }
+
+  Widget _buildListBody(ListsProvider listsProvider, ResponsiveProvider responsive) {
+    final padding = EdgeInsets.fromLTRB(
+      responsive.horizontalPadding,
+      16,
+      responsive.horizontalPadding,
+      100,
+    );
+
+    // Compact: reorderable single-column list
+    if (responsive.isCompact) {
+      return ReorderableListView.builder(
+        padding: padding,
+        itemCount: listsProvider.lists.length,
+        onReorder: listsProvider.reorderLists,
+        itemBuilder: (context, index) =>
+            _buildListCard(listsProvider.lists[index]),
+      );
+    }
+
+    // Medium / Expanded: grid that grows with screen width
+    final maxCrossAxisExtent = responsive.isExpanded ? 360.0 : 420.0;
+    return GridView.builder(
+      padding: padding,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: maxCrossAxisExtent,
+        mainAxisExtent: 80,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: listsProvider.lists.length,
+      itemBuilder: (context, index) =>
+          _buildListCard(listsProvider.lists[index]),
     );
   }
 
@@ -112,15 +110,9 @@ class _ListsScreenState extends State<ListsScreen> {
     return ListCard(
       key: ValueKey(list.id),
       list: list,
-      onTap: () {
-        Navigator.pushNamed(context, AppRoutes.list, arguments: list);
-      },
+      onTap: () => Navigator.pushNamed(context, AppRoutes.list, arguments: list),
       onEdit: () async {
-        await Navigator.pushNamed(
-          context,
-          AppRoutes.listConfig,
-          arguments: list,
-        );
+        await Navigator.pushNamed(context, AppRoutes.listConfig, arguments: list);
         if (mounted) context.read<ListsProvider>().fetchLists();
       },
       onDelete: () => _confirmDeleteList(list),
@@ -144,9 +136,9 @@ class _ListsScreenState extends State<ListsScreen> {
             onPressed: () async {
               Navigator.pop(dialogContext);
               if (list.id != null) {
-                final success = await context.read<ListsProvider>().deleteList(
-                  list.id!,
-                );
+                final success = await context
+                    .read<ListsProvider>()
+                    .deleteList(list.id!);
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('"${list.name}" eliminada')),

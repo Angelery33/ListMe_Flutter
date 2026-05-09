@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/providers/responsive_provider.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
 import '../../core/config/routes.dart';
@@ -12,6 +13,7 @@ import '../../widgets/lists/detail/list_price_summary.dart';
 import '../../widgets/lists/detail/list_section_header.dart';
 import '../../widgets/lists/detail/active_items_section.dart';
 import '../../widgets/items/item_card.dart';
+import '../../widgets/shared/app_shell.dart';
 
 class ListScreen extends StatefulWidget {
   final int listId;
@@ -108,7 +110,8 @@ class _ListScreenState extends State<ListScreen> {
       itemsProvider.items.where((i) => i.wishlist).toList(),
     );
 
-    return Scaffold(
+    return AppShell(
+      currentIndex: 0,
       appBar: ListDetailAppBar(
         list: _currentList,
         searchController: _searchController,
@@ -281,12 +284,12 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   Widget _buildGrid(List<ItemModel> items, ItemsProvider itemsProvider) {
+    final columns = context.read<ResponsiveProvider>().compactGridColumns;
     return GridView.builder(
       shrinkWrap: true,
-
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
         childAspectRatio: 0.7,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,

@@ -17,7 +17,9 @@ import '../../widgets/items/entry/entry_status_progress_section.dart';
 import '../../widgets/items/entry/entry_properties_section.dart';
 import '../../widgets/items/entry/entry_dates_section.dart';
 import '../../widgets/items/entry/entry_attributes_section.dart';
+import '../../core/providers/responsive_provider.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
+import '../../widgets/shared/app_shell.dart';
 import 'search_import/search_import_screen.dart';
 
 class ItemEntryScreen extends StatefulWidget {
@@ -495,8 +497,9 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       }
 
       if (savedItemId != null) {
-        // Persist existing images that have no gallery record yet (e.g. imported
-        // IMDB images stored only in ItemModel fields, never in ItemImageModel)
+        // Persist existing images that have no gallery record yet
+        // (e.g. imported IMDB images stored only in ItemModel, not in ItemImageModel)
+        bool persistedNewGalleryEntries = false;
         for (int i = 0; i < _existingImages.length; i++) {
           final img = _existingImages[i];
           if (img.id != null) continue;
@@ -511,6 +514,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
               remoteImageUrl: img.remoteImageUrl,
               isFavorite: (_favoriteImageIndex ?? 0) == i,
             ));
+            persistedNewGalleryEntries = true;
           } catch (_) {}
         }
 
@@ -520,29 +524,30 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
           uploadedFavoriteUrl = await _uploadImagesToCloud(savedItemId);
         }
 
-        // Determine the best remoteImageUrl for the card (favorite image wins)
-        final int favIdx = _favoriteImageIndex ?? 0;
-        String? bestRemoteUrl;
-        if (favIdx < _existingImages.length) {
-          // Favorite is an existing image
-          final favImg = _existingImages[favIdx];
-          bestRemoteUrl = favImg.remoteImageUrl?.isNotEmpty == true
-              ? favImg.remoteImageUrl
-              : favImg.imageUri;
-        } else {
-          // Favorite is a new uploaded image
-          bestRemoteUrl = uploadedFavoriteUrl;
-        }
-        bestRemoteUrl ??= uploadedFavoriteUrl ?? itemRemoteImageUrl;
+        // Only sync ItemModel.remoteImageUrl when something actually changed:
+        // new images were uploaded, or an unregistered image was just persisted.
+        final bool remoteUrlChanged =
+            uploadedFavoriteUrl != null || persistedNewGalleryEntries;
 
-        // Best-effort: sync ItemModel.remoteImageUrl for card display
-        if (bestRemoteUrl.isNotEmpty && mounted) {
-          try {
-            await itemsProvider.updateItem(
-              savedItemId,
-              newItem.copyWith(id: savedItemId, remoteImageUrl: bestRemoteUrl),
-            );
-          } catch (_) {}
+        if (remoteUrlChanged && mounted) {
+          final int favIdx = _favoriteImageIndex ?? 0;
+          String? bestRemoteUrl;
+          if (favIdx < _existingImages.length) {
+            final favImg = _existingImages[favIdx];
+            bestRemoteUrl = favImg.remoteImageUrl?.isNotEmpty == true
+                ? favImg.remoteImageUrl
+                : favImg.imageUri;
+          }
+          bestRemoteUrl ??= uploadedFavoriteUrl ?? itemRemoteImageUrl;
+
+          if (bestRemoteUrl.isNotEmpty) {
+            try {
+              await itemsProvider.updateItem(
+                savedItemId,
+                newItem.copyWith(id: savedItemId, remoteImageUrl: bestRemoteUrl),
+              );
+            } catch (_) {}
+          }
         }
       }
 
@@ -564,7 +569,10 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
+    final responsive = context.watch<ResponsiveProvider>();
+
+    return AppShell(
+      currentIndex: 0,
       appBar: CustomGradientAppBar(
         title: _item == null ? "Nuevo Item" : "Editar Item",
         showBackButton: true,
@@ -580,12 +588,18 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
             IconButton(onPressed: _save, icon: const Icon(Icons.check_rounded)),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: responsive.formMaxWidth),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: responsive.horizontalPadding,
+              vertical: 16,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
               EntryImagePicker(
                 existingImages: _existingImages
                     .map((e) => e.imageUri ?? '')
@@ -714,6 +728,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
               const SizedBox(height: 32),
             ],
           ),
+        ),
+      ),
         ),
       ),
     );

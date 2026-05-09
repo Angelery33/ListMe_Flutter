@@ -45,11 +45,12 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isTitanium = AppTheme.isTitanium(scheme);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final useDarkText = isTitanium && !isDark;
+    final useDarkText = isTitanium;
 
     final textColor = useDarkText ? Colors.black87 : Colors.white;
     final hintColor = useDarkText ? Colors.black54 : Colors.white54;
+
+    final canPop = Navigator.canPop(context);
 
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -57,16 +58,25 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
       flexibleSpace: AppTheme.appBarGradient(context),
       automaticallyImplyLeading: false,
       centerTitle: true,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 12.0),
-        child: IconButton(
-          icon: Icon(
-            widget.isSearchVisible ? Icons.search_off : Icons.search,
-            color: textColor,
+      leadingWidth: canPop ? 96 : 48,
+      leading: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (canPop)
+            IconButton(
+              icon: Icon(Icons.arrow_back, color: textColor),
+              onPressed: () => Navigator.of(context).pop(),
+              tooltip: 'Volver',
+            ),
+          IconButton(
+            icon: Icon(
+              widget.isSearchVisible ? Icons.search_off : Icons.search,
+              color: textColor,
+            ),
+            onPressed: widget.onSearchToggle,
+            tooltip: widget.isSearchVisible ? 'Ocultar búsqueda' : 'Buscar',
           ),
-          onPressed: widget.onSearchToggle,
-          tooltip: widget.isSearchVisible ? 'Ocultar búsqueda' : 'Buscar',
-        ),
+        ],
       ),
       title: Row(
         mainAxisSize: MainAxisSize.min,

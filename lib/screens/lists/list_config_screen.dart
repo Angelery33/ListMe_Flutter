@@ -12,6 +12,7 @@ import '../../widgets/lists/config/config_genres_section.dart';
 import '../../widgets/lists/config/config_display_section.dart';
 import '../../widgets/lists/config/config_icon_color_section.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
+import '../../widgets/shared/app_shell.dart';
 
 /// Géneros por defecto por tipo de lista (igual que la versión legacy)
 const Map<String, List<String>> kDefaultGenres = {
@@ -375,7 +376,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppShell(
+      currentIndex: 0,
       appBar: CustomGradientAppBar(
         title: widget.library == null ? "Nueva Lista" : "Editar Lista",
         actions: [

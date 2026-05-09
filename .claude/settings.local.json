@@ -6,6 +6,9 @@
       "Bash(grep -E \"\\\\.\\(java|kt\\)$\")",
       "Bash(dart analyze *)",
       "PowerShell(head -20)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Angel\\Desktop\\Comparacion apis\\listme\\src\\main\\java\\com\\angelcantero\\listme\\dto"
     ]
   }
 }

@@ -16,12 +16,23 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _userController = TextEditingController();
   final _passwordController = TextEditingController();
+  late FocusNode _userFocusNode;
+  late FocusNode _passwordFocusNode;
   bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _userFocusNode = FocusNode();
+    _passwordFocusNode = FocusNode();
+  }
 
   @override
   void dispose() {
     _userController.dispose();
     _passwordController.dispose();
+    _userFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -127,6 +138,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: _userController,
                                 label: 'Nombre de Usuario',
                                 icon: Icons.person_outline,
+                                focusNode: _userFocusNode,
+                                onSubmitted: () => _passwordFocusNode.requestFocus(),
                               ),
                               const SizedBox(height: 16),
                               _buildTextField(
@@ -134,6 +147,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 label: 'Contraseña',
                                 icon: Icons.lock_outline,
                                 isPassword: true,
+                                focusNode: _passwordFocusNode,
+                                onSubmitted: () => _handleLogin(context),
                               ),
                               const SizedBox(height: 24),
                               _buildLoginButton(context, theme, authProvider),
@@ -165,10 +180,15 @@ class _LoginScreenState extends State<LoginScreen> {
     required String label,
     required IconData icon,
     bool isPassword = false,
+    VoidCallback? onSubmitted,
+    FocusNode? focusNode,
   }) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       obscureText: isPassword && !_isPasswordVisible,
+      textInputAction: isPassword ? TextInputAction.done : TextInputAction.next,
+      onSubmitted: (_) => onSubmitted?.call(),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,

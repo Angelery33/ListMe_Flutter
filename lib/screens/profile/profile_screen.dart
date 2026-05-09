@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:list_me/core/config/routes.dart';
 import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:list_me/providers/profile/profile_provider.dart';
 import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';
-import 'package:list_me/widgets/shared/app_bottom_nav_bar.dart';
+import 'package:list_me/widgets/shared/app_shell.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -15,22 +14,11 @@ class ProfileScreen extends StatelessWidget {
     final profile = context.watch<ProfileProvider>();
     final auth = context.read<AuthProvider>();
 
-    return Scaffold(
+    return AppShell(
+      currentIndex: 1,
       appBar: const CustomGradientAppBar(
         title: 'Mi Perfil',
         showBackButton: false,
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, AppRoutes.lists);
-          } else if (index == 2) {
-            Navigator.pushNamed(context, AppRoutes.settings);
-          } else if (index == 3) {
-            Navigator.pushNamed(context, AppRoutes.social);
-          }
-        },
       ),
       body: profile.isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -16,7 +16,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  late FocusNode _userFocusNode;
+  late FocusNode _emailFocusNode;
+  late FocusNode _passwordFocusNode;
+  late FocusNode _confirmPasswordFocusNode;
   bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _userFocusNode = FocusNode();
+    _emailFocusNode = FocusNode();
+    _passwordFocusNode = FocusNode();
+    _confirmPasswordFocusNode = FocusNode();
+  }
 
   @override
   void dispose() {
@@ -24,6 +37,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _userFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
@@ -167,12 +184,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   controller: _userController,
                                   label: 'Nombre de Usuario',
                                   icon: Icons.person_outline,
+                                  focusNode: _userFocusNode,
+                                  onSubmitted: () => _emailFocusNode.requestFocus(),
                                 ),
                                 const SizedBox(height: 16),
                                 _buildTextField(
                                   controller: _emailController,
                                   label: 'Correo Electrónico',
                                   icon: Icons.email_outlined,
+                                  focusNode: _emailFocusNode,
+                                  onSubmitted: () => _passwordFocusNode.requestFocus(),
                                 ),
                                 const SizedBox(height: 16),
                                 _buildTextField(
@@ -180,6 +201,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   label: 'Contraseña',
                                   icon: Icons.lock_outline,
                                   isPassword: true,
+                                  focusNode: _passwordFocusNode,
+                                  onSubmitted: () => _confirmPasswordFocusNode.requestFocus(),
                                 ),
                                 const SizedBox(height: 16),
                                 _buildTextField(
@@ -187,6 +210,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   label: 'Confirmar Contraseña',
                                   icon: Icons.lock_reset_outlined,
                                   isPassword: true,
+                                  focusNode: _confirmPasswordFocusNode,
+                                  onSubmitted: () => _handleRegister(context),
                                 ),
                                 const SizedBox(height: 24),
                                 _buildRegisterButton(context, theme, authProvider),
@@ -219,10 +244,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String label,
     required IconData icon,
     bool isPassword = false,
+    VoidCallback? onSubmitted,
+    FocusNode? focusNode,
   }) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       obscureText: isPassword && !_isPasswordVisible,
+      textInputAction: TextInputAction.next,
+      onSubmitted: (_) => onSubmitted?.call(),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,

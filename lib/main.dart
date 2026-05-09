@@ -16,6 +16,8 @@ import 'providers/settings/settings_provider.dart';
 import 'providers/items/items_provider.dart';
 import 'providers/items/item_details_provider.dart';
 import 'providers/profile/profile_provider.dart';
+import 'core/providers/responsive_provider.dart';
+import 'core/providers/sidebar_provider.dart';
 
 import 'core/services/local_storage_service.dart';
 import 'core/auth/auth_wrapper.dart';
@@ -72,6 +74,12 @@ void main() async {
         ChangeNotifierProvider(
           create: (context) =>
               ProfileProvider(context.read<ProfileRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ResponsiveProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SidebarProvider(),
         ),
       ],
       child: const ListMeApp(),
