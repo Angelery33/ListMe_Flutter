@@ -22,6 +22,7 @@ import 'core/providers/sidebar_provider.dart';
 import 'core/services/local_storage_service.dart';
 import 'core/auth/auth_wrapper.dart';
 import 'core/services/api_client.dart';
+import 'widgets/shared/app_shell.dart';
 
 void main() async {
   // Aseguramos que los bindings de Flutter estén inicializados
