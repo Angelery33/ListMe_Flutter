@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://app.angelcantero.store"],
+    "method": ["GET"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

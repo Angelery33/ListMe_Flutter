@@ -57,7 +57,7 @@ class StandardItemCard extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         child: SizedBox(
-          height: 130,
+          height: 160,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -83,7 +83,7 @@ class StandardItemCard extends StatelessWidget {
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -94,7 +94,7 @@ class StandardItemCard extends StatelessWidget {
                         _buildGenre(context),
                       if (item.edition != null && item.edition!.isNotEmpty)
                         _buildEditionBadge(context),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       if (item.description != null &&
                           item.description!.isNotEmpty)
                         _buildDescription(context),
@@ -212,13 +212,13 @@ class StandardItemCard extends StatelessWidget {
 
   Widget _buildDescription(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: 2),
       child: Text(
         item.description!,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
-          fontSize: 12,
-          height: 1.2,
+          fontSize: 11,
+          height: 1.1,
         ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -317,7 +317,7 @@ class StandardItemCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -338,7 +338,7 @@ class StandardItemCard extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         ClipRRect(
           borderRadius: BorderRadius.circular(2),
           child: LinearProgressIndicator(

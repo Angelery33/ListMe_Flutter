@@ -255,27 +255,32 @@ class _ListScreenState extends State<ListScreen> {
         if (_currentList.compact) {
           widgets.add(_buildGrid(items, itemsProvider));
         } else {
-          widgets.addAll(
-            items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: ItemCard(
-                  item: item,
-                  onTap: () => _navigateToItemDetails(item),
-                  onLongPress: () => _showItemOptions(item),
-                  isCompact: false,
-                  showStatus: _currentList.supportsCompletion,
-                  isGradeable: _currentList.gradeable,
-                  isThematic: _currentList.thematic,
-                  supportsPrice: _currentList.supportsPrice,
-                  supportsProgress: _currentList.supportsProgress,
-                  onIncrement: _currentList.supportsProgress
-                      ? () => itemsProvider.incrementProgress(item)
-                      : null,
+          final responsive = context.read<ResponsiveProvider>();
+          if (responsive.isExpanded) {
+            widgets.add(_buildStandardGrid(items, itemsProvider));
+          } else {
+            widgets.addAll(
+              items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: ItemCard(
+                    item: item,
+                    onTap: () => _navigateToItemDetails(item),
+                    onLongPress: () => _showItemOptions(item),
+                    isCompact: false,
+                    showStatus: _currentList.supportsCompletion,
+                    isGradeable: _currentList.gradeable,
+                    isThematic: _currentList.thematic,
+                    supportsPrice: _currentList.supportsPrice,
+                    supportsProgress: _currentList.supportsProgress,
+                    onIncrement: _currentList.supportsProgress
+                        ? () => itemsProvider.incrementProgress(item)
+                        : null,
+                  ),
                 ),
               ),
-            ),
-          );
+            );
+          }
         }
       }
     });
@@ -302,6 +307,37 @@ class _ListScreenState extends State<ListScreen> {
           onTap: () => _navigateToItemDetails(item),
           onLongPress: () => _showItemOptions(item),
           isCompact: true,
+          showStatus: _currentList.supportsCompletion,
+          isGradeable: _currentList.gradeable,
+          isThematic: _currentList.thematic,
+          supportsPrice: _currentList.supportsPrice,
+          supportsProgress: _currentList.supportsProgress,
+          onIncrement: _currentList.supportsProgress
+              ? () => itemsProvider.incrementProgress(item)
+              : null,
+        );
+      },
+    );
+  }
+
+  Widget _buildStandardGrid(List<ItemModel> items, ItemsProvider itemsProvider) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 4.2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return ItemCard(
+          item: item,
+          onTap: () => _navigateToItemDetails(item),
+          onLongPress: () => _showItemOptions(item),
+          isCompact: false,
           showStatus: _currentList.supportsCompletion,
           isGradeable: _currentList.gradeable,
           isThematic: _currentList.thematic,
