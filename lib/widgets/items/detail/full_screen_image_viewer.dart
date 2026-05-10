@@ -4,15 +4,17 @@ import '../../shared/universal_image.dart';
 class FullScreenImageViewer extends StatefulWidget {
   final List<String> imagePaths;
   final int initialIndex;
+  final int? currentImageId;
   final VoidCallback? onDismiss;
-  final Function(String)? onSetMain;
+  final Function(int)? onSetFavorite;
 
   const FullScreenImageViewer({
     super.key,
     required this.imagePaths,
     required this.initialIndex,
+    this.currentImageId,
     this.onDismiss,
-    this.onSetMain,
+    this.onSetFavorite,
   });
 
   @override
@@ -89,23 +91,18 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
             right: 16,
             child: Row(
               children: [
-                if (widget.onSetMain != null)
+                if (widget.onSetFavorite != null && widget.currentImageId != null)
                   Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: IconButton(
-                      icon: Icon(
-                        widget.imagePaths[_currentIndex].isNotEmpty
-                            ? Icons.star
-                            : Icons.star_border,
+                      icon: const Icon(
+                        Icons.star,
                         color: Colors.amber,
                         size: 30,
                       ),
-                      tooltip: "Establecer como portada",
+                      tooltip: "Marcar como favorita",
                       onPressed: () {
-                        widget.onSetMain!(widget.imagePaths[_currentIndex]);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Portada actualizada")),
-                        );
+                        widget.onSetFavorite!(widget.currentImageId!);
                       },
                     ),
                   ),

@@ -158,4 +158,28 @@ class ItemDetailsProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> setFavoriteImage(int imageId) async {
+    if (_item?.id == null) return false;
+
+    try {
+      await _itemsRepository.setFavoriteImage(_item!.id!, imageId);
+
+      _images = _images.map((img) =>
+        img.id == imageId
+          ? img.copyWith(isFavorite: true)
+          : img.copyWith(isFavorite: false)
+      ).toList();
+
+      final favImg = _images.firstWhere((img) => img.id == imageId);
+      _item = _item!.copyWith(remoteImageUrl: favImg.remoteImageUrl);
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
 }

@@ -134,6 +134,17 @@ class ItemsRepository {
     }
   }
 
+  Future<void> setFavoriteImage(int itemId, int imageId) async {
+    try {
+      _logger.debug('ItemsRepository: Marcando imagen $imageId como favorita');
+      await _apiClient.dio.put('/images/$itemId/favorite/$imageId');
+      _logger.info('ItemsRepository: Imagen $imageId marcada como favorita');
+    } catch (e) {
+      _logger.error('ItemsRepository: Error al marcar imagen como favorita', e);
+      rethrow;
+    }
+  }
+
   Future<List<ItemModel>> getSubCollections(int parentId, int libraryId) async {
     try {
       _logger.debug(
