@@ -3,6 +3,7 @@ import '../../../../data/items/item_model.dart';
 
 import 'package:provider/provider.dart';
 import '../../../../providers/items/item_details_provider.dart';
+import '../../shared/universal_image.dart';
 
 class DetailGallerySection extends StatelessWidget {
   final ItemModel item;
@@ -45,24 +46,17 @@ class DetailGallerySection extends StatelessWidget {
               itemCount: images.length,
               itemBuilder: (context, index) {
                 final img = images[index];
-                final url = img.remoteImageUrl?.isNotEmpty == true
-                    ? img.remoteImageUrl!
-                    : img.imageUri ?? '';
-                final isNetwork = url.startsWith('http') || url.startsWith('blob:');
                 return Padding(
                   padding: const EdgeInsets.only(right: 12.0),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: AspectRatio(
                       aspectRatio: 3 / 4,
-                      child: isNetwork
-                          ? Image.network(
-                              url,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  Container(color: Colors.grey),
-                            )
-                          : Container(color: Colors.grey),
+                      child: UniversalImage(
+                        img.imageUri ?? '',
+                        remoteImageUrl: img.remoteImageUrl,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 );
