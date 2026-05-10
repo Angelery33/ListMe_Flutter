@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../data/items/item_model.dart';
+import '../../../../core/providers/responsive_provider.dart';
 
 class DetailHeaderTags extends StatelessWidget {
   final ItemModel item;
@@ -57,8 +59,12 @@ class DetailHeaderTags extends StatelessWidget {
     IconData icon,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final responsive = context.read<ResponsiveProvider>();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: responsive.tagFontSize,
+        vertical: responsive.tagFontSize * 0.6,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.2 : 0.1),
         borderRadius: BorderRadius.circular(12),
@@ -67,15 +73,15 @@ class DetailHeaderTags extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
+          Icon(icon, size: responsive.tagIconSize, color: color),
+          SizedBox(width: responsive.tagFontSize * 0.4),
           Text(
             label.toUpperCase(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: color,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
-              fontSize: 10,
+              fontSize: responsive.tagFontSize,
             ),
           ),
         ],

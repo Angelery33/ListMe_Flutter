@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../data/items/item_model.dart';
+import '../../../core/providers/responsive_provider.dart';
 import '../../items/item_card.dart';
 
 class ActiveItemsSection extends StatelessWidget {
@@ -32,6 +34,7 @@ class ActiveItemsSection extends StatelessWidget {
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final responsive = context.read<ResponsiveProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +45,7 @@ class ActiveItemsSection extends StatelessWidget {
             children: [
               Icon(
                 Icons.play_circle_fill_rounded,
-                size: 20,
+                size: responsive.sectionHeaderFontSize + 6,
                 color: colorScheme.primary,
               ),
               const SizedBox(width: 8),
@@ -51,7 +54,7 @@ class ActiveItemsSection extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
-                  fontSize: 14,
+                  fontSize: responsive.sectionHeaderFontSize,
                   color: colorScheme.primary,
                 ),
               ),
@@ -59,14 +62,14 @@ class ActiveItemsSection extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: isCompact ? 200 : 180,
+          height: responsive.activeCardHeight,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
               return Container(
-                width: isCompact ? 150 : 300,
+                width: responsive.activeCardWidth,
                 margin: const EdgeInsets.only(right: 12),
                 child: ItemCard(
                   item: item,

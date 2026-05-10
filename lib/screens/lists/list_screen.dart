@@ -193,7 +193,7 @@ class _ListScreenState extends State<ListScreen> {
                             children: [
                               ActiveItemsSection(
                                 items: activeItems,
-                                isCompact: _currentList.compact,
+                                isCompact: true,
                                 isGradeable: _currentList.gradeable,
                                 isThematic: _currentList.thematic,
                                 supportsPrice: _currentList.supportsPrice,

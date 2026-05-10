@@ -56,31 +56,29 @@ class StandardItemCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        child: IntrinsicHeight(
+        child: SizedBox(
+          height: 130,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Imagen Cuadrada
-              AspectRatio(
-                aspectRatio: 1.0,
-                child: Container(
-                  width: 100,
-                  color: colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.3,
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _buildImage(context),
-                      if (item.itemNumber != null &&
-                          item.itemNumber!.isNotEmpty)
-                        Positioned(
-                          top: 4,
-                          left: 4,
-                          child: _buildItemNumberBadge(context),
-                        ),
-                    ],
-                  ),
+              Container(
+                width: 100,
+                color: colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _buildImage(context),
+                    if (item.itemNumber != null &&
+                        item.itemNumber!.isNotEmpty)
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: _buildItemNumberBadge(context),
+                      ),
+                  ],
                 ),
               ),
               Expanded(

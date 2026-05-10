@@ -30,64 +30,73 @@ class CompactItemCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Imagen
-              _buildImage(context),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final s = constraints.maxWidth;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Imagen
+                  _buildImage(context),
 
-              // Edition Tag (Bottom Right)
-              if (item.edition != null && item.edition!.isNotEmpty)
-                Positioned(
-                  bottom: (supportsProgress && (item.currentProgress ?? 0) > 0)
-                      ? 46
-                      : 32,
-                  right: 6,
-                  child: _buildEditionBadge(context),
-                ),
+                  // Edition Tag (Bottom Right)
+                  if (item.edition != null && item.edition!.isNotEmpty)
+                    Positioned(
+                      bottom: (supportsProgress && (item.currentProgress ?? 0) > 0)
+                          ? s * 0.46
+                          : s * 0.32,
+                      right: s * 0.06,
+                      child: _buildEditionBadge(context, s),
+                    ),
 
-              // Gradient Overlay
-              _buildGradientOverlay(context),
+                  // Gradient Overlay
+                  _buildGradientOverlay(context),
 
-              // Item Number Badge (Top Left)
-              if (item.itemNumber != null && item.itemNumber!.isNotEmpty)
-                Positioned(
-                  top: 6,
-                  left: 6,
-                  child: _buildItemNumberBadge(context),
-                ),
+                  // Item Number Badge (Top Left)
+                  if (item.itemNumber != null && item.itemNumber!.isNotEmpty)
+                    Positioned(
+                      top: s * 0.06,
+                      left: s * 0.06,
+                      child: _buildItemNumberBadge(context, s),
+                    ),
 
-              // Score Overlay (Top Right)
-              if (isGradeable && (item.score ?? 0) > 0)
-                Positioned(top: 6, right: 6, child: _buildScoreBadge(context)),
+                  // Score Overlay (Top Right)
+                  if (isGradeable && (item.score ?? 0) > 0)
+                    Positioned(
+                      top: s * 0.06,
+                      right: s * 0.06,
+                      child: _buildScoreBadge(context, s),
+                    ),
 
-              // Siguiendo Badge Overlay
-              if (item.current)
-                Positioned(
-                  top: 6,
-                  left: 6,
-                  child: _buildFollowingBadge(context),
-                ),
+                  // Siguiendo Badge Overlay
+                  if (item.current)
+                    Positioned(
+                      top: s * 0.06,
+                      left: s * 0.06,
+                      child: _buildFollowingBadge(context, s),
+                    ),
 
-              // Progress Overlay (Bottom)
-              if (supportsProgress && (item.currentProgress ?? 0) > 0)
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: _buildProgressOverlay(context),
-                ),
+                  // Progress Overlay (Bottom)
+                  if (supportsProgress && (item.currentProgress ?? 0) > 0)
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: _buildProgressOverlay(context, s),
+                    ),
 
-              // Name Overlay
-              Positioned(
-                bottom: (supportsProgress && (item.currentProgress ?? 0) > 0)
-                    ? 22
-                    : 8,
-                left: 0,
-                right: 0,
-                child: _buildNameOverlay(context),
-              ),
-            ],
+                  // Name Overlay
+                  Positioned(
+                    bottom: (supportsProgress && (item.currentProgress ?? 0) > 0)
+                        ? s * 0.22
+                        : s * 0.08,
+                    left: 0,
+                    right: 0,
+                    child: _buildNameOverlay(context, s),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -102,13 +111,13 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEditionBadge(BuildContext context) {
+  Widget _buildEditionBadge(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: s * 0.06, vertical: s * 0.02),
       decoration: BoxDecoration(
         color: colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(s * 0.04),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 2),
         ],
@@ -117,7 +126,7 @@ class CompactItemCard extends StatelessWidget {
         item.edition!,
         style: TextStyle(
           color: colorScheme.onSecondaryContainer,
-          fontSize: 8,
+          fontSize: s * 0.08,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -144,11 +153,12 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildItemNumberBadge(BuildContext context) {
+  Widget _buildItemNumberBadge(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
+    final badgeSize = s * 0.22;
     return Container(
-      width: 24,
-      height: 24,
+      width: badgeSize,
+      height: badgeSize,
       decoration: BoxDecoration(
         color: colorScheme.tertiary,
         shape: BoxShape.circle,
@@ -164,7 +174,7 @@ class CompactItemCard extends StatelessWidget {
             item.itemNumber!,
             style: TextStyle(
               color: colorScheme.onTertiary,
-              fontSize: 10,
+              fontSize: s * 0.10,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -173,13 +183,13 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreBadge(BuildContext context) {
+  Widget _buildScoreBadge(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: s * 0.06, vertical: s * 0.02),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(s * 0.08),
         border: Border.all(
           color: colorScheme.primary.withValues(alpha: 0.5),
           width: 1,
@@ -191,13 +201,13 @@ class CompactItemCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star, size: 10, color: Colors.white),
-          const SizedBox(width: 2),
+          Icon(Icons.star, size: s * 0.10, color: Colors.white),
+          SizedBox(width: s * 0.02),
           Text(
             item.score!.toStringAsFixed(1),
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 10,
+              fontSize: s * 0.10,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -206,21 +216,21 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFollowingBadge(BuildContext context) {
+  Widget _buildFollowingBadge(BuildContext context, double s) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: s * 0.06, vertical: s * 0.02),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(s * 0.08),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4),
         ],
       ),
-      child: const Icon(Icons.play_circle_fill, size: 14, color: Colors.white),
+      child: Icon(Icons.play_circle_fill, size: s * 0.14, color: Colors.white),
     );
   }
 
-  Widget _buildProgressOverlay(BuildContext context) {
+  Widget _buildProgressOverlay(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
     final progress = (item.totalProgress != null && item.totalProgress! > 0)
         ? (item.currentProgress ?? 0) / item.totalProgress!
@@ -231,26 +241,26 @@ class CompactItemCard extends StatelessWidget {
       children: [
         if (item.totalProgress != null && item.totalProgress! > 0)
           ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(s * 0.12),
+              bottomRight: Radius.circular(s * 0.12),
             ),
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: Colors.white24,
               valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-              minHeight: 4,
+              minHeight: s * 0.04,
             ),
           ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          padding: EdgeInsets.symmetric(horizontal: s * 0.04, vertical: s * 0.01),
           color: Colors.black54,
           width: double.infinity,
           child: Text(
             "${item.progressUnit ?? 'Progreso'} ${item.currentProgress}${item.totalProgress != null ? '/${item.totalProgress}' : ''}",
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 8,
+              fontSize: s * 0.08,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
@@ -260,22 +270,22 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildNameOverlay(BuildContext context) {
+  Widget _buildNameOverlay(BuildContext context, double s) {
     return Align(
       alignment: Alignment.center,
       child: IntrinsicWidth(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: s * 0.08, vertical: s * 0.04),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(s * 0.06),
           ),
           child: Text(
             item.name,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 11,
+              fontSize: s * 0.11,
               shadows: [
                 const Shadow(
                   blurRadius: 4,

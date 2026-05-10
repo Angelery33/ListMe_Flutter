@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/responsive_provider.dart';
 
 class ListSectionHeader extends StatelessWidget {
   final String title;
@@ -18,6 +20,7 @@ class ListSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final responsive = context.read<ResponsiveProvider>();
 
     return InkWell(
       onTap: onTap,
@@ -47,7 +50,7 @@ class ListSectionHeader extends StatelessWidget {
                     style: TextStyle(
                       color: colorScheme.primary,
                       fontWeight: FontWeight.w900,
-                      fontSize: 13,
+                      fontSize: responsive.sectionHeaderFontSize,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -67,7 +70,7 @@ class ListSectionHeader extends StatelessWidget {
                   ? Icons.add_circle_outline_rounded
                   : Icons.remove_circle_outline_rounded,
               color: colorScheme.primary.withValues(alpha: 0.5),
-              size: 20,
+              size: responsive.sectionHeaderFontSize + 6,
             ),
           ],
         ),

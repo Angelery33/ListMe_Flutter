@@ -97,4 +97,48 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
       case Breakpoint.expanded: return 32;
     }
   }
+
+  // ── Card item dimensions (ActiveItemsSection horizontal scroll) ─────────
+  double get activeCardWidth {
+    switch (breakpoint) {
+      case Breakpoint.compact:  return 130;
+      case Breakpoint.medium:   return 160;
+      case Breakpoint.expanded: return 190;
+    }
+  }
+
+  double get activeCardHeight {
+    switch (breakpoint) {
+      case Breakpoint.compact:  return 180;
+      case Breakpoint.medium:   return 210;
+      case Breakpoint.expanded: return 240;
+    }
+  }
+
+  // ── Section header font size ─────────────────────────────────────────────
+  double get sectionHeaderFontSize {
+    switch (breakpoint) {
+      case Breakpoint.compact:  return 12;
+      case Breakpoint.medium:   return 13;
+      case Breakpoint.expanded: return 14;
+    }
+  }
+
+  // ── Tag font size (DetailHeaderTags) ──────────────────────────────────────
+  double get tagFontSize {
+    switch (breakpoint) {
+      case Breakpoint.compact:  return 10;
+      case Breakpoint.medium:   return 11;
+      case Breakpoint.expanded: return 12;
+    }
+  }
+
+  // ── Tag icon size ────────────────────────────────────────────────────────
+  double get tagIconSize {
+    switch (breakpoint) {
+      case Breakpoint.compact:  return 12;
+      case Breakpoint.medium:   return 14;
+      case Breakpoint.expanded: return 16;
+    }
+  }
 }

@@ -4,6 +4,7 @@ import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:list_me/providers/profile/profile_provider.dart';
 import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';
 import 'package:list_me/widgets/shared/app_shell.dart';
+import 'package:list_me/core/config/routes.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -362,6 +363,13 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await auth.logout();
+              if (context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.login,
+                  (route) => false,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Cerrar sesión'),
@@ -389,7 +397,14 @@ class ProfileScreen extends StatelessWidget {
               final success = await profile.deleteAccount();
               if (success && ctx.mounted) {
                 Navigator.pop(ctx);
-                context.read<AuthProvider>().logout();
+                await context.read<AuthProvider>().logout();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
+                }
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
