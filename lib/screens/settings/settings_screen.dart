@@ -153,13 +153,38 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 40),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Versión 0.1.0 Beta',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                fontSize: 12,
-              ),
+            child: Column(
+              children: [
+                Text(
+                  'ListMe',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Versión 0.2.0',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '📸 Sistema de carga de imágenes mejorado\n🖼️ Imagen favorita y optimizaciones visuales',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 80), // Espacio extra para scroll
