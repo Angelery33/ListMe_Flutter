@@ -4,6 +4,7 @@ import 'package:list_me/data/items/item_model.dart';
 import 'package:list_me/data/items/item_image_model.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ItemsRepository {
   final ApiClient _apiClient;
@@ -177,12 +178,20 @@ class ItemsRepository {
       _logger.debug('ItemsRepository: Subiendo imagen para ítem $itemId');
 
       final bytes = await imageFile.readAsBytes();
-      final fileName = imageFile.name;
+      final originalName = imageFile.name;
+      final mimeType = _resolveMimeType(originalName, imageFile.mimeType);
+      final fileName = _ensureFileExtension(originalName, mimeType);
+      final mimeParts = mimeType.split('/');
+
+      _logger.debug(
+        'ItemsRepository: Upload - filename=$fileName, mimeType=$mimeType, size=${bytes.length} bytes',
+      );
 
       final formData = FormData.fromMap({
         'file': MultipartFile.fromBytes(
           bytes,
           filename: fileName,
+          contentType: MediaType(mimeParts[0], mimeParts[1]),
         ),
         'itemId': itemId,
       });
@@ -198,6 +207,31 @@ class ItemsRepository {
     } catch (e) {
       _logger.error('ItemsRepository: Error al subir imagen', e);
       rethrow;
+    }
+  }
+
+  String _resolveMimeType(String fileName, String? xfileMimeType) {
+    if (xfileMimeType != null && xfileMimeType.isNotEmpty && xfileMimeType.startsWith('image/')) {
+      return xfileMimeType;
+    }
+    final lower = fileName.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+    return 'image/jpeg';
+  }
+
+  String _ensureFileExtension(String fileName, String mimeType) {
+    final hasExtension = fileName.contains('.') &&
+        fileName.split('.').last.length <= 5;
+    if (hasExtension) return fileName;
+    switch (mimeType) {
+      case 'image/png':
+        return '$fileName.png';
+      case 'image/webp':
+        return '$fileName.webp';
+      default:
+        return '$fileName.jpg';
     }
   }
 

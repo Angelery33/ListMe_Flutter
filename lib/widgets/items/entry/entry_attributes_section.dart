@@ -146,25 +146,21 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildSectionTitle(context, "Atributos Personalizados"),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (widget.onCreateAttributeType != null)
-                      IconButton(
-                        onPressed: () => _showCreateTypeDialog(context),
-                        icon: const Icon(Icons.add_rounded),
-                        color: Theme.of(context).colorScheme.secondary,
-                        tooltip: 'Crear nuevo tipo',
-                      ),
-                    IconButton(
-                      onPressed: () => _showAddAttributeDialog(context),
-                      icon: const Icon(Icons.add_circle_outline_rounded),
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ],
+                Expanded(
+                  child: _buildSectionTitle(context, "Atributos Personalizados"),
+                ),
+                if (widget.onCreateAttributeType != null)
+                  IconButton(
+                    onPressed: () => _showCreateTypeDialog(context),
+                    icon: const Icon(Icons.add_rounded),
+                    color: Theme.of(context).colorScheme.secondary,
+                    tooltip: 'Crear nuevo tipo',
+                  ),
+                IconButton(
+                  onPressed: () => _showAddAttributeDialog(context),
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             ),
