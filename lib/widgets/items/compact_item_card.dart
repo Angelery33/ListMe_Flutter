@@ -108,6 +108,7 @@ class CompactItemCard extends StatelessWidget {
       item.imagePath ?? "",
       remoteImageUrl: item.remoteImageUrl,
       fit: BoxFit.cover,
+      itemId: item.id,
     );
   }
 

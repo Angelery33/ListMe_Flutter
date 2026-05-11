@@ -9,6 +9,8 @@ class UniversalImage extends StatelessWidget {
   final BoxFit fit;
   final double? width;
   final double? height;
+  final int? itemId;
+  final int? imageId;
 
   const UniversalImage(
     this.imagePath, {
@@ -17,6 +19,8 @@ class UniversalImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.width,
     this.height,
+    this.itemId,
+    this.imageId,
   });
 
   @override
@@ -57,7 +61,12 @@ class UniversalImage extends StatelessWidget {
   }
 
   String _getBestUrl() {
-    // Remote URL always takes priority — works across all devices and platforms
+    // If we have itemId and imageId, use the API endpoint (avoids CORS issues)
+    if (itemId != null && imageId != null) {
+      return 'https://api.angelcantero.store/api/v1/images/$itemId/$imageId';
+    }
+
+    // Remote URL as fallback (works across all devices and platforms)
     if (remoteImageUrl?.isNotEmpty == true) return remoteImageUrl!;
 
     // Blob URL from web image picker (before upload)

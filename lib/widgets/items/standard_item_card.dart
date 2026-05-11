@@ -114,11 +114,11 @@ class StandardItemCard extends StatelessWidget {
   }
 
   Widget _buildImage(BuildContext context) {
-
     return UniversalImage(
       item.imagePath ?? "",
       remoteImageUrl: item.remoteImageUrl,
       fit: BoxFit.cover,
+      itemId: item.id,
     );
   }
 
