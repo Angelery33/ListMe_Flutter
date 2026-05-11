@@ -1,5 +1,58 @@
 import 'package:flutter/material.dart';
 
+const List<String> kFunkoProductTypes = [
+  'Funko Pop!',
+  'Funko Pop! Deluxe',
+  'Funko Pop! Moments',
+  'Funko Pop! Rides',
+  'Funko Pop! Town',
+  'Funko Pop! Albums',
+  'Funko Pop! Movie Posters',
+  'Funko Pop! Mega (10")',
+  'Funko Pop! Super Sized (6")',
+  'Funko Pop! Jumbo',
+  'Funko Pocket Pop!',
+  'Funko Bitty Pop!',
+  'Funko Soda',
+  'Funko Mystery Minis',
+  'Funko Mini Vinyl',
+  'Funko Rock Candy',
+  'Funko Plushies',
+  'Funko Loungefly',
+  'Funko Dorbz',
+  'Funko Hikari',
+];
+
+const List<String> kFunkoEditions = [
+  'Estándar',
+  'Chase',
+  'Exclusive',
+  'Flocked',
+  'Glow in the Dark',
+  'Metallic',
+  'Diamond Collection',
+  'Translucent',
+  'Black Light',
+  'Scented',
+  'Special Edition',
+  'Vaulted',
+  'Convention Exclusive',
+  'SDCC Exclusive',
+  'NYCC Exclusive',
+  'ECCC Exclusive',
+  'Funko Shop Exclusive',
+  'Hot Topic Exclusive',
+  'BoxLunch Exclusive',
+  'GameStop Exclusive',
+  'Walmart Exclusive',
+  'Target Exclusive',
+  'Amazon Exclusive',
+  'FYE Exclusive',
+  'Best Buy Exclusive',
+  'Funko Europe Exclusive',
+  'Disney Parks Exclusive',
+];
+
 class EntryMainInfoSection extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController descController;
@@ -112,35 +165,21 @@ class EntryMainInfoSection extends StatelessWidget {
 
             if (showProductType && productTypeController != null) ...[
               const SizedBox(height: 16),
-              TextFormField(
-                controller: productTypeController,
-                decoration: InputDecoration(
-                  labelText: "Tipo de Producto",
-                  prefixIcon: Icon(
-                    Icons.category_rounded,
-                    color: colorScheme.primary,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+              _SuggestionField(
+                controller: productTypeController!,
+                label: "Tipo de Producto",
+                icon: Icons.category_rounded,
+                suggestions: kFunkoProductTypes,
               ),
             ],
 
             if (showEdition && editionController != null) ...[
               const SizedBox(height: 16),
-              TextFormField(
-                controller: editionController,
-                decoration: InputDecoration(
-                  labelText: "Edición",
-                  prefixIcon: Icon(
-                    Icons.bookmark_rounded,
-                    color: colorScheme.primary,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+              _SuggestionField(
+                controller: editionController!,
+                label: "Edición",
+                icon: Icons.bookmark_rounded,
+                suggestions: kFunkoEditions,
               ),
             ],
           ],
@@ -157,6 +196,80 @@ class EntryMainInfoSection extends StatelessWidget {
         fontWeight: FontWeight.bold,
         letterSpacing: 1.2,
       ),
+    );
+  }
+}
+
+class _SuggestionField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final List<String> suggestions;
+
+  const _SuggestionField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    required this.suggestions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return RawAutocomplete<String>(
+      textEditingController: controller,
+      focusNode: FocusNode(),
+      optionsBuilder: (TextEditingValue value) {
+        final q = value.text.trim().toLowerCase();
+        if (q.isEmpty) return suggestions;
+        return suggestions.where((s) => s.toLowerCase().contains(q));
+      },
+      fieldViewBuilder: (context, textController, focusNode, onSubmit) {
+        return TextFormField(
+          controller: textController,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: label,
+            prefixIcon: Icon(icon, color: colorScheme.primary),
+            suffixIcon: PopupMenuButton<String>(
+              icon: Icon(Icons.arrow_drop_down, color: colorScheme.primary),
+              tooltip: 'Ver opciones',
+              onSelected: (val) => controller.text = val,
+              itemBuilder: (context) => suggestions
+                  .map((s) => PopupMenuItem<String>(value: s, child: Text(s)))
+                  .toList(),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          textCapitalization: TextCapitalization.words,
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(12),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 240),
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options.elementAt(index);
+                  return ListTile(
+                    dense: true,
+                    title: Text(option),
+                    onTap: () => onSelected(option),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

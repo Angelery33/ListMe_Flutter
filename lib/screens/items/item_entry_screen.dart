@@ -34,6 +34,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
   late ListModel _list;
   ItemModel? _item;
+  int? _parentId;
   bool _initialized = false;
   bool _isSaving = false;
 
@@ -90,6 +91,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       }
       _list = args['list'] as ListModel;
       _item = args['item'] as ItemModel?;
+      _parentId = args['parentId'] as int? ?? _item?.parentId;
       _initControllers();
       _loadData();
       _initialized = true;
@@ -226,26 +228,18 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     }
   }
 
-  Future<String?> _uploadImagesToCloud(int itemDbId) async {
-    if (_newImageFiles.isEmpty) return null;
+  Future<List<ItemImageModel?>> _uploadImagesToCloud(int itemDbId) async {
+    if (_newImageFiles.isEmpty) return [];
 
-    String? favoriteRemoteUrl;
-
+    final List<ItemImageModel?> uploaded = [];
     for (int i = 0; i < _newImageFiles.length; i++) {
       final image = await context.read<ItemsProvider>().uploadImage(
-        itemDbId,
-        _newImageFiles[i],
-      );
-
-      if (image?.remoteImageUrl == null) continue;
-
-      final isFavorite = _favoriteImageIndex == _existingImages.length + i;
-      if (isFavorite || favoriteRemoteUrl == null) {
-        favoriteRemoteUrl = image!.remoteImageUrl;
-      }
+            itemDbId,
+            _newImageFiles[i],
+          );
+      uploaded.add(image);
     }
-
-    return favoriteRemoteUrl;
+    return uploaded;
   }
 
   Future<void> _pickImage(String source) async {
@@ -604,6 +598,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         startDate: _startDate,
         completionDate: _completionDate,
         externalRating: _importedExternalRating,
+        parentId: _parentId,
       );
 
       int? savedItemId;
@@ -626,48 +621,76 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       if (savedItemId != null) {
         await _persistPendingAttributes(savedItemId);
 
-        // Persist existing images that have no gallery record yet
-        // (e.g. imported IMDB images stored only in ItemModel, not in ItemImageModel)
+        // Resolve each "position" in the editor to a persisted ItemImageModel (with id).
+        // Existing images: keep them; if they don't have an id yet (e.g. imported from API),
+        // persist them now.
+        final List<ItemImageModel?> resolvedExisting =
+            List<ItemImageModel?>.filled(_existingImages.length, null);
         bool persistedNewGalleryEntries = false;
         for (int i = 0; i < _existingImages.length; i++) {
           final img = _existingImages[i];
-          if (img.id != null) continue;
+          if (img.id != null) {
+            resolvedExisting[i] = img;
+            continue;
+          }
           final url = img.remoteImageUrl?.isNotEmpty == true
               ? img.remoteImageUrl!
               : (img.imageUri?.isNotEmpty == true ? img.imageUri! : '');
           if (url.isEmpty) continue;
           try {
-            await itemsProvider.createItemImage(ItemImageModel(
+            final created = await itemsProvider.createItemImage(ItemImageModel(
               idItem: savedItemId,
               imageUri: url,
               remoteImageUrl: img.remoteImageUrl,
-              isFavorite: (_favoriteImageIndex ?? 0) == i,
+              isFavorite: false,
             ));
-            persistedNewGalleryEntries = true;
+            if (created != null) {
+              resolvedExisting[i] = created;
+              persistedNewGalleryEntries = true;
+            }
           } catch (_) {}
         }
 
-        // Upload new images and collect the favorite remote URL
-        String? uploadedFavoriteUrl;
+        // Upload new images and keep the resulting ItemImageModel list (with ids).
+        List<ItemImageModel?> uploaded = const [];
         if (_newImageFiles.isNotEmpty) {
-          uploadedFavoriteUrl = await _uploadImagesToCloud(savedItemId);
+          uploaded = await _uploadImagesToCloud(savedItemId);
         }
 
-        // Only sync ItemModel.remoteImageUrl when something actually changed:
-        // new images were uploaded, or an unregistered image was just persisted.
+        // Determine which persisted image corresponds to the selected favorite position.
+        final int favIdx = _favoriteImageIndex ?? 0;
+        ItemImageModel? favImage;
+        if (favIdx < _existingImages.length) {
+          favImage = resolvedExisting[favIdx];
+        } else {
+          final newIdx = favIdx - _existingImages.length;
+          if (newIdx >= 0 && newIdx < uploaded.length) {
+            favImage = uploaded[newIdx];
+          }
+        }
+        // Fallback: prefer the first valid resolved image, then first uploaded.
+        favImage ??= resolvedExisting.firstWhere(
+          (m) => m != null,
+          orElse: () => null,
+        );
+        favImage ??= uploaded.firstWhere(
+          (m) => m != null,
+          orElse: () => null,
+        );
+
+        // Persist the favorite flag via the dedicated endpoint (most reliable).
+        if (favImage != null && favImage.id != null) {
+          await itemsProvider.setFavoriteImage(savedItemId, favImage.id!);
+        }
+
+        // Sync ItemModel.remoteImageUrl to the favorite's URL when something changed.
         final bool remoteUrlChanged =
-            uploadedFavoriteUrl != null || persistedNewGalleryEntries;
+            uploaded.isNotEmpty || persistedNewGalleryEntries;
 
         if (remoteUrlChanged && mounted) {
-          final int favIdx = _favoriteImageIndex ?? 0;
-          String? bestRemoteUrl;
-          if (favIdx < _existingImages.length) {
-            final favImg = _existingImages[favIdx];
-            bestRemoteUrl = favImg.remoteImageUrl?.isNotEmpty == true
-                ? favImg.remoteImageUrl
-                : favImg.imageUri;
-          }
-          bestRemoteUrl ??= uploadedFavoriteUrl ?? itemRemoteImageUrl;
+          final bestRemoteUrl = favImage?.remoteImageUrl?.isNotEmpty == true
+              ? favImage!.remoteImageUrl!
+              : itemRemoteImageUrl;
 
           if (bestRemoteUrl.isNotEmpty) {
             try {

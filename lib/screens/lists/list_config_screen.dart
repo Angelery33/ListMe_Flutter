@@ -253,8 +253,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
         _supportsPrice = true;
         _tracksDates = true;
         _isCompact = true;
-        _supportsProgress = false;
-        _progressType = "Manual";
+        _supportsProgress = true;
+        _progressType = "Funko";
       }
 
       // --- Auto-fill de Icono según categoría ---

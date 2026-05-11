@@ -84,9 +84,14 @@ class ItemsRepository {
     try {
       _logger.debug('ItemsRepository: Obteniendo imágenes del item $itemId');
       final response = await _apiClient.dio.get('/images/item/$itemId');
-      return (response.data as List)
+      final images = (response.data as List)
           .map((json) => ItemImageModel.fromJson(json))
           .toList();
+      images.sort((a, b) {
+        if (a.isFavorite == b.isFavorite) return 0;
+        return a.isFavorite ? -1 : 1;
+      });
+      return images;
     } catch (e) {
       _logger.error(
         'ItemsRepository: Error al obtener imágenes del item $itemId',
@@ -140,7 +145,7 @@ class ItemsRepository {
   Future<void> setFavoriteImage(int itemId, int imageId) async {
     try {
       _logger.debug('ItemsRepository: Marcando imagen $imageId como favorita');
-      await _apiClient.dio.put('/images/$itemId/favorite/$imageId');
+      await _apiClient.dio.put('/images/item/$itemId/favorite/$imageId');
       _logger.info('ItemsRepository: Imagen $imageId marcada como favorita');
     } catch (e) {
       _logger.error('ItemsRepository: Error al marcar imagen como favorita', e);

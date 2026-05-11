@@ -152,7 +152,7 @@ class _EntryStatusProgressSectionState
           ),
         ],
       );
-    } else if (progressType == "Libro" || progressType == "Manga") {
+    } else if (progressType == "Libro") {
       return Column(
         children: [
           _buildDoubleField(
@@ -165,6 +165,28 @@ class _EntryStatusProgressSectionState
             "Volumen",
             widget.volumeController,
             widget.totalVolumeController,
+          ),
+        ],
+      );
+    } else if (progressType == "Manga") {
+      return Column(
+        children: [
+          _buildDoubleField(
+            "Capítulo",
+            widget.chapterController,
+            widget.totalChapterController,
+          ),
+          const SizedBox(height: 12),
+          _buildDoubleField(
+            "Volumen",
+            widget.volumeController,
+            widget.totalVolumeController,
+          ),
+          const SizedBox(height: 12),
+          _buildDoubleField(
+            "Página",
+            widget.pageController,
+            widget.totalPageController,
           ),
         ],
       );

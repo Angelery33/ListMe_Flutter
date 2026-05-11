@@ -40,20 +40,10 @@ class ItemDetailsProvider extends ChangeNotifier {
       _item = await _itemsRepository.getItemById(itemId);
 
       if (_item != null) {
-        // 2. Fetch gallery
         _images = await _itemsRepository.getItemImages(itemId);
 
-        // 3. Fetch sub-items if it's a collection
         if (_item!.collection) {
-          // If the backend doesn't have a direct /items/parent/{id} endpoint yet,
-          // we might just fetch library items and filter, or assume it's added.
-          // For now we will await adding that endpoint, or filtering locally.
-          final libraryItems = await _itemsRepository.getAllItems(
-            libraryId: _item!.idLibrary,
-          );
-          _subItems = libraryItems
-              .where((i) => i.parentId == _item!.id)
-              .toList();
+          await _fetchSubItems();
         }
       }
     } catch (e) {
@@ -152,11 +142,107 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   Future<void> loadSubItems() async {
     if (_item != null && _item!.collection) {
+      await _fetchSubItems();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _fetchSubItems() async {
+    if (_item?.id == null) return;
+    try {
+      _subItems = await _itemsRepository.getSubCollections(
+        _item!.id!,
+        _item!.idLibrary,
+      );
+    } catch (_) {
       final libraryItems = await _itemsRepository.getAllItems(
         libraryId: _item!.idLibrary,
       );
       _subItems = libraryItems.where((i) => i.parentId == _item!.id).toList();
+    }
+    _subItems.sort((a, b) {
+      final av = a.volume ?? 0;
+      final bv = b.volume ?? 0;
+      if (av != bv) return av.compareTo(bv);
+      return a.name.compareTo(b.name);
+    });
+  }
+
+  Future<int> generateVolumes() async {
+    if (_item == null ||
+        _item!.id == null ||
+        _item!.totalVolume == null ||
+        _item!.totalVolume! <= 0) {
+      return 0;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    int created = 0;
+    try {
+      final int count = _item!.totalVolume!;
+      final parentId = _item!.id!;
+      final libId = _item!.idLibrary;
+      final padWidth = count.toString().length;
+
+      for (int i = 1; i <= count; i++) {
+        final padded = i.toString().padLeft(padWidth, '0');
+        final newItem = ItemModel(
+          idLibrary: libId,
+          name: '$padded ${_item!.name}',
+          description: _item!.description,
+          status: 'PENDING',
+          genre: _item!.genre,
+          parentId: parentId,
+          volume: i,
+          totalVolume: count,
+          collection: false,
+          imagePath: _item!.imagePath,
+          remoteImageUrl: _item!.remoteImageUrl,
+        );
+        try {
+          await _itemsRepository.createItem(newItem);
+          created++;
+        } catch (_) {}
+      }
+
+      await _fetchSubItems();
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
       notifyListeners();
+    }
+    return created;
+  }
+
+  Future<ItemModel?> createSubItem({String? name}) async {
+    if (_item?.id == null) return null;
+    try {
+      final nextVolume = (_subItems.map((s) => s.volume ?? 0).fold<int>(0,
+              (max, v) => v > max ? v : max)) +
+          1;
+      final newItem = ItemModel(
+        idLibrary: _item!.idLibrary,
+        name: name ?? '$nextVolume ${_item!.name}',
+        description: _item!.description,
+        status: 'PENDING',
+        genre: _item!.genre,
+        parentId: _item!.id,
+        volume: nextVolume,
+        collection: false,
+        imagePath: _item!.imagePath,
+        remoteImageUrl: _item!.remoteImageUrl,
+      );
+      final created = await _itemsRepository.createItem(newItem);
+      await _fetchSubItems();
+      notifyListeners();
+      return created;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
     }
   }
 
@@ -166,11 +252,15 @@ class ItemDetailsProvider extends ChangeNotifier {
     try {
       await _itemsRepository.setFavoriteImage(_item!.id!, imageId);
 
-      _images = _images.map((img) =>
-        img.id == imageId
-          ? img.copyWith(isFavorite: true)
-          : img.copyWith(isFavorite: false)
-      ).toList();
+      _images = _images
+          .map((img) => img.id == imageId
+              ? img.copyWith(isFavorite: true)
+              : img.copyWith(isFavorite: false))
+          .toList();
+      _images.sort((a, b) {
+        if (a.isFavorite == b.isFavorite) return 0;
+        return a.isFavorite ? -1 : 1;
+      });
 
       final favImg = _images.firstWhere((img) => img.id == imageId);
       _item = _item!.copyWith(remoteImageUrl: favImg.remoteImageUrl);

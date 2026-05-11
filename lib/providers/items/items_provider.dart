@@ -129,7 +129,10 @@ class ItemsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _items = await _itemsRepository.getAllItems(libraryId: libraryId);
+      final all = await _itemsRepository.getAllItems(libraryId: libraryId);
+      // Only top-level items show in the main library list. Sub-collection
+      // items (parentId != null) are reachable from their parent's detail.
+      _items = all.where((i) => i.parentId == null).toList();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -143,7 +146,8 @@ class ItemsProvider extends ChangeNotifier {
   /// Úsalo al volver de crear/editar un item para evitar el flash de lista vacía.
   Future<void> refreshItems(int libraryId) async {
     try {
-      _items = await _itemsRepository.getAllItems(libraryId: libraryId);
+      final all = await _itemsRepository.getAllItems(libraryId: libraryId);
+      _items = all.where((i) => i.parentId == null).toList();
       notifyListeners();
     } catch (_) {
       // En caso de error silencioso, mantenemos lo que tenemos
@@ -153,7 +157,10 @@ class ItemsProvider extends ChangeNotifier {
   Future<ItemModel?> createItem(ItemModel newItem) async {
     try {
       final createdItem = await _itemsRepository.createItem(newItem);
-      _items.add(createdItem);
+      // Sub-collection items don't belong in the main library list.
+      if (createdItem.parentId == null) {
+        _items.add(createdItem);
+      }
       notifyListeners();
       return createdItem;
     } catch (e) {
@@ -234,14 +241,24 @@ class ItemsProvider extends ChangeNotifier {
     return _items.where((i) => i.idLibrary == libraryId).toList();
   }
 
-  Future<bool> createItemImage(ItemImageModel image) async {
+  Future<ItemImageModel?> createItemImage(ItemImageModel image) async {
     try {
-      await _itemsRepository.createItemImage(image);
+      final created = await _itemsRepository.createItemImage(image);
       notifyListeners();
-      return true;
+      return created;
     } catch (e) {
       _errorMessage = e.toString();
       notifyListeners();
+      return null;
+    }
+  }
+
+  Future<bool> setFavoriteImage(int itemId, int imageId) async {
+    try {
+      await _itemsRepository.setFavoriteImage(itemId, imageId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
       return false;
     }
   }
