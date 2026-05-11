@@ -3,6 +3,7 @@ import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/data/items/item_model.dart';
 import 'package:list_me/data/items/item_image_model.dart';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ItemsRepository {
   final ApiClient _apiClient;
@@ -154,6 +155,35 @@ class ItemsRepository {
 
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(imagePath, filename: fileName),
+        'itemId': itemId,
+      });
+
+      final response = await _apiClient.dio.post(
+        '/images/upload',
+        data: formData,
+      );
+
+      final imageModel = ItemImageModel.fromJson(response.data);
+      _logger.info('ItemsRepository: Imagen subida exitosamente para ítem $itemId');
+      return imageModel;
+    } catch (e) {
+      _logger.error('ItemsRepository: Error al subir imagen', e);
+      rethrow;
+    }
+  }
+
+  Future<ItemImageModel> uploadImageFromFile(int itemId, XFile imageFile) async {
+    try {
+      _logger.debug('ItemsRepository: Subiendo imagen para ítem $itemId');
+
+      final bytes = await imageFile.readAsBytes();
+      final fileName = imageFile.name;
+
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
+        ),
         'itemId': itemId,
       });
 

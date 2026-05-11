@@ -348,7 +348,8 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
                               borderRadius: BorderRadius.circular(8),
                               child: imageUrl != null && imageUrl.isNotEmpty
                                   ? UniversalImage(
-                                      imageUrl,
+                                      "",
+                                      remoteImageUrl: imageUrl,
                                       width: 60,
                                       height: 90,
                                       fit: BoxFit.cover,

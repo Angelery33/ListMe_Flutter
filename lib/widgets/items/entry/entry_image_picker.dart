@@ -1,4 +1,6 @@
 
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../shared/universal_image.dart';
 
@@ -39,14 +41,15 @@ class EntryImagePicker extends StatelessWidget {
                   onPickImage('gallery');
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Cámara'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onPickImage('camera');
-                },
-              ),
+              if (!kIsWeb && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS)
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Cámara'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onPickImage('camera');
+                  },
+                ),
             ],
           ),
         );

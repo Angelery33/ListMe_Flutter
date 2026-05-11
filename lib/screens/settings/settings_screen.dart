@@ -166,7 +166,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Versión 0.2.0',
+                  'Versión 0.2.0 (Build 2)',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.7),

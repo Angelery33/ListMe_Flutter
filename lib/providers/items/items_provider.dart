@@ -259,7 +259,7 @@ class ItemsProvider extends ChangeNotifier {
 
   Future<ItemImageModel?> uploadImage(int itemId, XFile imageFile) async {
     try {
-      final image = await _itemsRepository.uploadImage(itemId, imageFile.path);
+      final image = await _itemsRepository.uploadImageFromFile(itemId, imageFile);
       notifyListeners();
       return image;
     } catch (e) {

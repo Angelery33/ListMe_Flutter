@@ -112,24 +112,25 @@ class ImagePickerService {
                 onImagePicked(file);
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Cámara'),
-              onTap: () async {
-                Navigator.pop(context);
-                final file = await pickImage(source: ImageSource.camera);
-                if (file == null && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Error al abrir cámara. Asegúrate de tener permisos.',
+            if (!kIsWeb && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS)
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Cámara'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final file = await pickImage(source: ImageSource.camera);
+                  if (file == null && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Error al abrir cámara. Asegúrate de tener permisos.',
+                        ),
                       ),
-                    ),
-                  );
-                }
-                onImagePicked(file);
-              },
-            ),
+                    );
+                  }
+                  onImagePicked(file);
+                },
+              ),
           ],
         ),
       ),
