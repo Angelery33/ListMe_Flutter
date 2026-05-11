@@ -260,6 +260,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     }
   }
 
+  final Map<String, String> _pendingAttributes = {};
+
   Future<void> _openSearchImport() async {
     final result = await Navigator.push(
       context,
@@ -309,7 +311,144 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       if (result.containsKey('genre') && _genre == null) {
         setState(() => _genre = result['genre']);
       }
+
+      _applyImportedProgressFields(result);
+      _collectImportedAttributes(result);
+
+      if (mounted) setState(() {});
     }
+  }
+
+  void _applyImportedProgressFields(Map<String, dynamic> result) {
+    int? toInt(dynamic v) {
+      if (v == null) return null;
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      return int.tryParse(v.toString());
+    }
+
+    final totalPage = toInt(result['totalPage']);
+    if (totalPage != null && totalPage > 0 && _totalPageController.text.isEmpty) {
+      _totalPageController.text = totalPage.toString();
+    }
+
+    final totalChapter = toInt(result['totalChapter']) ??
+        toInt(result['totalChapters']) ??
+        toInt(result['lastChapter']) ??
+        toInt(result['chapters']) ??
+        toInt(result['episodes']) ??
+        toInt(result['totalEpisodes']);
+    if (totalChapter != null && totalChapter > 0 && _totalChapterController.text.isEmpty) {
+      _totalChapterController.text = totalChapter.toString();
+    }
+
+    final totalVolume = toInt(result['totalVolume']) ??
+        toInt(result['totalVolumes']) ??
+        toInt(result['volumes']);
+    if (totalVolume != null && totalVolume > 0 && _totalVolumeController.text.isEmpty) {
+      _totalVolumeController.text = totalVolume.toString();
+    }
+
+    final totalSeason = toInt(result['totalSeason']) ?? toInt(result['seasons']);
+    if (totalSeason != null && totalSeason > 0 && _totalSeasonController.text.isEmpty) {
+      _totalSeasonController.text = totalSeason.toString();
+    }
+  }
+
+  void _collectImportedAttributes(Map<String, dynamic> result) {
+    void addAttr(String name, dynamic value) {
+      if (value == null) return;
+      final str = value.toString().trim();
+      if (str.isEmpty || str == 'N/A' || str == '0') return;
+      _pendingAttributes[name] = str;
+    }
+
+    addAttr('Autor', result['author']);
+    addAttr('Director', result['director']);
+    addAttr('Reparto', result['actors']);
+    addAttr('Guionista', result['writer']);
+    addAttr('Estudio', result['studio']);
+    addAttr('Editorial', result['publisher']);
+    addAttr('Año', result['year']);
+    addAttr('Idioma', result['language']);
+    addAttr('País', result['country']);
+    addAttr('ISBN', result['isbn']);
+    addAttr('IMDb ID', result['imdbId']);
+    addAttr('Eslogan', result['tagline']);
+
+    final runtime = result['runtime'];
+    if (runtime != null) {
+      final r = runtime is int ? runtime : int.tryParse(runtime.toString());
+      if (r != null && r > 0) {
+        _pendingAttributes['Duración'] = '$r min';
+      }
+    }
+
+    final duration = result['durationMinutes'];
+    if (duration != null) {
+      final d = duration is int ? duration : int.tryParse(duration.toString());
+      if (d != null && d > 0) {
+        _pendingAttributes['Duración/Episodio'] = '$d min';
+      }
+    }
+
+    final nameJa = result['nameJapanese'];
+    if (nameJa != null && nameJa.toString().trim().isNotEmpty) {
+      _pendingAttributes['Título Japonés'] = nameJa.toString();
+    }
+    final nameEn = result['nameEnglish'];
+    if (nameEn != null && nameEn.toString().trim().isNotEmpty) {
+      _pendingAttributes['Título Inglés'] = nameEn.toString();
+    }
+  }
+
+  Future<void> _persistPendingAttributes(int itemId) async {
+    if (_pendingAttributes.isEmpty) return;
+    final itemsProvider = context.read<ItemsProvider>();
+
+    List<AttributeTypeModel> types = _attributeTypes;
+    try {
+      types = await itemsProvider.getAttributeTypes();
+    } catch (_) {}
+
+    final existingNames = {
+      for (final a in _attributes)
+        types
+                .firstWhere(
+                  (t) => t.id == a.attributeTypeId,
+                  orElse: () =>
+                      const AttributeTypeModel(name: '', dataType: 'TEXT'),
+                )
+                .name
+                .toLowerCase():
+            true,
+    };
+
+    for (final entry in _pendingAttributes.entries) {
+      try {
+        if (existingNames[entry.key.toLowerCase()] == true) continue;
+
+        AttributeTypeModel? type;
+        for (final t in types) {
+          if (t.name.toLowerCase() == entry.key.toLowerCase()) {
+            type = t;
+            break;
+          }
+        }
+        type ??= await itemsProvider.createAttributeType(entry.key);
+        if (type.id == null) continue;
+
+        await itemsProvider.addAttributeToItem(
+          AttributeItemModel(
+            value: entry.value,
+            idItem: itemId,
+            attributeTypeId: type.id!,
+          ),
+        );
+        types = [...types, type];
+      } catch (_) {}
+    }
+    _pendingAttributes.clear();
   }
 
   void _showAddGenreDialog() {
@@ -485,6 +624,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       }
 
       if (savedItemId != null) {
+        await _persistPendingAttributes(savedItemId);
+
         // Persist existing images that have no gallery record yet
         // (e.g. imported IMDB images stored only in ItemModel, not in ItemImageModel)
         bool persistedNewGalleryEntries = false;

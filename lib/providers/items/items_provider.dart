@@ -222,6 +222,10 @@ class ItemsProvider extends ChangeNotifier {
     return await _attributesRepository.getItemAttributes(itemId);
   }
 
+  Future<AttributeItemModel> addAttributeToItem(AttributeItemModel attribute) async {
+    return await _attributesRepository.addAttributeToItem(attribute);
+  }
+
   Future<List<ItemImageModel>> getItemImages(int itemId) async {
     return await _itemsRepository.getItemImages(itemId);
   }
