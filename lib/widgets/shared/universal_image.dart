@@ -61,11 +61,15 @@ class UniversalImage extends StatelessWidget {
     if (remoteImageUrl?.isNotEmpty == true) return remoteImageUrl!;
 
     // Blob URL from web image picker (before upload)
-    if (imagePath.startsWith('blob:')) return imagePath;
+    if (imagePath.isNotEmpty && imagePath.startsWith('blob:')) return imagePath;
 
     // Local paths are only valid on the same device they were picked
     if (kIsWeb) return '';
-    return imagePath;
+
+    // Use local path as fallback if it exists
+    if (imagePath.isNotEmpty && !imagePath.startsWith('http')) return imagePath;
+
+    return '';
   }
 
   bool _isFirebaseStorageUrl(String url) =>
@@ -73,11 +77,13 @@ class UniversalImage extends StatelessWidget {
 
   Widget _placeholder(BuildContext context) {
     return Container(
-      color: Theme.of(
-        context,
-      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      child: const Center(
-        child: Icon(Icons.broken_image_rounded, color: Colors.white24),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      child: Center(
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          color: Theme.of(context).colorScheme.outline,
+          size: 40,
+        ),
       ),
     );
   }
@@ -147,14 +153,12 @@ class _WebFirebaseImageState extends State<_WebFirebaseImage> {
       return Container(
         width: widget.width,
         height: widget.height,
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         child: const Center(
           child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2.5),
           ),
         ),
       );
@@ -165,6 +169,7 @@ class _WebFirebaseImageState extends State<_WebFirebaseImage> {
       fit: widget.fit,
       width: widget.width,
       height: widget.height,
+      errorBuilder: (_, __, ___) => widget.placeholder,
     );
   }
 }
