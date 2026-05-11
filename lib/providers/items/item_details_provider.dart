@@ -3,6 +3,7 @@ import '../../data/items/item_model.dart';
 import '../../data/items/items_repository.dart';
 import '../../data/items/item_image_model.dart';
 import '../../data/attributes/attribute_item_model.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ItemDetailsProvider extends ChangeNotifier {
   final ItemsRepository _itemsRepository;
@@ -180,6 +181,21 @@ class ItemDetailsProvider extends ChangeNotifier {
       _errorMessage = e.toString();
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<ItemImageModel?> uploadImage(XFile imageFile) async {
+    if (_item?.id == null) return null;
+
+    try {
+      final newImage = await _itemsRepository.uploadImage(_item!.id!, imageFile.path);
+      _images.add(newImage);
+      notifyListeners();
+      return newImage;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
     }
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/services/image_picker_service.dart';
-import '../../core/services/firebase_storage_service.dart';
 import '../../data/items/item_model.dart';
 import '../../data/items/item_image_model.dart';
 import '../../data/lists/list_model.dart';
@@ -32,7 +31,6 @@ class ItemEntryScreen extends StatefulWidget {
 class _ItemEntryScreenState extends State<ItemEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePickerService();
-  final _firebaseStorage = FirebaseStorageService();
 
   late ListModel _list;
   ItemModel? _item;
@@ -221,12 +219,10 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
   Future<void> _deleteOldImages(ItemsProvider itemsProvider) async {
     for (final img in _deletedImages) {
-      // Delete from database
+      // Delete from database (server handles Firebase Storage deletion)
       if (img.id != null) {
         try { await itemsProvider.deleteItemImage(img.id!); } catch (_) {}
       }
-      // Delete from Firebase Storage
-      await _firebaseStorage.deleteImage(img.remoteImageUrl);
     }
   }
 
@@ -236,24 +232,16 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     String? favoriteRemoteUrl;
 
     for (int i = 0; i < _newImageFiles.length; i++) {
-      final remoteUrl = await _firebaseStorage.uploadImage(
+      final image = await context.read<ItemsProvider>().uploadImage(
+        itemDbId,
         _newImageFiles[i],
-        '${itemDbId}_$i',
       );
 
-      if (remoteUrl == null) continue;
+      if (image?.remoteImageUrl == null) continue;
 
       final isFavorite = _favoriteImageIndex == _existingImages.length + i;
-      if (isFavorite || favoriteRemoteUrl == null) favoriteRemoteUrl = remoteUrl;
-
-      if (mounted) {
-        final newImage = ItemImageModel(
-          idItem: itemDbId,
-          imageUri: _newImages[i],
-          remoteImageUrl: remoteUrl,
-          isFavorite: isFavorite,
-        );
-        await context.read<ItemsProvider>().createItemImage(newImage);
+      if (isFavorite || favoriteRemoteUrl == null) {
+        favoriteRemoteUrl = image!.remoteImageUrl;
       }
     }
 

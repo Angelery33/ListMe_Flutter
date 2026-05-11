@@ -36,7 +36,19 @@ class DetailImageCarousel extends StatefulWidget {
 
 class _DetailImageCarouselState extends State<DetailImageCarousel> {
   int _currentIndex = 0;
-  final PageController _pageController = PageController();
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.85);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   List<String> get _imagePaths {
     final List<String> paths = [];
@@ -223,26 +235,35 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
       aspectRatio: 1.0,
       child: Stack(
         children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: paths.length,
-            onPageChanged: (idx) => setState(() => _currentIndex = idx),
-            itemBuilder: (context, index) {
-              final img = _getImageAtIndex(index);
-              return GestureDetector(
-                onTap: () => _showFullScreenImage(context, index),
-                child: Hero(
-                  tag: index == 0
-                      ? 'item_image_${widget.item.id}'
-                      : 'item_gallery_$index',
-                  child: UniversalImage(
-                    img.imagePath,
-                    remoteImageUrl: img.remoteUrl,
-                    fit: BoxFit.cover,
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: paths.length,
+              onPageChanged: (idx) => setState(() => _currentIndex = idx),
+              itemBuilder: (context, index) {
+                final img = _getImageAtIndex(index);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: GestureDetector(
+                    onTap: () => _showFullScreenImage(context, index),
+                    child: Hero(
+                      tag: index == 0
+                          ? 'item_image_${widget.item.id}'
+                          : 'item_gallery_$index',
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: UniversalImage(
+                          img.imagePath,
+                          remoteImageUrl: img.remoteUrl,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
           if (paths.length > 1)
             Positioned(

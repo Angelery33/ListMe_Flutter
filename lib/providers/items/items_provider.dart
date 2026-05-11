@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../data/items/items_repository.dart';
 import '../../data/items/item_model.dart';
 import '../../data/items/item_image_model.dart';
@@ -253,6 +254,18 @@ class ItemsProvider extends ChangeNotifier {
       _errorMessage = e.toString();
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<ItemImageModel?> uploadImage(int itemId, XFile imageFile) async {
+    try {
+      final image = await _itemsRepository.uploadImage(itemId, imageFile.path);
+      notifyListeners();
+      return image;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
     }
   }
 }
