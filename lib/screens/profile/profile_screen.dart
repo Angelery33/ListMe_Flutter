@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:list_me/core/i18n/app_strings.dart';
 import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:list_me/providers/profile/profile_provider.dart';
 import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';
 import 'package:list_me/widgets/shared/app_shell.dart';
+import 'package:list_me/widgets/shared/responsive_centered_content.dart';
 import 'package:list_me/core/config/routes.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -17,16 +19,18 @@ class ProfileScreen extends StatelessWidget {
 
     return AppShell(
       currentIndex: 1,
-      appBar: const CustomGradientAppBar(
-        title: 'Mi Perfil',
+      appBar: CustomGradientAppBar(
+        title: context.tr('profile.title'),
         showBackButton: false,
       ),
       body: profile.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: ResponsiveCenteredContent(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: theme.colorScheme.primaryContainer,
@@ -146,6 +150,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
     );

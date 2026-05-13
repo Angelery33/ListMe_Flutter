@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'core/i18n/app_strings.dart';
 
 import 'firebase_options.dart';
 import 'core/theme/theme.dart';
@@ -109,6 +111,13 @@ class ListMeApp extends StatelessWidget {
             settings.fontScale,
           ),
           themeMode: settings.themeMode,
+          locale: Locale(settings.locale),
+          supportedLocales: AppStrings.supportedLocales,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: const AuthWrapper(),
           routes: AppRoutes.routes,
         );

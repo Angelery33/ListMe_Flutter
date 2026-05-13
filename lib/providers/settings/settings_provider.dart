@@ -11,12 +11,16 @@ class SettingsProvider extends ChangeNotifier {
   String _accentColor = 'amethyst';
   String _omdbApiKey = '';
   String _tmdbApiKey = '';
+  String _locale = 'es';
+  String _currency = 'EUR';
 
   ThemeMode get themeMode => _themeMode;
   double get fontScale => _fontScale;
   String get accentColor => _accentColor;
   String get omdbApiKey => _omdbApiKey;
   String get tmdbApiKey => _tmdbApiKey;
+  String get locale => _locale;
+  String get currency => _currency;
 
   /// Carga los ajustes desde el almacenamiento local.
   Future<void> loadSettings() async {
@@ -37,7 +41,27 @@ class SettingsProvider extends ChangeNotifier {
     _tmdbApiKey =
         prefs.getString('tmdbApiKey') ?? 'a4294c7b69c82d96850476e2439c2da6';
 
+    // Locale & Currency
+    _locale = prefs.getString('locale') ?? 'es';
+    _currency = prefs.getString('currency') ?? 'EUR';
+
     notifyListeners();
+  }
+
+  Future<void> setLocale(String locale) async {
+    if (_locale == locale) return;
+    _locale = locale;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', locale);
+  }
+
+  Future<void> setCurrency(String currency) async {
+    if (_currency == currency) return;
+    _currency = currency;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('currency', currency);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
