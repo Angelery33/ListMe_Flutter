@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../core/services/external_api_service.dart';
 import '../../../providers/settings/settings_provider.dart';
 import '../../../widgets/shared/custom_gradient_app_bar.dart';
@@ -248,29 +249,31 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     );
   }
 
-  String _getTitle() {
+  String _getTitle(BuildContext context) {
+    final l = context.l10n;
+    final base = l.searchImportTitle;
     switch (widget.category) {
       case 'Book':
-        return 'Buscar Libros';
+        return '$base · ${l.categoryBook}';
       case 'Anime':
-        return 'Buscar Anime';
+        return '$base · ${l.categoryAnime}';
       case 'Manga':
-        return 'Buscar Manga';
+        return '$base · ${l.categoryManga}';
       case 'Comic':
-        return 'Buscar Cómic';
+        return '$base · ${l.categoryComic}';
       case 'Movie':
-        return 'Buscar Películas';
+        return '$base · ${l.categoryMovie}';
       case 'Series':
-        return 'Buscar Series';
+        return '$base · ${l.categorySeries}';
       default:
-        return 'Buscar ${widget.category}';
+        return '$base · ${widget.category}';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomGradientAppBar(title: _getTitle(), showBackButton: true),
+      appBar: CustomGradientAppBar(title: _getTitle(context), showBackButton: true),
       body: Column(
         children: [
           Padding(
@@ -279,7 +282,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
               controller: _searchController,
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
-                hintText: "Título, autor...",
+                hintText: context.l10n.searchImportPlaceholder,
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search),
                   onPressed: _search,
@@ -301,7 +304,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
               ),
             )
           else if (_results.isEmpty)
-            const Expanded(child: Center(child: Text("Sin resultados")))
+            Expanded(child: Center(child: Text(context.l10n.searchImportNoResults)))
           else
             Expanded(
               child: ListView.builder(

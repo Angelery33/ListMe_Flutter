@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../core/providers/responsive_provider.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
@@ -236,7 +237,7 @@ class _ListScreenState extends State<ListScreen> {
 
       widgets.add(
         ListSectionHeader(
-          title: groupTitle,
+          title: groupLabelFor(context, groupTitle),
           isCollapsed: isCollapsed,
           totalPrice: _currentList.supportsPrice ? groupPrice : null,
           onTap: () {
@@ -368,8 +369,8 @@ class _ListScreenState extends State<ListScreen> {
             const SizedBox(height: 16),
             Text(
               isSearching
-                  ? "No hay resultados para tu búsqueda"
-                  : "Esta lista está vacía",
+                  ? context.l10n.listEmptySearch
+                  : context.l10n.listEmptyTitle,
               style: theme.textTheme.titleLarge?.copyWith(
                 color: theme.colorScheme.primary.withValues(alpha: 0.5),
                 fontWeight: FontWeight.bold,
@@ -378,7 +379,7 @@ class _ListScreenState extends State<ListScreen> {
             if (!isSearching) ...[
               const SizedBox(height: 8),
               Text(
-                "Pulsa '+' para añadir tu primer elemento",
+                context.l10n.listEmptyMessage,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -456,26 +457,24 @@ class _ListScreenState extends State<ListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sincronizar'),
-        content: const Text(
-          '¿Deseas sincronizar los elementos con el servidor?',
-        ),
+        title: Text(ctx.l10n.commonSync),
+        content: Text(ctx.l10n.listsSyncing),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCELAR'),
+            child: Text(ctx.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Sincronizando...')),
+                  SnackBar(content: Text(context.l10n.listsSyncing)),
                 );
                 _refreshItems();
               }
             },
-            child: const Text('SINCRONIZAR'),
+            child: Text(ctx.l10n.commonSync.toUpperCase()),
           ),
         ],
       ),
@@ -491,7 +490,7 @@ class _ListScreenState extends State<ListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit_rounded),
-              title: const Text('Editar'),
+              title: Text(ctx.l10n.commonEdit),
               onTap: () {
                 Navigator.pop(ctx);
                 Navigator.pushNamed(
@@ -503,9 +502,9 @@ class _ListScreenState extends State<ListScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete_rounded, color: Colors.red),
-              title: const Text(
-                'Eliminar',
-                style: TextStyle(color: Colors.red),
+              title: Text(
+                ctx.l10n.commonDelete,
+                style: const TextStyle(color: Colors.red),
               ),
               onTap: () {
                 Navigator.pop(ctx);
@@ -522,12 +521,12 @@ class _ListScreenState extends State<ListScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar elemento'),
-        content: Text('¿Seguro que quieres eliminar "${item.name}"?'),
+        title: Text(dialogContext.l10n.itemDeleteTitle),
+        content: Text('${dialogContext.l10n.itemDeleteMessage}\n\n"${item.name}"'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('CANCELAR'),
+            child: Text(dialogContext.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () async {
@@ -537,12 +536,15 @@ class _ListScreenState extends State<ListScreen> {
                 if (mounted) {
                   _refreshItems();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('"${item.name}" eliminado')),
+                    SnackBar(content: Text('"${item.name}"')),
                   );
                 }
               }
             },
-            child: const Text('ELIMINAR', style: TextStyle(color: Colors.red)),
+            child: Text(
+              dialogContext.l10n.commonDelete.toUpperCase(),
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -570,14 +572,12 @@ class _ListScreenState extends State<ListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Subir a la nube'),
-        content: const Text(
-          '¿Quieres publicar esta lista en la nube? Esto permitirá compartirla con otras personas y sincronizarla entre tus dispositivos.',
-        ),
+        title: Text(ctx.l10n.listsUploadCloud),
+        content: Text(ctx.l10n.listsUploadCloud),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCELAR'),
+            child: Text(ctx.l10n.commonCancel.toUpperCase()),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -590,19 +590,17 @@ class _ListScreenState extends State<ListScreen> {
               if (mounted) {
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('¡Lista publicada con éxito!'),
-                    ),
+                    SnackBar(content: Text(context.l10n.listsPublished)),
                   );
                   _refreshItems();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Error al publicar la lista')),
+                    SnackBar(content: Text(context.l10n.listsPublishError)),
                   );
                 }
               }
             },
-            child: const Text('PUBLICAR'),
+            child: Text(ctx.l10n.commonPublish.toUpperCase()),
           ),
         ],
       ),
@@ -613,14 +611,12 @@ class _ListScreenState extends State<ListScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar Lista'),
-        content: Text(
-          '¿Estás seguro de que quieres eliminar "${_currentList.name}"? Se borrarán todos sus elementos.',
-        ),
+        title: Text(dialogContext.l10n.listsDeleteTitle),
+        content: Text('${dialogContext.l10n.listsDeleteMessage}\n\n"${_currentList.name}"'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('CANCELAR'),
+            child: Text(dialogContext.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () async {
@@ -634,7 +630,10 @@ class _ListScreenState extends State<ListScreen> {
                 }
               }
             },
-            child: const Text('ELIMINAR', style: TextStyle(color: Colors.red)),
+            child: Text(
+              dialogContext.l10n.commonDelete.toUpperCase(),
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -645,16 +644,16 @@ class _ListScreenState extends State<ListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Compartir lista'),
+        title: Text(ctx.l10n.listsShareTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Comparte "${_currentList.name}" con otros usuarios.'),
+            Text('${ctx.l10n.listsShareMessage} "${_currentList.name}"'),
             const SizedBox(height: 16),
             TextField(
-              decoration: const InputDecoration(
-                labelText: 'Email del usuario',
-                hintText: 'usuario@ejemplo.com',
+              decoration: InputDecoration(
+                labelText: ctx.l10n.listsShareEmail,
+                hintText: ctx.l10n.listsShareEmailHint,
               ),
             ),
           ],
@@ -662,16 +661,16 @@ class _ListScreenState extends State<ListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCELAR'),
+            child: Text(ctx.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Invitación enviada')),
+                SnackBar(content: Text(context.l10n.listsInviteSent)),
               );
             },
-            child: const Text('ENVIAR'),
+            child: Text(ctx.l10n.commonSend.toUpperCase()),
           ),
         ],
       ),

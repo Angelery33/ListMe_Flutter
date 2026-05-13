@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/i18n/l10n_extension.dart';
 
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
@@ -60,12 +61,12 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
 
     return Scaffold(
       appBar: CustomGradientAppBar(
-        title: '${widget.parent.name} · Colección',
+        title: '${widget.parent.name} · ${context.l10n.collectionTitle}',
         showBackButton: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            tooltip: 'Añadir',
+            tooltip: context.l10n.commonAdd,
             onPressed: _addSubItem,
           ),
         ],
@@ -81,15 +82,15 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
                       children: [
                         const Icon(Icons.collections_bookmark_outlined, size: 64),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Esta colección está vacía',
-                          style: TextStyle(fontStyle: FontStyle.italic),
+                        Text(
+                          context.l10n.collectionEmpty,
+                          style: const TextStyle(fontStyle: FontStyle.italic),
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton.icon(
                           onPressed: _addSubItem,
                           icon: const Icon(Icons.add),
-                          label: const Text('Añadir elemento'),
+                          label: Text(context.l10n.collectionAddItem),
                         ),
                       ],
                     ),

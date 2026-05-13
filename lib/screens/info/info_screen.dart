@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/l10n_extension.dart';
 
 /// Pantalla de información de la aplicación ListMe.
-/// 
+///
 /// Muestra información sobre la aplicación, como su nombre, versión y autor.
 class InfoScreen extends StatelessWidget {
   const InfoScreen({super.key});
@@ -9,10 +10,10 @@ class InfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Información'),
+        title: Text(context.l10n.infoTitle),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -33,18 +34,13 @@ class InfoScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Text('Versión 0.1.0 Beta'),
+            Text('${context.l10n.settingsVersion} 0.2.0 (Build 2)'),
             const SizedBox(height: 40),
             _buildInfoTile(
               context,
-              title: 'Sobre el Proyecto',
-              content: 'ListMe es una aplicación avanzada para la gestión de listas personales y compartidas, diseñada con Flutter.',
-            ),
-            const SizedBox(height: 16),
-            _buildInfoTile(
-              context,
-              title: 'Desarrollador',
-              content: 'Equipo de Desarrollo ListMe.',
+              title: context.l10n.infoTitle,
+              content:
+                  'ListMe es una aplicación avanzada para la gestión de listas personales y compartidas, diseñada con Flutter.',
             ),
           ],
         ),
@@ -52,7 +48,8 @@ class InfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoTile(BuildContext context, {required String title, required String content}) {
+  Widget _buildInfoTile(BuildContext context,
+      {required String title, required String content}) {
     final theme = Theme.of(context);
     return Container(
       width: double.infinity,

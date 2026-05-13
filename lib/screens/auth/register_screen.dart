@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../providers/auth/auth_provider.dart';
 
 /// Pantalla de registro con diseño Premium (Glassmorphism).
@@ -53,38 +54,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (username.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, rellena todos los campos')),
+        SnackBar(content: Text(context.l10n.authFillAll)),
       );
       return;
     }
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Las contraseñas no coinciden')),
+        SnackBar(content: Text(context.l10n.authPasswordsMismatch)),
       );
       return;
     }
 
     if (!email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Introduce un email válido')),
+        SnackBar(content: Text(context.l10n.authFillAll)),
       );
       return;
     }
 
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
+    final welcomeMsg = context.l10n.authWelcome;
+    final errorMsg = context.l10n.authRegisterError;
     final success = await auth.register(username, password, email);
     if (!mounted) return;
 
     if (success) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('¡Registro exitoso! Ya puedes iniciar sesión')),
+        SnackBar(content: Text(welcomeMsg)),
       );
-      navigator.pop(); // Volver al login
+      navigator.pop();
     } else {
       messenger.showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Error al registrarse')),
+        SnackBar(content: Text(auth.errorMessage ?? errorMsg)),
       );
     }
   }
@@ -161,9 +164,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   color: Colors.white,
                                 ),
                                 const SizedBox(height: 16),
-                                const Text(
-                                  'Registro',
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.authCreateAccount,
+                                  style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -182,7 +185,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 _buildTextField(
                                   controller: _userController,
-                                  label: 'Nombre de Usuario',
+                                  label: context.l10n.authUsername,
                                   icon: Icons.person_outline,
                                   focusNode: _userFocusNode,
                                   onSubmitted: () => _emailFocusNode.requestFocus(),
@@ -190,7 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 const SizedBox(height: 16),
                                 _buildTextField(
                                   controller: _emailController,
-                                  label: 'Correo Electrónico',
+                                  label: context.l10n.authEmail,
                                   icon: Icons.email_outlined,
                                   focusNode: _emailFocusNode,
                                   onSubmitted: () => _passwordFocusNode.requestFocus(),
@@ -198,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 const SizedBox(height: 16),
                                 _buildTextField(
                                   controller: _passwordController,
-                                  label: 'Contraseña',
+                                  label: context.l10n.authPassword,
                                   icon: Icons.lock_outline,
                                   isPassword: true,
                                   focusNode: _passwordFocusNode,
@@ -207,7 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 const SizedBox(height: 16),
                                 _buildTextField(
                                   controller: _confirmPasswordController,
-                                  label: 'Confirmar Contraseña',
+                                  label: context.l10n.authConfirmPassword,
                                   icon: Icons.lock_reset_outlined,
                                   isPassword: true,
                                   focusNode: _confirmPasswordFocusNode,
@@ -218,9 +221,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 const SizedBox(height: 16),
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
-                                  child: const Text(
-                                    '¿Ya tienes cuenta? Inicia sesión',
-                                    style: TextStyle(color: Colors.white70),
+                                  child: Text(
+                                    context.l10n.authHasAccount,
+                                    style: const TextStyle(color: Colors.white70),
                                   ),
                                 ),
                               ],
@@ -315,9 +318,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Text(
-                'REGISTRARSE',
-                style: TextStyle(
+            : Text(
+                context.l10n.authSignUp,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
                 ),

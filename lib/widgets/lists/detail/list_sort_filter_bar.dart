@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../core/utils/item_grouping_helper.dart';
 
 class ListSortFilterBar extends StatelessWidget {
@@ -52,8 +53,8 @@ class ListSortFilterBar extends StatelessWidget {
                       size: 20,
                     ),
                     tooltip: isStatsVisible
-                        ? 'Ocultar estadísticas'
-                        : 'Mostrar estadísticas',
+                        ? context.l10n.commonClose
+                        : context.l10n.commonAll,
                     onPressed: onStatsToggle,
                   ),
                   Container(
@@ -66,34 +67,34 @@ class ListSortFilterBar extends StatelessWidget {
                 // Botón de Ordenación
                 PopupMenuButton<SortOption>(
                   icon: Icon(Icons.sort_rounded, color: colorScheme.primary),
-                  tooltip: "Ordenar",
+                  tooltip: context.l10n.sortTitle,
                   initialValue: currentSort,
                   onSelected: onSortChanged,
                   itemBuilder: (BuildContext context) =>
                       <PopupMenuEntry<SortOption>>[
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: SortOption.dateNewest,
-                          child: Text('Fecha (Más reciente)'),
+                          child: Text(context.l10n.sortDateNewest),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: SortOption.dateOldest,
-                          child: Text('Fecha (Más antiguo)'),
+                          child: Text(context.l10n.sortDateOldest),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: SortOption.nameAsc,
-                          child: Text('Nombre (A-Z)'),
+                          child: Text(context.l10n.sortNameAZ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: SortOption.nameDesc,
-                          child: Text('Nombre (Z-A)'),
+                          child: Text(context.l10n.sortNameZA),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: SortOption.scoreHighLow,
-                          child: Text('Puntuación (Alta-Baja)'),
+                          child: Text(context.l10n.sortScoreHighLow),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: SortOption.scoreLowHigh,
-                          child: Text('Puntuación (Baja-Alta)'),
+                          child: Text(context.l10n.sortScoreLowHigh),
                         ),
                       ],
                 ),
@@ -112,7 +113,7 @@ class ListSortFilterBar extends StatelessWidget {
                     child: Row(
                       children: [
                         FilterChip(
-                          label: const Text('Todos'),
+                          label: Text(context.l10n.commonAll),
                           selected: currentGenre == null,
                           onSelected: (selected) => onGenreChanged(null),
                           visualDensity: VisualDensity.compact,

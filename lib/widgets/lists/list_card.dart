@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../data/lists/list_model.dart';
 import '../../core/theme/theme.dart';
 
@@ -82,7 +83,7 @@ class ListCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                '${list.itemCount} elementos',
+                                '${list.itemCount} ${list.itemCount == 1 ? context.l10n.commonItem : context.l10n.commonItems}',
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant
                                       .withValues(alpha: 0.7),
@@ -133,16 +134,16 @@ class ListCard extends StatelessWidget {
                 itemBuilder: (context) => [
                   PopupMenuItem(
                     value: 'edit',
-                    child: Text('Editar', style: theme.textTheme.bodyMedium),
+                    child: Text(context.l10n.commonEdit, style: theme.textTheme.bodyMedium),
                   ),
                   PopupMenuItem(
                     value: 'share',
-                    child: Text('Compartir', style: theme.textTheme.bodyMedium),
+                    child: Text(context.l10n.commonShare, style: theme.textTheme.bodyMedium),
                   ),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text(
-                      'Eliminar',
+                      context.l10n.commonDelete,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.error,
                       ),

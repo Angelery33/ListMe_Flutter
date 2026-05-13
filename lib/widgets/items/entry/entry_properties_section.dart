@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/lists/library_genre_model.dart';
 
 class EntryPropertiesSection extends StatelessWidget {
@@ -44,7 +45,7 @@ class EntryPropertiesSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle(context, "Categorización y Valoración"),
+            _buildSectionTitle(context, context.l10n.itemSectionProperties),
             const SizedBox(height: 16),
 
             if (isGradeable) ...[
@@ -64,7 +65,7 @@ class EntryPropertiesSection extends StatelessWidget {
                   decimal: true,
                 ),
                 decoration: InputDecoration(
-                  labelText: "Precio pagado",
+                  labelText: context.l10n.itemPrice,
                   prefixIcon: const Icon(Icons.euro_rounded),
                   suffixText: "€",
                   border: OutlineInputBorder(
@@ -91,7 +92,7 @@ class EntryPropertiesSection extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                "Puntuación Personal",
+                context.l10n.listConfigRatingTitle,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -194,16 +195,16 @@ class EntryPropertiesSection extends StatelessWidget {
                       ? genre
                       : null,
                   decoration: InputDecoration(
-                    labelText: "Género / Categoría",
+                    labelText: context.l10n.itemGenre,
                     prefixIcon: const Icon(Icons.category_rounded),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   items: [
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: null,
-                      child: Text("Sin categoría"),
+                      child: Text(context.l10n.commonNone),
                     ),
                     ...availableGenres.map(
                       (g) =>
@@ -216,7 +217,7 @@ class EntryPropertiesSection extends StatelessWidget {
               : TextFormField(
                   initialValue: genre,
                   decoration: InputDecoration(
-                    labelText: "Género / Categoría",
+                    labelText: context.l10n.itemGenre,
                     prefixIcon: const Icon(Icons.category_rounded),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -238,7 +239,7 @@ class EntryPropertiesSection extends StatelessWidget {
               onPressed: onAddGenrePressed,
               icon: const Icon(Icons.add_circle_outline),
               color: Theme.of(context).colorScheme.onPrimaryContainer,
-              tooltip: 'Añadir nuevo género',
+              tooltip: context.l10n.listConfigGenresAdd,
             ),
           ),
         ],

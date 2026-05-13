@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/lists/library_genre_model.dart';
 
 class ConfigGenresSection extends StatelessWidget {
@@ -40,8 +41,8 @@ class ConfigGenresSection extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     controller: genreController,
-                    decoration: const InputDecoration(
-                      hintText: "Nuevo Género",
+                    decoration: InputDecoration(
+                      hintText: context.l10n.listConfigGenresAdd,
                       prefixIcon: Icon(Icons.label_outline),
                       border: OutlineInputBorder(),
                     ),
@@ -52,7 +53,7 @@ class ConfigGenresSection extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: onAddGenre,
                   icon: const Icon(Icons.add),
-                  label: const Text("Añadir"),
+                  label: Text(context.l10n.commonAdd),
                 ),
               ],
             ),

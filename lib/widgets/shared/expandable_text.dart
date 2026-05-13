@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/l10n_extension.dart';
 
 class ExpandableText extends StatefulWidget {
   final String text;
@@ -45,7 +46,7 @@ class _ExpandableTextState extends State<ExpandableText> {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: Text(
-            _expanded ? 'Leer menos' : 'Leer más',
+            _expanded ? context.l10n.descriptionReadLess : context.l10n.descriptionReadMore,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.primary,

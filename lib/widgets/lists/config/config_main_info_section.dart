@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 class ConfigMainInfoSection extends StatelessWidget {
   final TextEditingController nameController;
@@ -20,19 +21,19 @@ class ConfigMainInfoSection extends StatelessWidget {
           children: [
             TextFormField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Nombre *",
+              decoration: InputDecoration(
+                labelText: context.l10n.listConfigNameLabel,
                 prefixIcon: Icon(Icons.list_alt),
                 border: OutlineInputBorder(),
               ),
-              validator: (v) => v!.isEmpty ? "Requerido" : null,
+              validator: (v) => v!.isEmpty ? context.l10n.commonRequired : null,
               textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: descController,
-              decoration: const InputDecoration(
-                labelText: "Descripción (Opcional)",
+              decoration: InputDecoration(
+                labelText: context.l10n.listConfigDescriptionOptional,
                 prefixIcon: Icon(Icons.description),
                 border: OutlineInputBorder(),
               ),

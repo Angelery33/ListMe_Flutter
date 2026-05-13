@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import 'package:intl/intl.dart';
 
 class EntryDatesSection extends StatelessWidget {
@@ -63,7 +64,7 @@ class EntryDatesSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle(context, "Fechas y Detalles"),
+            _buildSectionTitle(context, context.l10n.itemSectionDates),
             const SizedBox(height: 12),
 
             if (tracksDates) ...[
@@ -72,7 +73,7 @@ class EntryDatesSection extends StatelessWidget {
                   Expanded(
                     child: _buildDatePicker(
                       context: context,
-                      label: 'Inicio',
+                      label: context.l10n.datesStart,
                       timestamp: startDate,
                       onTap: () =>
                           _selectDate(context, startDate, onStartDateChanged),
@@ -82,7 +83,7 @@ class EntryDatesSection extends StatelessWidget {
                   Expanded(
                     child: _buildDatePicker(
                       context: context,
-                      label: 'Finalización',
+                      label: context.l10n.datesCompletion,
                       timestamp: completionDate,
                       onTap: () => _selectDate(
                         context,
@@ -98,8 +99,8 @@ class EntryDatesSection extends StatelessWidget {
 
             if (supportsWishlist) ...[
               SwitchListTile(
-                title: const Text("Lista de Deseos"),
-                subtitle: const Text("Marcar si aún no lo has adquirido"),
+                title: Text(context.l10n.listConfigWishlist),
+                subtitle: Text(context.l10n.listConfigWishlistSubtitle),
                 secondary: Icon(
                   Icons.card_giftcard,
                   color: isWishlist ? Colors.orangeAccent : null,
@@ -112,7 +113,7 @@ class EntryDatesSection extends StatelessWidget {
               if (!isWishlist) ...[
                 _buildDatePicker(
                   context: context,
-                  label: 'Fecha Adquisición',
+                  label: context.l10n.datesAcquisitionShort,
                   timestamp: acquisitionDate,
                   onTap: () => _selectDate(
                     context,
@@ -125,8 +126,8 @@ class EntryDatesSection extends StatelessWidget {
             ],
 
             SwitchListTile(
-              title: const Text("Es una Colección"),
-              subtitle: const Text("Permite añadir sub-ítems a este elemento"),
+              title: Text(context.l10n.collectionTitle),
+              subtitle: Text(context.l10n.collectionAddItem),
               secondary: const Icon(Icons.collections_bookmark_outlined),
               value: isCollection,
               onChanged: onCollectionChanged,
@@ -148,7 +149,7 @@ class EntryDatesSection extends StatelessWidget {
         ? DateFormat(
             'dd/MM/yyyy',
           ).format(DateTime.fromMillisecondsSinceEpoch(timestamp))
-        : "No establecida";
+        : context.l10n.datesNotSet;
 
     return InkWell(
       onTap: onTap,

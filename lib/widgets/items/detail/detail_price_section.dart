@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../../data/items/item_model.dart';
 
 class DetailPriceSection extends StatelessWidget {
@@ -41,7 +42,7 @@ class DetailPriceSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.wishlist ? "PRECIO ESTIMADO" : "COSTE",
+                  item.wishlist ? context.l10n.infoPriceEstimated : context.l10n.infoPriceCost,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Theme.of(context).colorScheme.tertiary,
                     fontWeight: FontWeight.bold,

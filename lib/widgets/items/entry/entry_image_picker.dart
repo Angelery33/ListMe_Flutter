@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../shared/universal_image.dart';
 
 class EntryImagePicker extends StatelessWidget {
@@ -35,7 +36,7 @@ class EntryImagePicker extends StatelessWidget {
             children: <Widget>[
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Galería'),
+                title: Text(context.l10n.imageGallery),
                 onTap: () {
                   Navigator.of(context).pop();
                   onPickImage('gallery');
@@ -44,7 +45,7 @@ class EntryImagePicker extends StatelessWidget {
               if (!kIsWeb && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS)
                 ListTile(
                   leading: const Icon(Icons.photo_camera),
-                  title: const Text('Cámara'),
+                  title: Text(context.l10n.imageCamera),
                   onTap: () {
                     Navigator.of(context).pop();
                     onPickImage('camera');
@@ -76,7 +77,7 @@ class EntryImagePicker extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle(context, "Galería de Imágenes"),
+            _buildSectionTitle(context, context.l10n.itemSectionGallery),
             const SizedBox(height: 12),
             SizedBox(
               height: 120,
@@ -135,7 +136,7 @@ class EntryImagePicker extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "Añadir",
+                            context.l10n.commonAdd,
                             style: TextStyle(
                               fontSize: 12,
                               color: colorScheme.primary,

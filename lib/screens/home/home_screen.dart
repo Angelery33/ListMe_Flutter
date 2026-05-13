@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../core/config/routes.dart';
 import '../../widgets/home/menu_card.dart';
 import '../../widgets/shared/app_logo_title.dart';
@@ -45,29 +46,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 84),
                   // Menú central de tarjetas
                   MenuCard(
-                    title: 'Mis Listas',
-                    subtitle: 'Gestiona tus tareas y notas',
+                    title: context.l10n.homeListsTitle,
+                    subtitle: context.l10n.homeListsSubtitle,
                     icon: Icons.list_alt_rounded,
                     onTap: () => Navigator.pushNamed(context, AppRoutes.lists),
                   ),
                   const SizedBox(height: 16),
                   MenuCard(
-                    title: 'Mi Perfil',
-                    subtitle: 'Configura tu cuenta de usuario',
+                    title: context.l10n.profileTitle,
+                    subtitle: context.l10n.homeProfileSubtitle,
                     icon: Icons.person_rounded,
                     onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
                   ),
                   const SizedBox(height: 16),
                   MenuCard(
-                    title: 'Ajustes App',
-                    subtitle: 'Temas, fuentes y notificaciones',
+                    title: context.l10n.homeSettingsTitle,
+                    subtitle: context.l10n.homeSettingsSubtitle,
                     icon: Icons.settings_rounded,
                     onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
                   ),
                   const SizedBox(height: 16),
                   MenuCard(
-                    title: 'Información',
-                    subtitle: 'Información de la aplicación',
+                    title: context.l10n.infoTitle,
+                    subtitle: context.l10n.homeInfoSubtitle,
                     icon: Icons.info_rounded,
                     onTap: () => Navigator.pushNamed(context, AppRoutes.info),
                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 class ConfigRatingProgressSection extends StatelessWidget {
   final bool isGradeable;
@@ -34,7 +35,7 @@ class ConfigRatingProgressSection extends StatelessWidget {
           children: [
             if (isGradeable) ...[
               Text(
-                "Configuración de Puntuación",
+                context.l10n.itemScore,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -43,23 +44,23 @@ class ConfigRatingProgressSection extends StatelessWidget {
               DropdownButtonFormField<int>(
                 initialValue: ratingScale,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Escala de Puntuación',
+                decoration: InputDecoration(
+                  labelText: context.l10n.itemScore,
                   prefixIcon: Icon(Icons.score),
                   border: OutlineInputBorder(),
                 ),
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: 5,
-                    child: Text("Sobre 5 Estrellas (1-5)"),
+                    child: Text(context.l10n.ratingScale5),
                   ),
                   DropdownMenuItem(
                     value: 10,
-                    child: Text("Sobre 10 (Estándar)"),
+                    child: Text(context.l10n.ratingScale10),
                   ),
                   DropdownMenuItem(
                     value: 100,
-                    child: Text("Sobre 100 (Porcentaje)"),
+                    child: Text(context.l10n.ratingScale100),
                   ),
                 ],
                 onChanged: (val) {
@@ -71,7 +72,7 @@ class ConfigRatingProgressSection extends StatelessWidget {
 
             if (supportsProgress) ...[
               Text(
-                "Configuración de Progreso",
+                context.l10n.listConfigProgress,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -79,18 +80,18 @@ class ConfigRatingProgressSection extends StatelessWidget {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: progressType,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de seguimiento',
+                decoration: InputDecoration(
+                  labelText: context.l10n.listConfigProgressType,
                   prefixIcon: Icon(Icons.settings_overscan),
                   border: OutlineInputBorder(),
                 ),
-                items: const [
-                  DropdownMenuItem(value: null, child: Text("Ninguno")),
-                  DropdownMenuItem(value: "Manual", child: Text("Manual")),
-                  DropdownMenuItem(value: "Libro", child: Text("Libro")),
-                  DropdownMenuItem(value: "Serie", child: Text("Serie")),
-                  DropdownMenuItem(value: "Anime", child: Text("Anime")),
-                  DropdownMenuItem(value: "Manga", child: Text("Manga")),
+                items: [
+                  DropdownMenuItem(value: null, child: Text(context.l10n.commonNone)),
+                  DropdownMenuItem(value: "Manual", child: Text(context.l10n.progressTypeManual)),
+                  DropdownMenuItem(value: "Libro", child: Text(context.l10n.progressTypeBook)),
+                  DropdownMenuItem(value: "Serie", child: Text(context.l10n.progressTypeSeries)),
+                  DropdownMenuItem(value: "Anime", child: Text(context.l10n.progressTypeAnime)),
+                  DropdownMenuItem(value: "Manga", child: Text(context.l10n.progressTypeManga)),
                 ],
                 onChanged: onProgressTypeChanged,
               ),
@@ -98,8 +99,8 @@ class ConfigRatingProgressSection extends StatelessWidget {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: customProgressUnitController,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidad personalizada',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.listConfigProgressType,
                     hintText: 'ej: Artículo, Nivel, Misión...',
                     prefixIcon: Icon(Icons.edit),
                     border: OutlineInputBorder(),

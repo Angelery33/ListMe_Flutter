@@ -1,16 +1,33 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/l10n_extension.dart';
 import 'package:provider/provider.dart';
 import '../../core/config/routes.dart';
 import '../../core/providers/responsive_provider.dart';
 import '../../core/providers/sidebar_provider.dart';
 
 /// Destinations shared between bottom bar and navigation rail.
-const _destinations = [
-  (icon: Icons.list_alt_outlined,   selectedIcon: Icons.list_alt_rounded,  label: 'Listas'),
-  (icon: Icons.person_outline,      selectedIcon: Icons.person,             label: 'Perfil'),
-  (icon: Icons.settings_outlined,   selectedIcon: Icons.settings,           label: 'Ajustes'),
-  (icon: Icons.people_outline,      selectedIcon: Icons.people,             label: 'Social'),
+/// Labels are resolved via l10n at build time.
+const _destinationIcons = [
+  (icon: Icons.list_alt_outlined,   selectedIcon: Icons.list_alt_rounded),
+  (icon: Icons.person_outline,      selectedIcon: Icons.person),
+  (icon: Icons.settings_outlined,   selectedIcon: Icons.settings),
+  (icon: Icons.people_outline,      selectedIcon: Icons.people),
 ];
+
+List<({IconData icon, IconData selectedIcon, String label})> _destinationsFor(
+  BuildContext context,
+) {
+  final l = context.l10n;
+  final labels = [l.navLists, l.navProfile, l.navSettings, l.navSocial];
+  return [
+    for (var i = 0; i < _destinationIcons.length; i++)
+      (
+        icon: _destinationIcons[i].icon,
+        selectedIcon: _destinationIcons[i].selectedIcon,
+        label: labels[i],
+      ),
+  ];
+}
 
 /// Adaptive navigation shell.
 ///
@@ -134,7 +151,7 @@ class _CompactLayout extends StatelessWidget {
             indicatorColor: theme.colorScheme.primaryContainer,
             selectedIndex: currentIndex,
             onDestinationSelected: onTap,
-            destinations: _destinations
+            destinations: _destinationsFor(context)
                 .map(
                   (d) => NavigationDestination(
                     icon: Icon(d.icon),
@@ -216,7 +233,7 @@ class _WideLayout extends StatelessWidget {
                             ),
                           )
                         : null,
-                    destinations: _destinations
+                    destinations: _destinationsFor(context)
                         .map(
                           (d) => NavigationRailDestination(
                             icon: Icon(d.icon),
@@ -238,7 +255,7 @@ class _WideLayout extends StatelessWidget {
                         size: 20,
                       ),
                       onPressed: onToggleExpanded,
-                      tooltip: isExpanded ? 'Contraer' : 'Expandir',
+                      tooltip: isExpanded ? context.l10n.expandCollapse : context.l10n.expandExpand,
                     ),
                   ),
                 ),

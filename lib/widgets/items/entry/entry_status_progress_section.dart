@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 class EntryStatusProgressSection extends StatefulWidget {
   final String status;
@@ -57,27 +58,27 @@ class _EntryStatusProgressSectionState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle(context, "Estado y Progreso"),
+            _buildSectionTitle(context, context.l10n.itemSectionStatusProgress),
             const SizedBox(height: 16),
 
             DropdownButtonFormField<String>(
               initialValue: widget.status,
               decoration: InputDecoration(
-                labelText: "Estado actual",
+                labelText: context.l10n.statusStatusCurrent,
                 prefixIcon: const Icon(Icons.star_half_rounded),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              items: const [
-                DropdownMenuItem(value: "PENDING", child: Text("Pendiente")),
+              items: [
+                DropdownMenuItem(value: "PENDING", child: Text(context.l10n.statusPending)),
                 DropdownMenuItem(
                   value: "IN_PROGRESS",
-                  child: Text("En Progreso"),
+                  child: Text(context.l10n.statusInProgress),
                 ),
-                DropdownMenuItem(value: "COMPLETED", child: Text("Completado")),
-                DropdownMenuItem(value: "DROPPED", child: Text("Abandonado")),
-                DropdownMenuItem(value: "PAUSED", child: Text("En Pausa")),
+                DropdownMenuItem(value: "COMPLETED", child: Text(context.l10n.statusCompleted)),
+                DropdownMenuItem(value: "DROPPED", child: Text(context.l10n.statusDropped)),
+                DropdownMenuItem(value: "PAUSED", child: Text(context.l10n.statusPaused)),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -100,11 +101,11 @@ class _EntryStatusProgressSectionState
                 borderRadius: BorderRadius.circular(12),
               ),
               child: SwitchListTile(
-                title: const Text("Disfrutando ahora"),
+                title: Text(context.l10n.statusEnjoying),
                 subtitle: Text(
                   widget.status == "IN_PROGRESS"
-                      ? "Mostrar en la sección destacada de la lista"
-                      : "Solo disponible en 'En Progreso'",
+                      ? context.l10n.statusEnjoyingSubtitle
+                      : context.l10n.statusEnjoyingDisabled,
                 ),
                 value: widget.isCurrent,
                 onChanged: widget.status == "IN_PROGRESS"
@@ -136,17 +137,20 @@ class _EntryStatusProgressSectionState
   Widget _buildProgressFields(BuildContext context) {
     final progressType = widget.progressType;
 
+    final l = context.l10n;
     if (progressType == "Serie" || progressType == "Anime") {
       return Column(
         children: [
           _buildDoubleField(
-            "Temporada",
+            context,
+            l.progressSeason,
             widget.seasonController,
             widget.totalSeasonController,
           ),
           const SizedBox(height: 12),
           _buildDoubleField(
-            "Episodio",
+            context,
+            l.progressEpisode,
             widget.chapterController,
             widget.totalChapterController,
           ),
@@ -156,13 +160,15 @@ class _EntryStatusProgressSectionState
       return Column(
         children: [
           _buildDoubleField(
-            "Página",
+            context,
+            l.progressPage,
             widget.pageController,
             widget.totalPageController,
           ),
           const SizedBox(height: 12),
           _buildDoubleField(
-            "Volumen",
+            context,
+            l.progressVolume,
             widget.volumeController,
             widget.totalVolumeController,
           ),
@@ -172,19 +178,22 @@ class _EntryStatusProgressSectionState
       return Column(
         children: [
           _buildDoubleField(
-            "Capítulo",
+            context,
+            l.progressChapter,
             widget.chapterController,
             widget.totalChapterController,
           ),
           const SizedBox(height: 12),
           _buildDoubleField(
-            "Volumen",
+            context,
+            l.progressVolume,
             widget.volumeController,
             widget.totalVolumeController,
           ),
           const SizedBox(height: 12),
           _buildDoubleField(
-            "Página",
+            context,
+            l.progressPage,
             widget.pageController,
             widget.totalPageController,
           ),
@@ -192,13 +201,15 @@ class _EntryStatusProgressSectionState
       );
     } else if (progressType == "Funko") {
       return _buildDoubleField(
-        "Cantidad",
+        context,
+        l.progressQuantity,
         widget.currentProgressController,
         widget.totalProgressController,
       );
     } else {
       return _buildDoubleField(
-        "Progreso",
+        context,
+        l.progressProgress,
         widget.currentProgressController,
         widget.totalProgressController,
       );
@@ -206,6 +217,7 @@ class _EntryStatusProgressSectionState
   }
 
   Widget _buildDoubleField(
+    BuildContext context,
     String label,
     TextEditingController? current,
     TextEditingController? total,
@@ -217,7 +229,7 @@ class _EntryStatusProgressSectionState
             controller: current,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: "$label actual",
+              labelText: "$label ${context.l10n.progressActual}",
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -236,7 +248,7 @@ class _EntryStatusProgressSectionState
             controller: total,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: "Total",
+              labelText: context.l10n.progressTotal,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

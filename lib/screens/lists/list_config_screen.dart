@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/l10n_extension.dart';
 import 'package:provider/provider.dart';
 import '../../data/lists/list_model.dart';
 import '../../data/lists/library_genre_model.dart';
@@ -367,7 +368,7 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ).showSnackBar(SnackBar(content: Text("${context.l10n.errorPrefix}: $e")));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -379,12 +380,14 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     return AppShell(
       currentIndex: 0,
       appBar: CustomGradientAppBar(
-        title: widget.library == null ? "Nueva Lista" : "Editar Lista",
+        title: widget.library == null
+            ? context.l10n.listConfigTitleCreate
+            : context.l10n.listConfigTitleEdit,
         actions: [
           IconButton(
             icon: const Icon(Icons.check_rounded),
             onPressed: _saveLibrary,
-            tooltip: "Guardar",
+            tooltip: context.l10n.commonSave,
           ),
         ],
       ),

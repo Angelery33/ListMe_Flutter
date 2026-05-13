@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 import '../../../data/items/item_model.dart';
 import '../../../providers/items/item_details_provider.dart';
@@ -15,7 +16,7 @@ class DetailDescriptionSection extends StatelessWidget {
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Editar descripción'),
+        title: Text(ctx.l10n.descriptionEdit),
         content: SizedBox(
           width: 500,
           child: TextField(
@@ -23,20 +24,20 @@ class DetailDescriptionSection extends StatelessWidget {
             maxLines: 10,
             minLines: 5,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Escribe una descripción…',
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              hintText: ctx.l10n.descriptionPlaceholder,
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCELAR'),
+            child: Text(ctx.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('GUARDAR'),
+            child: Text(ctx.l10n.commonSave.toUpperCase()),
           ),
         ],
       ),
@@ -88,7 +89,7 @@ class DetailDescriptionSection extends StatelessWidget {
                   hasDescription ? Icons.edit_outlined : Icons.add,
                   size: 20,
                 ),
-                tooltip: hasDescription ? 'Editar' : 'Añadir descripción',
+                tooltip: hasDescription ? context.l10n.descriptionEdit : context.l10n.descriptionAdd,
                 onPressed: () => _editDescription(context),
                 color: primary,
               ),

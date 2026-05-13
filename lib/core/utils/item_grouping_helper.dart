@@ -1,5 +1,41 @@
+import 'package:flutter/widgets.dart';
+import '../i18n/l10n_extension.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
+
+/// Stable group keys (not user-facing). Translation happens at display time
+/// via `groupLabelFor(context, key)`.
+const String kGroupKeyPending = '@group/pending';
+const String kGroupKeyInProgress = '@group/inProgress';
+const String kGroupKeyPaused = '@group/paused';
+const String kGroupKeyDropped = '@group/dropped';
+const String kGroupKeyCompleted = '@group/completed';
+const String kGroupKeyAcquired = '@group/acquired';
+const String kGroupKeyWishlist = '@group/wishlist';
+
+/// Resolves a stable group key into a localized label.
+/// For unknown keys (e.g. user-defined genres), returns the key as-is.
+String groupLabelFor(BuildContext context, String key) {
+  final l = context.l10n;
+  switch (key) {
+    case kGroupKeyPending:
+      return l.groupPending;
+    case kGroupKeyInProgress:
+      return l.groupInProgress;
+    case kGroupKeyPaused:
+      return l.groupPaused;
+    case kGroupKeyDropped:
+      return l.groupDropped;
+    case kGroupKeyCompleted:
+      return l.groupCompleted;
+    case kGroupKeyAcquired:
+      return l.groupAcquired;
+    case kGroupKeyWishlist:
+      return l.groupWishlist;
+    default:
+      return key;
+  }
+}
 
 /// Define las opciones de ordenación disponibles.
 enum SortOption {
@@ -79,15 +115,16 @@ class ItemGroupingHelper {
     List<ItemModel> items,
     Map<String, List<ItemModel>> grouped,
   ) {
-    grouped['Pendientes'] = items.where((i) => i.status == 'PENDING').toList();
-    grouped['En Progreso'] = items
-        .where((i) => i.status == 'IN_PROGRESS')
-        .toList();
-    grouped['En Pausa'] = items.where((i) => i.status == 'PAUSED').toList();
-    grouped['Abandonados'] = items.where((i) => i.status == 'DROPPED').toList();
-    grouped['Completados'] = items
-        .where((i) => i.status == 'COMPLETED')
-        .toList();
+    grouped[kGroupKeyPending] =
+        items.where((i) => i.status == 'PENDING').toList();
+    grouped[kGroupKeyInProgress] =
+        items.where((i) => i.status == 'IN_PROGRESS').toList();
+    grouped[kGroupKeyPaused] =
+        items.where((i) => i.status == 'PAUSED').toList();
+    grouped[kGroupKeyDropped] =
+        items.where((i) => i.status == 'DROPPED').toList();
+    grouped[kGroupKeyCompleted] =
+        items.where((i) => i.status == 'COMPLETED').toList();
 
     // Eliminar grupos vacíos
     grouped.removeWhere((key, value) => value.isEmpty);
@@ -97,8 +134,8 @@ class ItemGroupingHelper {
     List<ItemModel> items,
     Map<String, List<ItemModel>> grouped,
   ) {
-    grouped['Adquiridos'] = items.where((i) => !i.wishlist).toList();
-    grouped['Lista de Deseos'] = items.where((i) => i.wishlist).toList();
+    grouped[kGroupKeyAcquired] = items.where((i) => !i.wishlist).toList();
+    grouped[kGroupKeyWishlist] = items.where((i) => i.wishlist).toList();
 
     grouped.removeWhere((key, value) => value.isEmpty);
   }

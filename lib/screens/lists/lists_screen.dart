@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/config/routes.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../core/providers/responsive_provider.dart';
 import '../../data/lists/list_model.dart';
 import '../../providers/lists/lists_provider.dart';
@@ -33,8 +34,8 @@ class _ListsScreenState extends State<ListsScreen> {
 
     return AppShell(
       currentIndex: 0,
-      appBar: const CustomGradientAppBar(
-        title: 'Mis Listas',
+      appBar: CustomGradientAppBar(
+        title: context.l10n.listsTitle,
         showBackButton: false,
       ),
       floatingActionButton: Container(
@@ -123,14 +124,12 @@ class _ListsScreenState extends State<ListsScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar Lista'),
-        content: Text(
-          '¿Estás seguro de que quieres eliminar "${list.name}"? Se borrarán todos sus elementos.',
-        ),
+        title: Text(context.l10n.listsDeleteTitle),
+        content: Text('${context.l10n.listsDeleteMessage}\n\n"${list.name}"'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('CANCELAR'),
+            child: Text(context.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () async {
@@ -141,12 +140,15 @@ class _ListsScreenState extends State<ListsScreen> {
                     .deleteList(list.id!);
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('"${list.name}" eliminada')),
+                    SnackBar(content: Text('"${list.name}"')),
                   );
                 }
               }
             },
-            child: const Text('ELIMINAR', style: TextStyle(color: Colors.red)),
+            child: Text(
+              context.l10n.commonDelete.toUpperCase(),
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

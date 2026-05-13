@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 class ConfigTypeSection extends StatelessWidget {
   final String? selectedCategory;
@@ -20,7 +21,7 @@ class ConfigTypeSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Tipo de Lista",
+              context.l10n.listConfigType,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -28,21 +29,21 @@ class ConfigTypeSection extends StatelessWidget {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: selectedCategory,
-              decoration: const InputDecoration(
-                labelText: 'Categoría para Importar',
+              decoration: InputDecoration(
+                labelText: context.l10n.listConfigType,
                 prefixIcon: Icon(Icons.import_contacts),
                 border: OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem(value: null, child: Text("General / Otros")),
-                DropdownMenuItem(value: "Book", child: Text("Libros")),
-                DropdownMenuItem(value: "Manga", child: Text("Manga")),
-                DropdownMenuItem(value: "Comic", child: Text("Cómic")),
-                DropdownMenuItem(value: "Anime", child: Text("Anime")),
-                DropdownMenuItem(value: "Movie", child: Text("Películas")),
-                DropdownMenuItem(value: "Series", child: Text("Series / TV")),
-                DropdownMenuItem(value: "Figures", child: Text("Figuras")),
-                DropdownMenuItem(value: "Funko", child: Text("Funko Pop")),
+              items: [
+                DropdownMenuItem(value: null, child: Text(context.l10n.categoryGenericMixed)),
+                DropdownMenuItem(value: "Book", child: Text(context.l10n.categoryBook)),
+                DropdownMenuItem(value: "Manga", child: Text(context.l10n.categoryManga)),
+                DropdownMenuItem(value: "Comic", child: Text(context.l10n.categoryComic)),
+                DropdownMenuItem(value: "Anime", child: Text(context.l10n.categoryAnime)),
+                DropdownMenuItem(value: "Movie", child: Text(context.l10n.categoryMovie)),
+                DropdownMenuItem(value: "Series", child: Text(context.l10n.categorySeries)),
+                DropdownMenuItem(value: "Figures", child: Text(context.l10n.categoryFigures)),
+                DropdownMenuItem(value: "Funko", child: Text(context.l10n.categoryFunko)),
               ],
               onChanged: onChanged,
             ),

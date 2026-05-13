@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 const List<String> kFunkoProductTypes = [
   'Funko Pop!',
@@ -93,13 +94,13 @@ class EntryMainInfoSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle(context, "Información Principal"),
+            _buildSectionTitle(context, context.l10n.itemSectionMain),
             const SizedBox(height: 16),
 
             TextFormField(
               controller: nameController,
               decoration: InputDecoration(
-                labelText: "Nombre / Título",
+                labelText: context.l10n.entryItemName,
                 prefixIcon: Icon(
                   Icons.title_rounded,
                   color: colorScheme.primary,
@@ -111,7 +112,7 @@ class EntryMainInfoSection extends StatelessWidget {
                           color: colorScheme.primary,
                         ),
                         onPressed: onImportPressed,
-                        tooltip: 'Importar desde API',
+                        tooltip: context.l10n.entryImportFromApi,
                       )
                     : null,
                 border: OutlineInputBorder(
@@ -120,7 +121,7 @@ class EntryMainInfoSection extends StatelessWidget {
               ),
               textCapitalization: TextCapitalization.sentences,
               validator: (value) => (value == null || value.isEmpty)
-                  ? "El nombre es obligatorio"
+                  ? context.l10n.itemNameRequired
                   : null,
             ),
             const SizedBox(height: 16),
@@ -128,7 +129,7 @@ class EntryMainInfoSection extends StatelessWidget {
             TextFormField(
               controller: descController,
               decoration: InputDecoration(
-                labelText: "Descripción",
+                labelText: context.l10n.entryDescription,
                 alignLabelWithHint: true,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(bottom: 40),
@@ -151,7 +152,7 @@ class EntryMainInfoSection extends StatelessWidget {
                 controller: itemNumberController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: "Número de Item",
+                  labelText: context.l10n.itemItemNumber,
                   prefixIcon: Icon(
                     Icons.numbers_rounded,
                     color: colorScheme.primary,
@@ -167,7 +168,7 @@ class EntryMainInfoSection extends StatelessWidget {
               const SizedBox(height: 16),
               _SuggestionField(
                 controller: productTypeController!,
-                label: "Tipo de Producto",
+                label: context.l10n.itemProductType,
                 icon: Icons.category_rounded,
                 suggestions: kFunkoProductTypes,
               ),
@@ -177,7 +178,7 @@ class EntryMainInfoSection extends StatelessWidget {
               const SizedBox(height: 16),
               _SuggestionField(
                 controller: editionController!,
-                label: "Edición",
+                label: context.l10n.itemEdition,
                 icon: Icons.bookmark_rounded,
                 suggestions: kFunkoEditions,
               ),
@@ -234,7 +235,7 @@ class _SuggestionField extends StatelessWidget {
             prefixIcon: Icon(icon, color: colorScheme.primary),
             suffixIcon: PopupMenuButton<String>(
               icon: Icon(Icons.arrow_drop_down, color: colorScheme.primary),
-              tooltip: 'Ver opciones',
+              tooltip: context.l10n.imageViewOptions,
               onSelected: (val) => controller.text = val,
               itemBuilder: (context) => suggestions
                   .map((s) => PopupMenuItem<String>(value: s, child: Text(s)))

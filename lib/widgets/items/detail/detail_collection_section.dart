@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 import '../../../data/items/item_model.dart';
 import '../../../data/lists/list_model.dart';
@@ -91,7 +92,7 @@ class _CollectionHeader extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            'COLECCIÓN ($count)',
+            '${context.l10n.collectionTitle} ($count)',
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: primary,
@@ -101,13 +102,13 @@ class _CollectionHeader extends StatelessWidget {
         ),
         IconButton(
           icon: const Icon(Icons.grid_view),
-          tooltip: 'Ver todos',
+          tooltip: context.l10n.collectionViewAll,
           color: primary,
           onPressed: () => _openGrid(context),
         ),
         IconButton(
           icon: const Icon(Icons.add_circle_outline),
-          tooltip: 'Añadir elemento',
+          tooltip: context.l10n.collectionAddItem,
           color: primary,
           onPressed: () => _addItem(context),
         ),
@@ -129,19 +130,16 @@ class _EmptyCollection extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Generar tomos'),
-        content: Text(
-          '¿Generar ${item.totalVolume} tomos automáticamente?\n'
-          'Se crearán items hijos numerados.',
-        ),
+        title: Text(ctx.l10n.collectionGenerateTitle),
+        content: Text(ctx.l10n.collectionGenerateConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('CANCELAR'),
+            child: Text(ctx.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('GENERAR'),
+            child: Text(ctx.l10n.commonAccept.toUpperCase()),
           ),
         ],
       ),
@@ -154,7 +152,7 @@ class _EmptyCollection extends StatelessWidget {
       await itemsProvider.fetchItemsByLibrary(item.idLibrary);
     }
     messenger.showSnackBar(
-      SnackBar(content: Text('Se crearon $created tomos')),
+      SnackBar(content: Text(context.l10n.collectionGenerateResult(created))),
     );
   }
 
@@ -179,9 +177,9 @@ class _EmptyCollection extends StatelessWidget {
       child: Center(
         child: Column(
           children: [
-            const Text(
-              'Esta colección está vacía.',
-              style: TextStyle(fontStyle: FontStyle.italic),
+            Text(
+              context.l10n.collectionEmpty,
+              style: const TextStyle(fontStyle: FontStyle.italic),
             ),
             if (canGenerate) ...[
               const SizedBox(height: 16),
@@ -191,7 +189,7 @@ class _EmptyCollection extends StatelessWidget {
                       onPressed: () => _generate(context),
                       icon: const Icon(Icons.auto_awesome),
                       label: Text(
-                        'Generar ${item.totalVolume} tomos automáticamente',
+                        context.l10n.collectionGenerate,
                       ),
                     ),
             ],

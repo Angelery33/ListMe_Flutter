@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:list_me/core/i18n/app_strings.dart';
+import 'package:list_me/core/i18n/l10n_extension.dart';
 import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:list_me/providers/profile/profile_provider.dart';
 import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';
@@ -20,7 +20,7 @@ class ProfileScreen extends StatelessWidget {
     return AppShell(
       currentIndex: 1,
       appBar: CustomGradientAppBar(
-        title: context.tr('profile.title'),
+        title: context.l10n.profileTitle,
         showBackButton: false,
       ),
       body: profile.isLoading
@@ -89,20 +89,20 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 32),
                   _buildSection(
                     context,
-                    title: 'Cuenta',
+                    title: context.l10n.profileSectionAccount,
                     children: [
                       _buildListTile(
                         context,
                         icon: Icons.person_outline,
-                        title: 'Editar perfil',
-                        subtitle: 'Cambia tu nombre de usuario',
+                        title: context.l10n.profileEditProfile,
+                        subtitle: context.l10n.profileEditSubtitle,
                         onTap: () => _showEditUsernameDialog(context),
                       ),
                       _buildListTile(
                         context,
                         icon: Icons.lock_outline,
-                        title: 'Cambiar contraseña',
-                        subtitle: 'Actualiza tu contraseña',
+                        title: context.l10n.profileChangePassword,
+                        subtitle: context.l10n.profileChangePasswordSubtitle,
                         onTap: () => _showChangePasswordDialog(context),
                       ),
                     ],
@@ -110,18 +110,18 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildSection(
                     context,
-                    title: 'Estadísticas',
+                    title: context.l10n.profileSectionStats,
                     children: [
                       _buildStatTile(
                         context,
                         icon: Icons.list_alt_rounded,
-                        title: 'Listas creadas',
+                        title: context.l10n.profileStatsLists,
                         value: '0',
                       ),
                       _buildStatTile(
                         context,
                         icon: Icons.check_circle_outline,
-                        title: 'Elementos completados',
+                        title: context.l10n.profileStatsCompleted,
                         value: '0',
                       ),
                     ],
@@ -132,7 +132,7 @@ class ProfileScreen extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => _confirmLogout(context, auth),
                       icon: const Icon(Icons.logout),
-                      label: const Text('Cerrar Sesión'),
+                      label: Text(context.l10n.settingsLogout),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
@@ -144,9 +144,9 @@ class ProfileScreen extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () => _confirmDeleteAccount(context, profile),
                     icon: const Icon(Icons.delete_forever, color: Colors.red),
-                    label: const Text(
-                      'Eliminar cuenta',
-                      style: TextStyle(color: Colors.red),
+                    label: Text(
+                      context.l10n.profileDeleteAccount,
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 ],
@@ -234,18 +234,18 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Editar nombre de usuario'),
+        title: Text(context.l10n.profileEditUsername),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Nombre de usuario',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: ctx.l10n.profileUser,
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(ctx.l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -254,12 +254,12 @@ class ProfileScreen extends StatelessWidget {
                 if (success && ctx.mounted) {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Usuario actualizado')),
+                    SnackBar(content: Text(context.l10n.profileUsernameUpdated)),
                   );
                 }
               }
             },
-            child: const Text('Guardar'),
+            child: Text(ctx.l10n.commonSave),
           ),
         ],
       ),
@@ -274,34 +274,34 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cambiar contraseña'),
+        title: Text(ctx.l10n.profileChangePassword),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: currentPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Contraseña actual',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+            labelText: ctx.l10n.profileCurrentPassword,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: newPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Nueva contraseña',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+            labelText: ctx.l10n.profileNewPassword,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: confirmPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Confirmar contraseña',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+            labelText: ctx.l10n.profileConfirmPassword,
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
@@ -309,23 +309,21 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(ctx.l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () async {
               if (newPasswordController.text !=
                   confirmPasswordController.text) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Las contraseñas no coinciden')),
+                  SnackBar(content: Text(ctx.l10n.authPasswordsMismatch)),
                 );
                 return;
               }
               if (newPasswordController.text.length < 8) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'La contraseña debe tener al menos 8 caracteres',
-                    ),
+                  SnackBar(
+                    content: Text(ctx.l10n.profilePasswordTooShort),
                   ),
                 );
                 return;
@@ -338,7 +336,7 @@ class ProfileScreen extends StatelessWidget {
               if (success && ctx.mounted) {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Contraseña cambiada')),
+                  SnackBar(content: Text(ctx.l10n.profilePasswordChanged)),
                 );
               } else if (ctx.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -346,7 +344,7 @@ class ProfileScreen extends StatelessWidget {
                 );
               }
             },
-            child: const Text('Cambiar'),
+            child: Text(ctx.l10n.profileChange),
           ),
         ],
       ),
@@ -357,12 +355,12 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cerrar sesión'),
-        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+        title: Text(ctx.l10n.profileLogoutTitle),
+        content: Text(ctx.l10n.profileLogoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(ctx.l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -377,7 +375,7 @@ class ProfileScreen extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Cerrar sesión'),
+            child: Text(ctx.l10n.profileLogoutTitle),
           ),
         ],
       ),
@@ -388,14 +386,12 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar cuenta'),
-        content: const Text(
-          '¿Estás seguro? Esta acción es irreversible y se eliminarán todos tus datos.',
-        ),
+        title: Text(ctx.l10n.profileDeleteAccount),
+        content: Text(ctx.l10n.profileDeleteConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(ctx.l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -413,7 +409,7 @@ class ProfileScreen extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Eliminar'),
+            child: Text(ctx.l10n.commonDelete),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../../data/items/item_model.dart';
 import '../../../../data/lists/list_model.dart';
 import '../../../../providers/items/item_details_provider.dart';
@@ -56,7 +57,7 @@ class DetailProgressSection extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'PROGRESO ACTUAL',
+                context.l10n.progressProgress.toUpperCase(),
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
@@ -93,7 +94,7 @@ class DetailProgressSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'PROGRESO ($unit)'.toUpperCase(),
+                "${context.l10n.progressProgress} ($unit)".toUpperCase(),
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
@@ -167,7 +168,7 @@ class DetailProgressSection extends StatelessWidget {
         widgets.add(
           _buildProgressRow(
             context,
-            'Capítulo',
+            context.l10n.progressChapter,
             item.chapter ?? 0,
             item.totalChapter,
             () => provider.updateProgressField(
@@ -185,7 +186,7 @@ class DetailProgressSection extends StatelessWidget {
         widgets.add(
           _buildProgressRow(
             context,
-            'Página',
+            context.l10n.progressPage,
             item.page ?? 0,
             item.totalPage,
             () => provider.updateProgressField('page', (item.page ?? 0) + 1),
@@ -198,7 +199,7 @@ class DetailProgressSection extends StatelessWidget {
         widgets.add(
           _buildProgressRow(
             context,
-            'Temporada',
+            context.l10n.progressSeason,
             item.season ?? 0,
             item.totalSeason,
             () =>
@@ -212,7 +213,7 @@ class DetailProgressSection extends StatelessWidget {
         widgets.add(
           _buildProgressRow(
             context,
-            'Episodio',
+            context.l10n.progressEpisode,
             item.chapter ?? 0,
             item.totalChapter,
             () => provider.updateProgressField(
@@ -231,7 +232,7 @@ class DetailProgressSection extends StatelessWidget {
         widgets.add(
           _buildProgressRow(
             context,
-            'Tomo',
+            context.l10n.progressVolume,
             item.volume ?? 0,
             item.totalVolume,
             () =>
@@ -245,7 +246,7 @@ class DetailProgressSection extends StatelessWidget {
         widgets.add(
           _buildProgressRow(
             context,
-            'Capítulo',
+            context.l10n.progressChapter,
             item.chapter ?? 0,
             item.totalChapter,
             () => provider.updateProgressField(
@@ -263,7 +264,7 @@ class DetailProgressSection extends StatelessWidget {
         widgets.add(
           _buildProgressRow(
             context,
-            'Página',
+            context.l10n.progressPage,
             item.page ?? 0,
             item.totalPage,
             () => provider.updateProgressField('page', (item.page ?? 0) + 1),
@@ -275,7 +276,7 @@ class DetailProgressSection extends StatelessWidget {
       widgets.add(
         _buildProgressRow(
           context,
-          library?.customProgressUnit ?? item.progressUnit ?? 'Progreso',
+          library?.customProgressUnit ?? item.progressUnit ?? context.l10n.progressProgress,
           item.currentProgress ?? 0,
           item.totalProgress,
           () => provider.incrementProgress(),

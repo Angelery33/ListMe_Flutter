@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/lists/list_model.dart';
 
@@ -66,7 +67,7 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
             IconButton(
               icon: Icon(Icons.arrow_back, color: textColor),
               onPressed: () => Navigator.of(context).pop(),
-              tooltip: 'Volver',
+              tooltip: context.l10n.commonBack,
             ),
           IconButton(
             icon: Icon(
@@ -74,7 +75,7 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
               color: textColor,
             ),
             onPressed: widget.onSearchToggle,
-            tooltip: widget.isSearchVisible ? 'Ocultar búsqueda' : 'Buscar',
+            tooltip: widget.isSearchVisible ? context.l10n.commonClose : context.l10n.commonSearch,
           ),
         ],
       ),
@@ -107,18 +108,18 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
           onSelected: widget.onMenuSelected,
           itemBuilder: (context) => [
             if (!widget.isCloud)
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'share',
-                child: Text('Compartir Lista'),
+                child: Text(context.l10n.listsShareTitle),
               ),
             if (widget.canEdit && widget.onEditPressed != null)
-              const PopupMenuItem(value: 'edit', child: Text('Editar Lista')),
+              PopupMenuItem(value: 'edit', child: Text(context.l10n.commonEdit)),
             if (widget.onSyncPressed != null)
-              const PopupMenuItem(value: 'sync', child: Text('Sincronizar')),
-            const PopupMenuItem(
+              PopupMenuItem(value: 'sync', child: Text(context.l10n.commonSync)),
+            PopupMenuItem(
               value: 'delete',
               child: Text(
-                'Eliminar Lista',
+                context.l10n.listsDeleteTitle,
                 style: TextStyle(color: Colors.red),
               ),
             ),
@@ -133,7 +134,7 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
                 child: TextField(
                   controller: widget.searchController,
                   decoration: InputDecoration(
-                    hintText: 'Buscar...',
+                    hintText: context.l10n.searchPlaceholder,
                     prefixIcon: Icon(Icons.search, color: hintColor),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),

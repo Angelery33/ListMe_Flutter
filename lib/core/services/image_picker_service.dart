@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../i18n/l10n_extension.dart';
 import 'logger_service.dart';
 
 class ImagePickerService {
@@ -105,7 +106,7 @@ class ImagePickerService {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Galería'),
+              title: Text(context.l10n.imageGallery),
               onTap: () async {
                 Navigator.pop(context);
                 final file = await pickImage(source: ImageSource.gallery);
@@ -115,17 +116,14 @@ class ImagePickerService {
             if (!kIsWeb && !Platform.isWindows && !Platform.isLinux && !Platform.isMacOS)
               ListTile(
                 leading: const Icon(Icons.photo_camera),
-                title: const Text('Cámara'),
+                title: Text(context.l10n.imageCamera),
                 onTap: () async {
+                  final cameraErr = context.l10n.imageCameraError;
                   Navigator.pop(context);
                   final file = await pickImage(source: ImageSource.camera);
                   if (file == null && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Error al abrir cámara. Asegúrate de tener permisos.',
-                        ),
-                      ),
+                      SnackBar(content: Text(cameraErr)),
                     );
                   }
                   onImagePicked(file);

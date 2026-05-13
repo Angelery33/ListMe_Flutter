@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../core/services/image_picker_service.dart';
 import '../../data/items/item_model.dart';
 import '../../data/items/item_image_model.dart';
@@ -290,7 +291,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
             );
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Imagen importada añadida")),
+            SnackBar(content: Text(context.l10n.itemImportAdded)),
           );
         }
       }
@@ -450,17 +451,17 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Añadir Género/Temática'),
+        title: Text(context.l10n.genreAddTitle),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(labelText: 'Nombre del género'),
+          decoration: InputDecoration(labelText: context.l10n.genreName),
           textCapitalization: TextCapitalization.sentences,
           autofocus: true,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCELAR'),
+            child: Text(context.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
             onPressed: () async {
@@ -480,7 +481,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 }
               }
             },
-            child: const Text('AÑADIR'),
+            child: Text(context.l10n.commonAdd.toUpperCase()),
           ),
         ],
       ),
@@ -492,17 +493,19 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("Nuevo Tipo de Atributo"),
+        title: Text(dialogContext.l10n.attributeNewType),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(labelText: "Nombre del tipo"),
+          decoration: InputDecoration(
+            labelText: dialogContext.l10n.attributesNewTypeName,
+          ),
           textCapitalization: TextCapitalization.sentences,
           autofocus: true,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Cancelar"),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () {
@@ -511,7 +514,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 Navigator.pop(dialogContext, name);
               }
             },
-            child: const Text("Crear"),
+            child: Text(dialogContext.l10n.commonCreate),
           ),
         ],
       ),
@@ -708,7 +711,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error al guardar: $e")));
+        ).showSnackBar(SnackBar(content: Text("${context.l10n.itemSaveError}: $e")));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -726,7 +729,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     return AppShell(
       currentIndex: 0,
       appBar: CustomGradientAppBar(
-        title: _item == null ? "Nuevo Item" : "Editar Item",
+        title: _item == null ? context.l10n.itemNew : context.l10n.itemEdit,
         showBackButton: true,
         actions: [
           if (_isSaving)

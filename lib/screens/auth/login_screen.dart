@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../providers/auth/auth_provider.dart';
 import '../../core/config/routes.dart';
 import '../../widgets/shared/app_logo_title.dart';
@@ -43,21 +44,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, rellena todos los campos')),
+        SnackBar(content: Text(context.l10n.authFillAll)),
       );
       return;
     }
 
     final messenger = ScaffoldMessenger.of(context);
     final nav = Navigator.of(context);
-    
+    final loginError = context.l10n.authLoginError;
+
     final success = await auth.login(username, password);
 
     if (success) {
       nav.pushNamedAndRemoveUntil(AppRoutes.lists, (route) => false);
     } else {
       messenger.showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Error al iniciar sesión')),
+        SnackBar(content: Text(auth.errorMessage ?? loginError)),
       );
     }
   }
@@ -116,9 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.white,
                               ),
                               const SizedBox(height: 16),
-                              const Text(
-                                'Iniciar Sesión',
-                                style: TextStyle(
+                              Text(
+                                context.l10n.authLogin,
+                                style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -136,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               _buildTextField(
                                 controller: _userController,
-                                label: 'Nombre de Usuario',
+                                label: context.l10n.authUsername,
                                 icon: Icons.person_outline,
                                 focusNode: _userFocusNode,
                                 onSubmitted: () => _passwordFocusNode.requestFocus(),
@@ -144,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 16),
                               _buildTextField(
                                 controller: _passwordController,
-                                label: 'Contraseña',
+                                label: context.l10n.authPassword,
                                 icon: Icons.lock_outline,
                                 isPassword: true,
                                 focusNode: _passwordFocusNode,
@@ -155,9 +157,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 16),
                               TextButton(
                                 onPressed: () => Navigator.pushNamed(context, AppRoutes.register),
-                                child: const Text(
-                                  '¿No tienes cuenta? Registrate aquí',
-                                  style: TextStyle(color: Colors.white70),
+                                child: Text(
+                                  context.l10n.authNoAccount,
+                                  style: const TextStyle(color: Colors.white70),
                                 ),
                               ),
                             ],
@@ -251,9 +253,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Text(
-                'ENTRAR',
-                style: TextStyle(
+            : Text(
+                context.l10n.authEnter,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
                 ),

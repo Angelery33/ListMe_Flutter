@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/i18n/l10n_extension.dart';
 import '../../core/providers/responsive_provider.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
@@ -60,18 +61,19 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar elemento'),
-        content: const Text(
-          '¿Estás seguro de que quieres eliminar este elemento de la lista?',
-        ),
+        title: Text(ctx.l10n.itemDeleteTitle),
+        content: Text(ctx.l10n.itemDeleteMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(ctx.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('ELIMINAR', style: TextStyle(color: Colors.red)),
+            child: Text(
+              ctx.l10n.commonDelete.toUpperCase(),
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -87,7 +89,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              itemsProvider.errorMessage ?? 'Error eliminando el elemento',
+              itemsProvider.errorMessage ?? context.l10n.commonError,
             ),
           ),
         );

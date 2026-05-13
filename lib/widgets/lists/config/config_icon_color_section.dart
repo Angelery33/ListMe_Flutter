@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 class ConfigIconColorSection extends StatelessWidget {
   final String selectedIcon;
@@ -53,11 +54,11 @@ class ConfigIconColorSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Icono y Color",
+              context.l10n.listConfigIconAndColor,
               style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            const Text("Selecciona un icono:"),
+            Text(context.l10n.listConfigSelectIcon),
             const SizedBox(height: 8),
             SizedBox(
               height: 50,
@@ -83,7 +84,7 @@ class ConfigIconColorSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text("Selecciona un color:"),
+            Text(context.l10n.listConfigSelectColor),
             const SizedBox(height: 8),
             SizedBox(
               height: 50,

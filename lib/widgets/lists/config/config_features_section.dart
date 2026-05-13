@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 class ConfigFeaturesSection extends StatelessWidget {
   final bool supportsCompletion;
@@ -70,56 +71,56 @@ class ConfigFeaturesSection extends StatelessWidget {
         child: Column(
           children: [
             _buildSwitch(
-              "Ítems Completables",
-              "Permitir marcar ítems como completados",
+              context.l10n.listConfigCompletion,
+              context.l10n.listConfigCompletionSubtitle,
               supportsCompletion,
               onSupportsCompletionChanged,
               Icons.check_circle_outline,
             ),
             _buildSwitch(
-              "Es Calificable",
-              "Permitir puntuar los ítems",
+              context.l10n.listConfigGradeable,
+              context.l10n.listConfigGradeableSubtitle,
               isGradeable,
               onIsGradeableChanged,
               Icons.star_border,
             ),
             _buildSwitch(
-              "Es Temática",
-              "Organizar ítems por géneros personalizados",
+              context.l10n.listConfigThematic,
+              context.l10n.listConfigThematicSubtitle,
               isThematic,
               onIsThematicChanged,
               Icons.category_outlined,
             ),
             _buildSwitch(
-              "Lista de Deseos",
-              "Soportar ítems deseados vs adquiridos",
+              context.l10n.listConfigWishlist,
+              context.l10n.listConfigWishlistSubtitle,
               supportsWishlist,
               onSupportsWishlistChanged,
               Icons.card_giftcard,
             ),
             _buildSwitch(
-              "Seguimiento de Fechas",
-              "Registrar fechas de inicio y fin",
+              context.l10n.listConfigTracksDates,
+              context.l10n.listConfigTracksDatesSubtitle,
               tracksDates,
               onTracksDatesChanged,
               Icons.date_range,
             ),
             _buildSwitch(
-              "Habilitar Precios",
-              "Seguimiento de costes y presupuestos",
+              context.l10n.listConfigPrice,
+              context.l10n.listConfigPriceSubtitle,
               supportsPrice,
               onSupportsPriceChanged,
               Icons.attach_money,
             ),
             _buildSwitch(
-              "Vista Compacta",
-              "Mostrar tarjetas más pequeñas en la lista",
+              context.l10n.listConfigCompact,
+              context.l10n.listConfigCompactSubtitle,
               isCompact,
               onIsCompactChanged,
               Icons.view_comfy_alt_outlined,
             ),
             _buildSwitch(
-              "Seguimiento de Progreso",
+              context.l10n.listConfigProgress,
               "Contabilizar páginas, capítulos, niveles...",
               supportsProgress,
               onSupportsProgressChanged,

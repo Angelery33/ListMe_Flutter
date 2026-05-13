@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 
 class ConfigDisplaySection extends StatelessWidget {
   final bool isThematic;
@@ -26,25 +27,25 @@ class ConfigDisplaySection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                "Configuración de Visualización",
+                context.l10n.listConfigDisplay,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
-            const RadioListTile<int>(
-              title: Text("Ignorar Temáticas"),
-              subtitle: Text("Estándar / Mezclado"),
+            RadioListTile<int>(
+              title: Text(context.l10n.commonNone),
+              subtitle: Text(context.l10n.commonAll),
               value: 0,
             ),
-            const RadioListTile<int>(
-              title: Text("Secciones con Cabeceras"),
-              subtitle: Text("Agrupar ítems por su tema con un título"),
+            RadioListTile<int>(
+              title: Text(context.l10n.listConfigCompact),
+              subtitle: Text(context.l10n.listConfigThematic),
               value: 1,
             ),
-            const RadioListTile<int>(
-              title: Text("Agrupado sin Cabeceras"),
-              subtitle: Text("Ordenados por tema pero de forma continua"),
+            RadioListTile<int>(
+              title: Text(context.l10n.listConfigCompact),
+              subtitle: Text(context.l10n.listConfigCompactSubtitle),
               value: 2,
             ),
             const SizedBox(height: 8),

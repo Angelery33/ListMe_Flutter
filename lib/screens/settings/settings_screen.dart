@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/config/routes.dart';
-import '../../core/i18n/app_strings.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../core/i18n/currencies.dart';
 import '../../providers/auth/auth_provider.dart';
 import '../../providers/settings/settings_provider.dart';
@@ -23,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
     return AppShell(
       currentIndex: 2,
       appBar: CustomGradientAppBar(
-        title: context.tr('settings.title'),
+        title: context.l10n.settingsTitle,
         showBackButton: false,
       ),
       body: ListView(
@@ -64,22 +64,22 @@ class _AppearanceSection extends StatelessWidget {
   String _themeLabel(BuildContext context, ThemeMode mode) {
     switch (mode) {
       case ThemeMode.light:
-        return context.tr('settings.theme.light');
+        return context.l10n.settingsThemeLight;
       case ThemeMode.dark:
-        return context.tr('settings.theme.dark');
+        return context.l10n.settingsThemeDark;
       default:
-        return context.tr('settings.theme.system');
+        return context.l10n.settingsThemeSystem;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return _Section(
-      title: context.tr('settings.appearance'),
+      title: context.l10n.settingsAppearance,
       children: [
         _SettingTile(
-          title: context.tr('settings.theme'),
-          subtitle: context.tr('settings.theme.subtitle'),
+          title: context.l10n.settingsTheme,
+          subtitle: context.l10n.settingsThemeSubtitle,
           trailing: Text(
             _themeLabel(context, settings.themeMode),
             style: TextStyle(
@@ -114,12 +114,12 @@ class _AppearanceSection extends StatelessWidget {
         Row(
           children: [
             Text(
-              context.tr('settings.accent'),
+              context.l10n.settingsAccent,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const Spacer(),
             Text(
-              context.tr('accent.${settings.accentColor}'),
+              _accentLabel(context, settings.accentColor),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: theme.colorScheme.primary,
@@ -139,25 +139,26 @@ class _TextSection extends StatelessWidget {
   final ThemeData theme;
   const _TextSection({required this.settings, required this.theme});
 
-  String _fontScaleKey(double s) {
-    if (s <= 0.85) return 'fontSize.verySmall';
-    if (s <= 0.95) return 'fontSize.small';
-    if (s <= 1.05) return 'fontSize.normal';
-    if (s <= 1.15) return 'fontSize.medium';
-    if (s <= 1.30) return 'fontSize.large';
-    return 'fontSize.veryLarge';
+  String _fontScaleLabel(BuildContext context, double s) {
+    final l = context.l10n;
+    if (s <= 0.85) return l.fontSizeVerySmall;
+    if (s <= 0.95) return l.fontSizeSmall;
+    if (s <= 1.05) return l.fontSizeNormal;
+    if (s <= 1.15) return l.fontSizeMedium;
+    if (s <= 1.30) return l.fontSizeLarge;
+    return l.fontSizeVeryLarge;
   }
 
   @override
   Widget build(BuildContext context) {
     return _Section(
-      title: context.tr('settings.textAndReading'),
+      title: context.l10n.settingsTextAndReading,
       children: [
         _SettingTile(
-          title: context.tr('settings.fontSize'),
-          subtitle: context.tr('settings.fontSize.subtitle'),
+          title: context.l10n.settingsFontSize,
+          subtitle: context.l10n.settingsFontSizeSubtitle,
           trailing: Text(
-            context.tr(_fontScaleKey(settings.fontScale)),
+            _fontScaleLabel(context, settings.fontScale),
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.primary,
@@ -181,18 +182,18 @@ class _RegionalSection extends StatelessWidget {
     final currency = currencyByCode(settings.currency);
 
     return _Section(
-      title: context.tr('settings.regional'),
+      title: context.l10n.settingsRegional,
       children: [
         _SettingTile(
-          title: context.tr('settings.language'),
-          subtitle: context.tr('settings.language.subtitle'),
+          title: context.l10n.settingsLanguage,
+          subtitle: context.l10n.settingsLanguageSubtitle,
           trailing: DropdownButton<String>(
             value: settings.locale,
             underline: const SizedBox.shrink(),
-            items: AppStrings.languageLabels.entries
+            items: kSupportedAppLocales
                 .map((e) => DropdownMenuItem(
-                      value: e.key,
-                      child: Text(e.value),
+                      value: e.code,
+                      child: Text(e.label),
                     ))
                 .toList(),
             onChanged: (val) {
@@ -202,8 +203,8 @@ class _RegionalSection extends StatelessWidget {
         ),
         const Divider(height: 32),
         _SettingTile(
-          title: context.tr('settings.currency'),
-          subtitle: context.tr('settings.currency.subtitle'),
+          title: context.l10n.settingsCurrency,
+          subtitle: context.l10n.settingsCurrencySubtitle,
           trailing: DropdownButton<String>(
             value: currency.code,
             underline: const SizedBox.shrink(),
@@ -227,13 +228,13 @@ class _AccountSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _Section(
-      title: context.tr('settings.account'),
+      title: context.l10n.settingsAccount,
       children: [
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.logout, color: Colors.redAccent),
           title: Text(
-            context.tr('settings.logout'),
+            context.l10n.settingsLogout,
             style: const TextStyle(
               color: Colors.redAccent,
               fontWeight: FontWeight.bold,
@@ -275,7 +276,7 @@ class _VersionFooter extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '${context.tr('settings.version')} 0.2.0 (Build 2)',
+          '${context.l10n.settingsVersion} 0.2.0 (Build 2)',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -399,5 +400,29 @@ class _SettingTile extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+String _accentLabel(BuildContext context, String accent) {
+  final l = context.l10n;
+  switch (accent) {
+    case 'amethyst':
+      return l.accentAmethyst;
+    case 'sapphire':
+      return l.accentSapphire;
+    case 'ruby':
+      return l.accentRuby;
+    case 'emerald':
+      return l.accentEmerald;
+    case 'cobalt':
+      return l.accentCobalt;
+    case 'cyan':
+      return l.accentCyan;
+    case 'magenta':
+      return l.accentMagenta;
+    case 'titanium':
+      return l.accentTitanium;
+    default:
+      return accent;
   }
 }

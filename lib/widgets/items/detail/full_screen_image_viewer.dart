@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../shared/universal_image.dart';
 
 class FullScreenImageViewer extends StatefulWidget {
@@ -100,7 +101,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                         color: Colors.amber,
                         size: 30,
                       ),
-                      tooltip: "Marcar como favorita",
+                      tooltip: context.l10n.imageMarkFavorite,
                       onPressed: () {
                         widget.onSetFavorite!(widget.currentImageId!);
                       },

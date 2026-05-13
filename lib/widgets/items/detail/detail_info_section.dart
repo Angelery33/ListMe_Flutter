@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../../data/items/item_model.dart';
 import '../../../../data/lists/list_model.dart';
 
@@ -25,7 +26,7 @@ class DetailInfoSection extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: _buildModernTag(
                     context,
-                    _getStatusLabel(item.status),
+                    _getStatusLabel(context, item.status),
                     _getStatusColor(item.status, context),
                     _getStatusIcon(item.status),
                   ),
@@ -37,7 +38,7 @@ class DetailInfoSection extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: _buildModernTag(
                     context,
-                    item.wishlist ? 'En lista de deseos' : 'Adquirido',
+                    item.wishlist ? context.l10n.infoWishlist : context.l10n.infoAcquired,
                     item.wishlist
                         ? Colors.orange
                         : Theme.of(context).colorScheme.primary,
@@ -141,7 +142,7 @@ class DetailInfoSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.wishlist ? 'PRECIO ESTIMADO' : 'COSTE',
+                  item.wishlist ? context.l10n.infoPriceEstimated : context.l10n.infoPriceCost,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Theme.of(context).colorScheme.tertiary,
                     fontWeight: FontWeight.bold,
@@ -176,16 +177,17 @@ class DetailInfoSection extends StatelessWidget {
     }
   }
 
-  String _getStatusLabel(String? status) {
+  String _getStatusLabel(BuildContext context, String? status) {
+    final l = context.l10n;
     switch (status) {
       case 'PENDING':
-        return 'Pendiente';
+        return l.statusPending;
       case 'IN_PROGRESS':
-        return 'En Progreso';
+        return l.statusInProgress;
       case 'COMPLETED':
-        return 'Completado';
+        return l.statusCompleted;
       default:
-        return status ?? 'Desconocido';
+        return status ?? l.commonUnknown;
     }
   }
 

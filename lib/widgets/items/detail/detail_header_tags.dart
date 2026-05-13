@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../data/items/item_model.dart';
-import '../../../../core/providers/responsive_provider.dart';
+import '../../../core/i18n/l10n_extension.dart';
+import '../../../data/items/item_model.dart';
+import '../../../core/providers/responsive_provider.dart';
 
 class DetailHeaderTags extends StatelessWidget {
   final ItemModel item;
@@ -14,7 +15,7 @@ class DetailHeaderTags extends StatelessWidget {
       children: [
         _buildCompactTag(
           context,
-          _getStatusLabel(item.status ?? 'PENDING'),
+          _getStatusLabel(context, item.status ?? 'PENDING'),
           _getStatusColor(item.status),
           _getStatusIcon(item.status),
         ),
@@ -89,18 +90,19 @@ class DetailHeaderTags extends StatelessWidget {
     );
   }
 
-  String _getStatusLabel(String status) {
+  String _getStatusLabel(BuildContext context, String status) {
+    final l = context.l10n;
     switch (status) {
       case 'PENDING':
-        return 'Pendiente';
+        return l.statusPending;
       case 'IN_PROGRESS':
-        return 'En Progreso';
+        return l.statusInProgress;
       case 'COMPLETED':
-        return 'Completado';
+        return l.statusCompleted;
       case 'DROPPED':
-        return 'Abandonado';
+        return l.statusDropped;
       case 'PAUSED':
-        return 'En Pausa';
+        return l.statusPaused;
       default:
         return status;
     }

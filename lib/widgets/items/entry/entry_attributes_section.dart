@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/attributes/attribute_type_model.dart';
 import '../../../data/attributes/attribute_item_model.dart';
 
@@ -26,7 +27,7 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
   void _showAddAttributeDialog(BuildContext context) {
     if (widget.allTypes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No hay tipos de atributos disponibles")),
+        SnackBar(content: Text(context.l10n.attributesEmpty)),
       );
       return;
     }
@@ -40,15 +41,15 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: const Text("Añadir Atributo"),
+              title: Text(context.l10n.attributesAdd),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<AttributeTypeModel>(
                     initialValue: selectedType,
                     isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: "Tipo de atributo",
+                    decoration: InputDecoration(
+                      labelText: context.l10n.attributesType,
                     ),
                     items: widget.allTypes.map((type) {
                       return DropdownMenuItem(
@@ -63,14 +64,14 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: valueController,
-                    decoration: const InputDecoration(labelText: "Valor"),
+                    decoration: InputDecoration(labelText: context.l10n.attributesValue),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancelar"),
+                  child: Text(context.l10n.commonCancel),
                 ),
                 TextButton(
                   onPressed: () {
@@ -86,7 +87,7 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text("Añadir"),
+                  child: Text(context.l10n.commonAdd),
                 ),
               ],
             );
@@ -102,17 +103,17 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text("Nuevo Tipo de Atributo"),
+          title: Text(context.l10n.attributeNewType),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(labelText: "Nombre del tipo"),
+            decoration: InputDecoration(labelText: context.l10n.attributesNewTypeName),
             textCapitalization: TextCapitalization.sentences,
             autofocus: true,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancelar"),
+              child: Text(context.l10n.commonCancel),
             ),
             TextButton(
               onPressed: () async {
@@ -126,7 +127,7 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
                   }
                 }
               },
-              child: const Text("Crear"),
+              child: Text(context.l10n.commonCreate),
             ),
           ],
         );
@@ -148,14 +149,14 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
             Row(
               children: [
                 Expanded(
-                  child: _buildSectionTitle(context, "Atributos Personalizados"),
+                  child: _buildSectionTitle(context, context.l10n.itemSectionAttributes),
                 ),
                 if (widget.onCreateAttributeType != null)
                   IconButton(
                     onPressed: () => _showCreateTypeDialog(context),
                     icon: const Icon(Icons.add_rounded),
                     color: Theme.of(context).colorScheme.secondary,
-                    tooltip: 'Crear nuevo tipo',
+                    tooltip: context.l10n.attributesCreateType,
                   ),
                 IconButton(
                   onPressed: () => _showAddAttributeDialog(context),
@@ -169,7 +170,7 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
-                  "No hay atributos añadidos.",
+                  context.l10n.attributesEmpty,
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
@@ -181,8 +182,10 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
                 final attr = entry.value;
                 final type = widget.allTypes.firstWhere(
                   (t) => t.id == attr.attributeTypeId,
-                  orElse: () =>
-                      AttributeTypeModel(name: "Desconocido", dataType: "TEXT"),
+                  orElse: () => AttributeTypeModel(
+                    name: context.l10n.commonUnknown,
+                    dataType: "TEXT",
+                  ),
                 );
 
                 return ListTile(
