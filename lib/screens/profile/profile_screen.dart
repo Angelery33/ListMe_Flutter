@@ -20,9 +20,11 @@ class ProfileScreen extends StatelessWidget {
     final auth = context.read<AuthProvider>();
     final invitations = context.watch<InvitationsProvider>();
 
-    // Cargar invitaciones si no se han cargado
+    // Cargar invitaciones si no se han cargado y no hay errores previos
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!invitations.isLoading && invitations.pendingInvitations.isEmpty) {
+      if (!invitations.isLoading && 
+          invitations.pendingInvitations.isEmpty && 
+          invitations.error == null) {
         invitations.loadPendingInvitations();
       }
     });
