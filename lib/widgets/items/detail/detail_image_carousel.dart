@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/providers/responsive_provider.dart';
 import '../../../../data/items/item_model.dart';
 import '../../../../data/items/item_image_model.dart';
 import '../../../../widgets/shared/universal_image.dart';
@@ -212,6 +213,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
   @override
   Widget build(BuildContext context) {
     final paths = _imagePaths;
+    final responsive = context.watch<ResponsiveProvider>();
 
     if (paths.isEmpty) {
       return AspectRatio(
@@ -229,6 +231,10 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
           ),
         ),
       );
+    }
+
+    if (!responsive.isCompact) {
+      return _buildVerticalGallery(context, paths);
     }
 
     return AspectRatio(
@@ -312,6 +318,39 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildVerticalGallery(BuildContext context, List<String> paths) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+      child: Column(
+        children: List.generate(paths.length, (index) {
+          final img = _getImageAtIndex(index);
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: GestureDetector(
+              onTap: () => _showFullScreenImage(context, index),
+              child: Hero(
+                tag: index == 0
+                    ? 'item_image_${widget.item.id}'
+                    : 'item_gallery_$index',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: AspectRatio(
+                    aspectRatio: 0.8,
+                    child: UniversalImage(
+                      img.imagePath,
+                      remoteImageUrl: img.remoteUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

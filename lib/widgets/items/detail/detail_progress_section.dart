@@ -164,123 +164,115 @@ class DetailProgressSection extends StatelessWidget {
     List<Widget> widgets = [];
 
     if (progressType == 'Libro') {
-      if (item.totalChapter != null && item.totalChapter! > 0) {
-        widgets.add(
-          _buildProgressRow(
-            context,
-            context.l10n.progressChapter,
-            item.chapter ?? 0,
-            item.totalChapter,
-            () => provider.updateProgressField(
-              'chapter',
-              (item.chapter ?? 0) + 1,
-            ),
-            () => provider.updateProgressField(
-              'chapter',
-              (item.chapter ?? 0) - 1,
-            ),
+      widgets.add(
+        _buildProgressRow(
+          context,
+          context.l10n.progressChapter,
+          item.chapter ?? 0,
+          item.totalChapter,
+          () => provider.updateProgressField(
+            'chapter',
+            (item.chapter ?? 0) + 1,
           ),
-        );
-      }
-      if (item.totalPage != null && item.totalPage! > 0) {
-        widgets.add(
-          _buildProgressRow(
-            context,
-            context.l10n.progressPage,
-            item.page ?? 0,
-            item.totalPage,
-            () => provider.updateProgressField('page', (item.page ?? 0) + 1),
-            () => provider.updateProgressField('page', (item.page ?? 0) - 1),
+          () => provider.updateProgressField(
+            'chapter',
+            (item.chapter ?? 0) - 1,
           ),
-        );
-      }
+          (val) => provider.updateProgressField('chapter', val),
+        ),
+      );
+      widgets.add(
+        _buildProgressRow(
+          context,
+          context.l10n.progressPage,
+          item.page ?? 0,
+          item.totalPage,
+          () => provider.updateProgressField('page', (item.page ?? 0) + 1),
+          () => provider.updateProgressField('page', (item.page ?? 0) - 1),
+          (val) => provider.updateProgressField('page', val),
+        ),
+      );
     } else if (progressType == 'Serie' || progressType == 'Anime') {
-      if (item.totalSeason != null && item.totalSeason! > 0) {
-        widgets.add(
-          _buildProgressRow(
-            context,
-            context.l10n.progressSeason,
-            item.season ?? 0,
-            item.totalSeason,
-            () =>
-                provider.updateProgressField('season', (item.season ?? 0) + 1),
-            () =>
-                provider.updateProgressField('season', (item.season ?? 0) - 1),
+      widgets.add(
+        _buildProgressRow(
+          context,
+          context.l10n.progressSeason,
+          item.season ?? 0,
+          item.totalSeason,
+          () => provider.updateProgressField('season', (item.season ?? 0) + 1),
+          () => provider.updateProgressField('season', (item.season ?? 0) - 1),
+          (val) => provider.updateProgressField('season', val),
+        ),
+      );
+      widgets.add(
+        _buildProgressRow(
+          context,
+          context.l10n.progressEpisode,
+          item.chapter ?? 0,
+          item.totalChapter,
+          () => provider.updateProgressField(
+            'chapter',
+            (item.chapter ?? 0) + 1,
           ),
-        );
-      }
-      if (item.totalChapter != null && item.totalChapter! > 0) {
-        widgets.add(
-          _buildProgressRow(
-            context,
-            context.l10n.progressEpisode,
-            item.chapter ?? 0,
-            item.totalChapter,
-            () => provider.updateProgressField(
-              'chapter',
-              (item.chapter ?? 0) + 1,
-            ),
-            () => provider.updateProgressField(
-              'chapter',
-              (item.chapter ?? 0) - 1,
-            ),
+          () => provider.updateProgressField(
+            'chapter',
+            (item.chapter ?? 0) - 1,
           ),
-        );
-      }
+          (val) => provider.updateProgressField('chapter', val),
+        ),
+      );
     } else if (progressType == 'Manga') {
-      if (item.totalVolume != null && item.totalVolume! > 0) {
-        widgets.add(
-          _buildProgressRow(
-            context,
-            context.l10n.progressVolume,
-            item.volume ?? 0,
-            item.totalVolume,
-            () =>
-                provider.updateProgressField('volume', (item.volume ?? 0) + 1),
-            () =>
-                provider.updateProgressField('volume', (item.volume ?? 0) - 1),
+      widgets.add(
+        _buildProgressRow(
+          context,
+          context.l10n.progressVolume,
+          item.volume ?? 0,
+          item.totalVolume,
+          () => provider.updateProgressField('volume', (item.volume ?? 0) + 1),
+          () => provider.updateProgressField('volume', (item.volume ?? 0) - 1),
+          (val) => provider.updateProgressField('volume', val),
+        ),
+      );
+      widgets.add(
+        _buildProgressRow(
+          context,
+          context.l10n.progressChapter,
+          item.chapter ?? 0,
+          item.totalChapter,
+          () => provider.updateProgressField(
+            'chapter',
+            (item.chapter ?? 0) + 1,
           ),
-        );
-      }
-      if (item.totalChapter != null && item.totalChapter! > 0) {
-        widgets.add(
-          _buildProgressRow(
-            context,
-            context.l10n.progressChapter,
-            item.chapter ?? 0,
-            item.totalChapter,
-            () => provider.updateProgressField(
-              'chapter',
-              (item.chapter ?? 0) + 1,
-            ),
-            () => provider.updateProgressField(
-              'chapter',
-              (item.chapter ?? 0) - 1,
-            ),
+          () => provider.updateProgressField(
+            'chapter',
+            (item.chapter ?? 0) - 1,
           ),
-        );
-      }
-      if (item.totalPage != null && item.totalPage! > 0) {
-        widgets.add(
-          _buildProgressRow(
-            context,
-            context.l10n.progressPage,
-            item.page ?? 0,
-            item.totalPage,
-            () => provider.updateProgressField('page', (item.page ?? 0) + 1),
-            () => provider.updateProgressField('page', (item.page ?? 0) - 1),
-          ),
-        );
-      }
+          (val) => provider.updateProgressField('chapter', val),
+        ),
+      );
+      widgets.add(
+        _buildProgressRow(
+          context,
+          context.l10n.progressPage,
+          item.page ?? 0,
+          item.totalPage,
+          () => provider.updateProgressField('page', (item.page ?? 0) + 1),
+          () => provider.updateProgressField('page', (item.page ?? 0) - 1),
+          (val) => provider.updateProgressField('page', val),
+        ),
+      );
     } else {
       widgets.add(
         _buildProgressRow(
           context,
-          library?.customProgressUnit ?? item.progressUnit ?? context.l10n.progressProgress,
+          library?.customProgressUnit ??
+              item.progressUnit ??
+              context.l10n.progressProgress,
           item.currentProgress ?? 0,
           item.totalProgress,
           () => provider.incrementProgress(),
           () => provider.decrementProgress(),
+          (val) => provider.updateProgress(val, item.totalProgress),
         ),
       );
     }
@@ -295,6 +287,7 @@ class DetailProgressSection extends StatelessWidget {
     int? total,
     VoidCallback onIncrement,
     VoidCallback onDecrement,
+    Function(int) onManualSet,
   ) {
     final percentage = (total != null && total > 0)
         ? (current / total * 100).toStringAsFixed(1)
@@ -308,10 +301,48 @@ class DetailProgressSection extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  '$label: $current${total != null ? ' / $total' : ''}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                child: GestureDetector(
+                  onTap: () async {
+                    final controller =
+                        TextEditingController(text: current.toString());
+                    final newVal = await showDialog<int>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text('Establecer $label'),
+                        content: TextField(
+                          controller: controller,
+                          keyboardType: TextInputType.number,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            suffixText: total != null ? '/ $total' : null,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('CANCELAR'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(
+                              ctx,
+                              int.tryParse(controller.text),
+                            ),
+                            child: const Text('GUARDAR'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (newVal != null) {
+                      onManualSet(newVal);
+                    }
+                  },
+                  child: Text(
+                    '$label: $current${total != null ? ' / $total' : ''}',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                      decorationStyle: TextDecorationStyle.dotted,
+                    ),
                   ),
                 ),
               ),

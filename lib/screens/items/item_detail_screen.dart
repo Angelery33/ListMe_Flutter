@@ -158,7 +158,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     } else {
       final imageWidth = responsive.isMedium ? 320.0 : 400.0;
       body = Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
             width: imageWidth,

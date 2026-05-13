@@ -17,7 +17,7 @@ class DetailRatingSection extends StatelessWidget {
 
     if (item == null) return const SizedBox.shrink();
 
-    final showPersonal = item.score != null && item.score! > 0;
+    final showPersonal = library?.gradeable ?? (item.score != null && item.score! > 0);
     final showExternal =
         item.externalRating != null && item.externalRating! > 0;
 
@@ -36,7 +36,7 @@ class DetailRatingSection extends StatelessWidget {
       child: Column(
         children: [
           if (showPersonal)
-            _buildPersonalRating(context, provider, item.score!),
+            _buildPersonalRating(context, provider, item.score ?? 0.0),
           if (showExternal)
             Padding(
               padding: EdgeInsets.only(top: showPersonal ? 16 : 0),
