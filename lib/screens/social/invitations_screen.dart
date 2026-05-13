@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/i18n/l10n_extension.dart';
 import '../../providers/invitations/invitations_provider.dart';
 import '../../providers/lists/lists_provider.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
@@ -91,7 +90,7 @@ class InvitationsScreen extends StatelessWidget {
                                       final success = await provider.acceptInvitation(invitation.id);
                                       if (success && context.mounted) {
                                         // Refrescar las listas
-                                        context.read<ListsProvider>().loadLibraries();
+                                        context.read<ListsProvider>().fetchLists();
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(content: Text("Invitación aceptada")),
                                         );

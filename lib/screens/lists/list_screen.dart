@@ -377,16 +377,6 @@ class _ListScreenState extends State<ListScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (list.owner)
-              PopupMenuItem(
-                value: 'delete',
-                child: Text(
-                  context.l10n.commonDelete,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ),
             if (!isSearching) ...[
               const SizedBox(height: 8),
               Text(
@@ -680,36 +670,38 @@ class _ListScreenState extends State<ListScreen> {
               ),
             ],
           ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(ctx.l10n.commonCancel.toUpperCase()),
-          ),
-          TextButton(
-            onPressed: () async {
-              final username = usernameController.text.trim();
-              if (username.isNotEmpty) {
-                Navigator.pop(ctx);
-                final success = await context.read<InvitationsProvider>().sendInvitation(
-                  _currentList.id!,
-                  username,
-                  readOnly,
-                );
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success 
-                        ? context.l10n.listsInviteSent 
-                        : "Error al enviar invitación"),
-                    ),
-                  );
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(ctx.l10n.commonCancel.toUpperCase()),
+            ),
+            TextButton(
+              onPressed: () async {
+                final username = usernameController.text.trim();
+                if (username.isNotEmpty) {
+                  Navigator.pop(ctx);
+                  final success =
+                      await context.read<InvitationsProvider>().sendInvitation(
+                            _currentList.id!,
+                            username,
+                            readOnly,
+                          );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success
+                            ? context.l10n.listsInviteSent
+                            : "Error al enviar invitación"),
+                      ),
+                    );
+                  }
                 }
-              }
-            },
-            child: Text(ctx.l10n.commonSend.toUpperCase()),
-          ),
-        ],
-      );
-    },
-  );
+              },
+              child: Text(ctx.l10n.commonSend.toUpperCase()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
