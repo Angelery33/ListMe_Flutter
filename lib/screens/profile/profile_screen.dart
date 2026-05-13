@@ -7,6 +7,8 @@ import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';
 import 'package:list_me/widgets/shared/app_shell.dart';
 import 'package:list_me/widgets/shared/responsive_centered_content.dart';
 import 'package:list_me/core/config/routes.dart';
+import 'package:list_me/providers/invitations/invitations_provider.dart';
+import 'package:list_me/screens/social/invitations_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -16,6 +18,14 @@ class ProfileScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final profile = context.watch<ProfileProvider>();
     final auth = context.read<AuthProvider>();
+    final invitations = context.watch<InvitationsProvider>();
+
+    // Cargar invitaciones si no se han cargado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!invitations.isLoading && invitations.pendingInvitations.isEmpty) {
+        invitations.loadPendingInvitations();
+      }
+    });
 
     return AppShell(
       currentIndex: 1,
@@ -105,6 +115,19 @@ class ProfileScreen extends StatelessWidget {
                         subtitle: context.l10n.profileChangePasswordSubtitle,
                         onTap: () => _showChangePasswordDialog(context),
                       ),
+                      _buildListTile(
+                        context,
+                        icon: Icons.mail_outline,
+                        title: "Invitaciones",
+                        subtitle: "Gestiona tus solicitudes de colaboración",
+                        badgeCount: invitations.pendingCount,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const InvitationsScreen(),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -116,13 +139,13 @@ class ProfileScreen extends StatelessWidget {
                         context,
                         icon: Icons.list_alt_rounded,
                         title: context.l10n.profileStatsLists,
-                        value: '0',
+                        value: profile.stats?.totalLibraries.toString() ?? '0',
                       ),
                       _buildStatTile(
                         context,
                         icon: Icons.check_circle_outline,
-                        title: context.l10n.profileStatsCompleted,
-                        value: '0',
+                        title: "Elementos totales",
+                        value: profile.stats?.totalItems.toString() ?? '0',
                       ),
                     ],
                   ),
@@ -149,6 +172,14 @@ class ProfileScreen extends StatelessWidget {
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  if (profile.apiVersion != null)
+                    Text(
+                      'API Version: ${profile.apiVersion}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      ),
+                    ),
                 ],
               ),
               ),
@@ -194,11 +225,34 @@ class ProfileScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    int badgeCount = 0,
   }) {
     final theme = Theme.of(context);
     return ListTile(
       leading: Icon(icon, color: theme.colorScheme.primary),
-      title: Text(title),
+      title: Row(
+        children: [
+          Text(title),
+          if (badgeCount > 0) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.error,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                badgeCount.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,

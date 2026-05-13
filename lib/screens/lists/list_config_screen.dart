@@ -14,6 +14,7 @@ import '../../widgets/lists/config/config_display_section.dart';
 import '../../widgets/lists/config/config_icon_color_section.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/app_shell.dart';
+import '../../widgets/lists/config/config_collaboration_section.dart';
 
 /// Géneros por defecto por tipo de lista (igual que la versión legacy)
 const Map<String, List<String>> kDefaultGenres = {
@@ -472,6 +473,11 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
                           setState(() => _genreLayoutMode = v);
                         }
                       },
+                    ),
+                    const SizedBox(height: 16),
+                    ConfigCollaborationSection(
+                      libraryId: widget.library?.id,
+                      isOwner: widget.library?.owner ?? true,
                     ),
                     const SizedBox(height: 32),
                   ],

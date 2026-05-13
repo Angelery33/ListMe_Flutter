@@ -9,6 +9,7 @@ import '../../widgets/lists/list_card.dart';
 import '../../widgets/lists/empty_lists_state.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/app_shell.dart';
+import '../../providers/invitations/invitations_provider.dart';
 
 class ListsScreen extends StatefulWidget {
   const ListsScreen({super.key});
@@ -117,6 +118,70 @@ class _ListsScreenState extends State<ListsScreen> {
         if (mounted) context.read<ListsProvider>().fetchLists();
       },
       onDelete: () => _confirmDeleteList(list),
+      onShare: () => _showShareDialog(list),
+    );
+  }
+
+  void _showShareDialog(ListModel list) {
+    final usernameController = TextEditingController();
+    bool readOnly = true;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(ctx.l10n.listsShareTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${ctx.l10n.listsShareMessage} "${list.name}"'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: ctx.l10n.listsShareEmail,
+                  hintText: "Nombre de usuario",
+                ),
+              ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                title: const Text("Solo lectura"),
+                value: readOnly,
+                onChanged: (v) => setState(() => readOnly = v ?? true),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(ctx.l10n.commonCancel.toUpperCase()),
+            ),
+            TextButton(
+              onPressed: () async {
+                final username = usernameController.text.trim();
+                if (username.isNotEmpty) {
+                  Navigator.pop(ctx);
+                  final success = await context.read<InvitationsProvider>().sendInvitation(
+                    list.id!,
+                    username,
+                    readOnly,
+                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success 
+                          ? context.l10n.listsInviteSent 
+                          : "Error al enviar invitación"),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Text(ctx.l10n.commonSend.toUpperCase()),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

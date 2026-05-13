@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:list_me/data/auth/user_model.dart';
 import 'package:list_me/data/profile/profile_repository.dart';
+import 'package:list_me/data/system/system_repository.dart';
+import 'package:list_me/data/system/user_stats_model.dart';
 import 'package:list_me/core/services/logger_service.dart';
 
 class ProfileProvider extends ChangeNotifier {
   final ProfileRepository _profileRepository;
+  final SystemRepository _systemRepository;
   final LoggerService _logger = LoggerService.instance;
 
   UserModel? _user;
+  UserStatsModel? _stats;
+  String? _apiVersion;
   bool _isLoading = false;
   String? _errorMessage;
 
-  ProfileProvider(this._profileRepository) {
+  ProfileProvider(this._profileRepository, this._systemRepository) {
     loadProfile();
   }
 
   UserModel? get user => _user;
+  UserStatsModel? get stats => _stats;
+  String? get apiVersion => _apiVersion;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -26,10 +33,12 @@ class ProfileProvider extends ChangeNotifier {
 
     try {
       _user = await _profileRepository.getCurrentUser();
-      _logger.info('ProfileProvider: Perfil cargado');
+      _stats = await _systemRepository.getUserStats();
+      _apiVersion = await _systemRepository.getApiVersion();
+      _logger.info('ProfileProvider: Perfil, estadísticas y versión cargados');
     } catch (e) {
       _errorMessage = e.toString();
-      _logger.error('ProfileProvider: Error al cargar perfil', e);
+      _logger.error('ProfileProvider: Error al cargar datos', e);
     } finally {
       _isLoading = false;
       notifyListeners();

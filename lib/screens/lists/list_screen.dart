@@ -15,6 +15,7 @@ import '../../widgets/lists/detail/list_section_header.dart';
 import '../../widgets/lists/detail/active_items_section.dart';
 import '../../widgets/items/item_card.dart';
 import '../../widgets/shared/app_shell.dart';
+import '../../providers/invitations/invitations_provider.dart';
 
 class ListScreen extends StatefulWidget {
   final int listId;
@@ -376,6 +377,16 @@ class _ListScreenState extends State<ListScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            if (list.owner)
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(
+                  context.l10n.commonDelete,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ),
             if (!isSearching) ...[
               const SizedBox(height: 8),
               Text(
@@ -641,39 +652,64 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   void _showShareDialog() {
+    final usernameController = TextEditingController();
+    bool readOnly = true;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.listsShareTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('${ctx.l10n.listsShareMessage} "${_currentList.name}"'),
-            const SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                labelText: ctx.l10n.listsShareEmail,
-                hintText: ctx.l10n.listsShareEmailHint,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(ctx.l10n.listsShareTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${ctx.l10n.listsShareMessage} "${_currentList.name}"'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: ctx.l10n.listsShareEmail,
+                  hintText: "Nombre de usuario",
+                ),
               ),
-            ),
-          ],
-        ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                title: const Text("Solo lectura"),
+                value: readOnly,
+                onChanged: (v) => setState(() => readOnly = v ?? true),
+              ),
+            ],
+          ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(ctx.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(context.l10n.listsInviteSent)),
-              );
+            onPressed: () async {
+              final username = usernameController.text.trim();
+              if (username.isNotEmpty) {
+                Navigator.pop(ctx);
+                final success = await context.read<InvitationsProvider>().sendInvitation(
+                  _currentList.id!,
+                  username,
+                  readOnly,
+                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(success 
+                        ? context.l10n.listsInviteSent 
+                        : "Error al enviar invitación"),
+                    ),
+                  );
+                }
+              }
             },
             child: Text(ctx.l10n.commonSend.toUpperCase()),
           ),
         ],
-      ),
-    );
-  }
+      );
+    },
+  );
 }

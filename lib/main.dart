@@ -11,12 +11,15 @@ import 'data/lists/lists_repository.dart';
 import 'data/items/items_repository.dart';
 import 'data/attributes/attributes_repository.dart';
 import 'data/profile/profile_repository.dart';
+import 'data/invitations/invitations_repository.dart';
+import 'data/system/system_repository.dart';
 import 'providers/auth/auth_provider.dart';
 import 'providers/lists/lists_provider.dart';
 import 'providers/settings/settings_provider.dart';
 import 'providers/items/items_provider.dart';
 import 'providers/items/item_details_provider.dart';
 import 'providers/profile/profile_provider.dart';
+import 'providers/invitations/invitations_provider.dart';
 import 'core/providers/responsive_provider.dart';
 import 'core/providers/sidebar_provider.dart';
 
@@ -51,6 +54,8 @@ void main() async {
         Provider(create: (_) => ItemsRepository(apiClient)),
         Provider(create: (_) => AttributesRepository(apiClient)),
         Provider(create: (_) => ProfileRepository(apiClient)),
+        Provider(create: (_) => InvitationsRepository(apiClient)),
+        Provider(create: (_) => SystemRepository(apiClient)),
 
         // Providers de Estado
         ChangeNotifierProvider(
@@ -74,8 +79,14 @@ void main() async {
               ItemDetailsProvider(context.read<ItemsRepository>()),
         ),
         ChangeNotifierProvider(
+          create: (context) => ProfileProvider(
+            context.read<ProfileRepository>(),
+            context.read<SystemRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider(
           create: (context) =>
-              ProfileProvider(context.read<ProfileRepository>()),
+              InvitationsProvider(context.read<InvitationsRepository>()),
         ),
         ChangeNotifierProvider(
           create: (_) => ResponsiveProvider(),
