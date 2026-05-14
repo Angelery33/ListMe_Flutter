@@ -26,6 +26,7 @@ class ItemModel {
   final int? totalVolume;
   final int? parentId;
   final double? externalRating;
+  final String? ratingSource;
   final double? imageAlignmentX;
   final double? imageAlignmentY;
   final String? itemNumber;
@@ -63,6 +64,7 @@ class ItemModel {
     this.totalVolume,
     this.parentId,
     this.externalRating,
+    this.ratingSource,
     this.imageAlignmentX,
     this.imageAlignmentY,
     this.itemNumber,
@@ -102,6 +104,7 @@ class ItemModel {
       totalVolume: json['totalVolume'] as int?,
       parentId: json['parentId'] as int?,
       externalRating: (json['externalRating'] as num?)?.toDouble(),
+      ratingSource: json['ratingSource'] as String?,
       imageAlignmentX: (json['imageAlignmentX'] as num?)?.toDouble(),
       imageAlignmentY: (json['imageAlignmentY'] as num?)?.toDouble(),
       itemNumber: json['itemNumber'] as String?,
@@ -141,6 +144,7 @@ class ItemModel {
     int? totalVolume,
     int? parentId,
     double? externalRating,
+    String? ratingSource,
     double? imageAlignmentX,
     double? imageAlignmentY,
     String? itemNumber,
@@ -178,6 +182,7 @@ class ItemModel {
       totalVolume: totalVolume ?? this.totalVolume,
       parentId: parentId ?? this.parentId,
       externalRating: externalRating ?? this.externalRating,
+      ratingSource: ratingSource ?? this.ratingSource,
       imageAlignmentX: imageAlignmentX ?? this.imageAlignmentX,
       imageAlignmentY: imageAlignmentY ?? this.imageAlignmentY,
       itemNumber: itemNumber ?? this.itemNumber,
@@ -222,6 +227,7 @@ class ItemModel {
     if (totalVolume != null) map['totalVolume'] = totalVolume;
     if (parentId != null) map['parentId'] = parentId;
     if (externalRating != null) map['externalRating'] = externalRating;
+    if (ratingSource != null) map['ratingSource'] = ratingSource;
     if (imageAlignmentX != null) map['imageAlignmentX'] = imageAlignmentX;
     if (imageAlignmentY != null) map['imageAlignmentY'] = imageAlignmentY;
     if (itemNumber != null) map['itemNumber'] = itemNumber;

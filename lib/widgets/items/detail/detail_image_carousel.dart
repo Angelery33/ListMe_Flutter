@@ -7,18 +7,6 @@ import '../../../../widgets/shared/universal_image.dart';
 import '../../../../providers/items/item_details_provider.dart';
 import 'full_screen_image_viewer.dart';
 
-class _ImageData {
-  final String imagePath;
-  final String? remoteUrl;
-  final int? imageId;
-
-  _ImageData({
-    required this.imagePath,
-    required this.remoteUrl,
-    this.imageId,
-  });
-}
-
 class DetailImageCarousel extends StatefulWidget {
   final ItemModel item;
   final List<ItemImageModel> images;
@@ -51,177 +39,101 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
     super.dispose();
   }
 
-  List<String> get _imagePaths {
-    final List<String> paths = [];
-    final Set<String> addedPaths = {};
-
-    String? getUniquePath(String? remoteUrl, String? localPath) {
-      if (remoteUrl != null && remoteUrl.isNotEmpty) {
-        if (!addedPaths.contains(remoteUrl)) {
-          addedPaths.add(remoteUrl);
-          return remoteUrl;
-        }
-      }
-      if (localPath != null &&
-          localPath.isNotEmpty &&
-          !localPath.startsWith('http') &&
-          !localPath.startsWith('blob:')) {
-        if (!addedPaths.contains(localPath)) {
-          addedPaths.add(localPath);
-          return localPath;
-        }
-      }
-      return null;
-    }
-
-    final favoriteImages = widget.images
-        .where((img) => img.isFavorite == true)
-        .toList();
-    final otherImages = widget.images
-        .where((img) => img.isFavorite != true)
-        .toList();
-
-    for (final img in favoriteImages) {
-      final path = getUniquePath(img.remoteImageUrl, img.imageUri);
-      if (path != null) paths.add(path);
-    }
-
-    for (final img in otherImages) {
-      final path = getUniquePath(img.remoteImageUrl, img.imageUri);
-      if (path != null) paths.add(path);
-    }
-
-    // Only use the item's direct fields as fallback when there are no gallery images
+  /// Builds a deduplicated, ordered list of ViewerImageData from gallery images.
+  /// Favorites first, then the rest. Falls back to item fields if no gallery images.
+  List<ViewerImageData> _buildViewerImages() {
     if (widget.images.isEmpty) {
-      final mainPath = getUniquePath(
-        widget.item.remoteImageUrl,
-        widget.item.imagePath,
-      );
-      if (mainPath != null) paths.add(mainPath);
+      final remoteUrl = widget.item.remoteImageUrl;
+      final localPath = widget.item.imagePath;
+      final path = (remoteUrl?.isNotEmpty == true) ? remoteUrl! : (localPath ?? '');
+      if (path.isEmpty) return [];
+      return [ViewerImageData(path: path, remoteUrl: remoteUrl, isFavorite: true)];
     }
-
-    return paths;
-  }
-
-  _ImageData _getImageAtIndex(int index) {
-    final allImages = <_ImageData>[];
-
-    final favoriteImages = widget.images
-        .where((img) => img.isFavorite == true)
-        .toList();
-    final otherImages = widget.images
-        .where((img) => img.isFavorite != true)
-        .toList();
 
     final seen = <String>{};
+    final result = <ViewerImageData>[];
 
-    for (final img in favoriteImages) {
-      if (img.remoteImageUrl?.isNotEmpty == true) {
-        if (!seen.contains(img.remoteImageUrl)) {
-          seen.add(img.remoteImageUrl!);
-          allImages.add(_ImageData(
-            imagePath: img.imageUri ?? '',
-            remoteUrl: img.remoteImageUrl,
-            imageId: img.id,
-          ));
-        }
-      }
+    void addImage(ItemImageModel img) {
+      final remoteUrl = img.remoteImageUrl;
+      final localPath = img.imageUri;
+      final key = remoteUrl?.isNotEmpty == true ? remoteUrl! : (localPath ?? '');
+      if (key.isEmpty || seen.contains(key)) return;
+      seen.add(key);
+      result.add(ViewerImageData(
+        path: localPath ?? '',
+        remoteUrl: remoteUrl,
+        imageId: img.id,
+        isFavorite: img.isFavorite,
+      ));
     }
 
-    for (final img in otherImages) {
-      if (img.remoteImageUrl?.isNotEmpty == true) {
-        if (!seen.contains(img.remoteImageUrl)) {
-          seen.add(img.remoteImageUrl!);
-          allImages.add(_ImageData(
-            imagePath: img.imageUri ?? '',
-            remoteUrl: img.remoteImageUrl,
-            imageId: img.id,
-          ));
-        }
-      }
+    // Favorites first
+    for (final img in widget.images.where((i) => i.isFavorite)) {
+      addImage(img);
+    }
+    for (final img in widget.images.where((i) => !i.isFavorite)) {
+      addImage(img);
     }
 
-    if (widget.images.isEmpty) {
-      if (widget.item.remoteImageUrl?.isNotEmpty == true) {
-        allImages.add(_ImageData(
-          imagePath: widget.item.imagePath ?? '',
-          remoteUrl: widget.item.remoteImageUrl,
-          imageId: null,
-        ));
-      }
-    }
-
-    return allImages.isNotEmpty && index < allImages.length
-        ? allImages[index]
-        : _ImageData(imagePath: '', remoteUrl: null);
+    return result;
   }
 
   void _showFullScreenImage(BuildContext context, int index) {
-    final img = _getImageAtIndex(index);
+    final viewerImages = _buildViewerImages();
+    if (viewerImages.isEmpty) return;
 
-    // En web: modal con tamaño A4 en el centro
-    // En móvil: pantalla completa
     if (MediaQuery.of(context).size.width > 840) {
-      showDialog(
-        context: context,
-        builder: (ctx) => Dialog(
-          child: Container(
-            width: 595,
-            height: 842,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                UniversalImage(
-                  img.imagePath,
-                  remoteImageUrl: img.remoteUrl,
-                  fit: BoxFit.contain,
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      _showWebModal(context, viewerImages, index);
     } else {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => FullScreenImageViewer(
-            imagePaths: _imagePaths,
+            images: viewerImages,
             initialIndex: index,
-            currentImageId: img.imageId,
             onDismiss: () => Navigator.pop(context),
-            onSetFavorite: img.imageId != null
-                ? (imageId) => context.read<ItemDetailsProvider>().setFavoriteImage(imageId)
-                : null,
+            onSetFavorite: (imageId) =>
+                context.read<ItemDetailsProvider>().setFavoriteImage(imageId),
           ),
         ),
       );
     }
   }
 
+  void _showWebModal(
+      BuildContext context, List<ViewerImageData> viewerImages, int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        child: Container(
+          width: 595,
+          height: 842,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+          child: FullScreenImageViewer(
+            images: viewerImages,
+            initialIndex: index,
+            onDismiss: () => Navigator.pop(ctx),
+            onSetFavorite: (imageId) =>
+                context.read<ItemDetailsProvider>().setFavoriteImage(imageId),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final paths = _imagePaths;
+    final viewerImages = _buildViewerImages();
     final responsive = context.watch<ResponsiveProvider>();
 
-    if (paths.isEmpty) {
+    if (viewerImages.isEmpty) {
       return AspectRatio(
         aspectRatio: 1.0,
         child: Container(
-          color: Theme.of(
-            context,
-          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: Theme.of(context)
+              .colorScheme
+              .surfaceContainerHighest
+              .withValues(alpha: 0.5),
           child: Center(
             child: Icon(
               Icons.image_not_supported,
@@ -234,7 +146,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
     }
 
     if (!responsive.isCompact) {
-      return _buildVerticalGallery(context, paths);
+      return _buildVerticalGallery(context, viewerImages);
     }
 
     return AspectRatio(
@@ -245,10 +157,10 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: PageView.builder(
               controller: _pageController,
-              itemCount: paths.length,
+              itemCount: viewerImages.length,
               onPageChanged: (idx) => setState(() => _currentIndex = idx),
               itemBuilder: (context, index) {
-                final img = _getImageAtIndex(index);
+                final img = viewerImages[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: GestureDetector(
@@ -260,7 +172,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: UniversalImage(
-                          img.imagePath,
+                          img.path,
                           remoteImageUrl: img.remoteUrl,
                           fit: BoxFit.cover,
                         ),
@@ -271,7 +183,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
               },
             ),
           ),
-          if (paths.length > 1)
+          if (viewerImages.length > 1)
             Positioned(
               bottom: 110,
               left: 0,
@@ -279,7 +191,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
-                  paths.length,
+                  viewerImages.length,
                   (index) => Container(
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     width: 8,
@@ -302,14 +214,16 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Theme.of(
-                        context,
-                      ).colorScheme.surface.withValues(alpha: 0.4),
+                      Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withValues(alpha: 0.4),
                       Colors.transparent,
                       Colors.transparent,
-                      Theme.of(
-                        context,
-                      ).colorScheme.surface.withValues(alpha: 0.8),
+                      Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withValues(alpha: 0.8),
                     ],
                     stops: const [0.0, 0.2, 0.6, 1.0],
                   ),
@@ -322,12 +236,13 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
     );
   }
 
-  Widget _buildVerticalGallery(BuildContext context, List<String> paths) {
+  Widget _buildVerticalGallery(
+      BuildContext context, List<ViewerImageData> viewerImages) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
       child: Column(
-        children: List.generate(paths.length, (index) {
-          final img = _getImageAtIndex(index);
+        children: List.generate(viewerImages.length, (index) {
+          final img = viewerImages[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 24.0),
             child: GestureDetector(
@@ -341,7 +256,7 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
                   child: AspectRatio(
                     aspectRatio: 0.8,
                     child: UniversalImage(
-                      img.imagePath,
+                      img.path,
                       remoteImageUrl: img.remoteUrl,
                       fit: BoxFit.cover,
                     ),

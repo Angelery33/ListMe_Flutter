@@ -207,7 +207,8 @@ class ExternalApiService {
             'nameEnglish': item['title_english'],
             'nameJapanese': item['title_japanese'],
             'description': item['synopsis'] ?? '',
-            'imagePath': item['images']?['jpg']?['large_image_url'],
+            'imagePath': item['images']?['jpg']?['image_url'],
+            'imagePathLarge': item['images']?['jpg']?['large_image_url'],
             'imagePathSmall': item['images']?['jpg']?['image_url'],
             'genre': (item['genres'] as List?)?.isNotEmpty == true
                 ? item['genres'][0]['name']

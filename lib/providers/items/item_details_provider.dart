@@ -262,7 +262,10 @@ class ItemDetailsProvider extends ChangeNotifier {
         return a.isFavorite ? -1 : 1;
       });
 
-      final favImg = _images.firstWhere((img) => img.id == imageId);
+      final favImg = _images.firstWhere(
+        (img) => img.id == imageId,
+        orElse: () => _images.first,
+      );
       _item = _item!.copyWith(remoteImageUrl: favImg.remoteImageUrl);
 
       notifyListeners();

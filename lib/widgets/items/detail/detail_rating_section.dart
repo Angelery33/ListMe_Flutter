@@ -41,7 +41,7 @@ class DetailRatingSection extends StatelessWidget {
           if (showExternal)
             Padding(
               padding: EdgeInsets.only(top: showPersonal ? 16 : 0),
-              child: _buildExternalRating(context, item.externalRating!),
+              child: _buildExternalRating(context, item.externalRating!, item.ratingSource),
             ),
         ],
       ),
@@ -123,7 +123,7 @@ class DetailRatingSection extends StatelessWidget {
     );
   }
 
-  Widget _buildExternalRating(BuildContext context, double extRating) {
+  Widget _buildExternalRating(BuildContext context, double extRating, String? ratingSource) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -167,6 +167,25 @@ class DetailRatingSection extends StatelessWidget {
               color: Colors.blueAccent,
             ),
           ),
+          if (ratingSource != null) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                ratingSource,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

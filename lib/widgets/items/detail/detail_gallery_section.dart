@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../data/items/item_model.dart';
-
 import 'package:provider/provider.dart';
+import '../../../../data/items/item_model.dart';
+import '../../../../data/items/item_image_model.dart';
 import '../../../../providers/items/item_details_provider.dart';
 import '../../shared/universal_image.dart';
 import 'full_screen_image_viewer.dart';
@@ -11,6 +11,58 @@ class DetailGallerySection extends StatelessWidget {
   final bool canEdit;
 
   const DetailGallerySection({super.key, required this.item, this.canEdit = true});
+
+  List<ViewerImageData> _toViewerImages(List<ItemImageModel> images) {
+    return images.map((img) => ViewerImageData(
+      path: img.imageUri ?? '',
+      remoteUrl: img.remoteImageUrl,
+      imageId: img.id,
+      isFavorite: img.isFavorite,
+    )).toList();
+  }
+
+  void _showImageFullScreen(
+    BuildContext context,
+    List<ItemImageModel> images,
+    int index,
+  ) {
+    final viewerImages = _toViewerImages(images);
+    if (viewerImages.isEmpty) return;
+
+    Future<bool> onSetFavorite(int imageId) =>
+        context.read<ItemDetailsProvider>().setFavoriteImage(imageId);
+
+    if (MediaQuery.of(context).size.width > 840) {
+      showDialog(
+        context: context,
+        builder: (ctx) => Dialog(
+          child: Container(
+            width: 595,
+            height: 842,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+            child: FullScreenImageViewer(
+              images: viewerImages,
+              initialIndex: index,
+              onDismiss: () => Navigator.pop(ctx),
+              onSetFavorite: canEdit ? onSetFavorite : null,
+            ),
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FullScreenImageViewer(
+            images: viewerImages,
+            initialIndex: index,
+            onDismiss: () => Navigator.pop(context),
+            onSetFavorite: canEdit ? onSetFavorite : null,
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +76,10 @@ class DetailGallerySection extends StatelessWidget {
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -53,7 +106,7 @@ class DetailGallerySection extends StatelessWidget {
                   child: Stack(
                     children: [
                       GestureDetector(
-                        onTap: () => _showImageFullScreen(context, img, index),
+                        onTap: () => _showImageFullScreen(context, images, index),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: AspectRatio(
@@ -71,7 +124,7 @@ class DetailGallerySection extends StatelessWidget {
                           top: 4,
                           right: 4,
                           child: GestureDetector(
-                            onTap: () => context.read<ItemDetailsProvider>().setFavoriteImage(img.id!),
+                            onTap: () => provider.setFavoriteImage(img.id!),
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
@@ -79,8 +132,8 @@ class DetailGallerySection extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                img.isFavorite == true ? Icons.star : Icons.star_border,
-                                color: img.isFavorite == true
+                                img.isFavorite ? Icons.star : Icons.star_border,
+                                color: img.isFavorite
                                     ? Theme.of(context).colorScheme.primary
                                     : Colors.white,
                                 size: 16,
@@ -97,77 +150,5 @@ class DetailGallerySection extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _showImageFullScreen(BuildContext context, dynamic img, int index) {
-    final imagePath = img.imageUri ?? '';
-    final remoteUrl = img.remoteImageUrl;
-
-    // En web: modal con tamaño A4 en el centro
-    // En móvil: pantalla completa
-    if (MediaQuery.of(context).size.width > 840) {
-      showDialog(
-        context: context,
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setState) => Dialog(
-            child: Container(
-              width: 595,
-              height: 842,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  UniversalImage(
-                    imagePath,
-                    remoteImageUrl: remoteUrl,
-                    fit: BoxFit.contain,
-                  ),
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            img.isFavorite == true ? Icons.star : Icons.star_border,
-                            color: img.isFavorite == true
-                                ? Theme.of(ctx).colorScheme.primary
-                                : Colors.white,
-                          ),
-                          onPressed: () {
-                            context.read<ItemDetailsProvider>().setFavoriteImage(img.id!);
-                            setState(() {});
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.pop(ctx),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => FullScreenImageViewer(
-            imagePaths: [remoteUrl ?? imagePath],
-            initialIndex: 0,
-            currentImageId: img.id,
-            onDismiss: () => Navigator.pop(context),
-            onSetFavorite: (imageId) => context.read<ItemDetailsProvider>().setFavoriteImage(imageId),
-          ),
-        ),
-      );
-    }
   }
 }

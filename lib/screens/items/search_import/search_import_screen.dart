@@ -140,6 +140,15 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
       case 'Book':
         return await _apiService.searchBooks(query: query, page: page);
       case 'Anime':
+        if (source == 'TMDb') {
+          final settings = Provider.of<SettingsProvider>(context, listen: false);
+          return await _apiService.searchTMDb(
+            query: query,
+            page: page,
+            apiKey: settings.tmdbApiKey,
+            type: 'tv',
+          );
+        }
         return await _apiService.searchAnime(query: query, page: page);
       case 'Manga':
       case 'Comic':
@@ -215,7 +224,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     } else if (widget.category == 'Book') {
       sources = ['Auto (Books)'];
     } else if (widget.category == 'Anime') {
-      sources = ['Auto (MAL)'];
+      sources = ['MAL', 'TMDb'];
     } else if (widget.category == 'Movie' || widget.category == 'Series') {
       sources = ['Auto'];
     } else {
@@ -229,8 +238,9 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
       child: Wrap(
         spacing: 8.0,
         children: sources.map((s) {
+          final defaultSource = widget.category == 'Anime' ? 'MAL' : 'Auto';
           final isSelected =
-              (_selectedSource == null && s == 'Auto') ||
+              (_selectedSource == null && s == defaultSource) ||
               (_selectedSource == s);
           return ChoiceChip(
             label: Text(s),
@@ -556,6 +566,15 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     );
   }
 
+  String? _ratingSourceLabel(String? source) {
+    if (source == null) return null;
+    if (source.contains('MyAnimeList')) return 'MAL';
+    if (source == 'TMDb') return 'TMDb';
+    if (source == 'OMDb') return 'IMDb';
+    if (source.contains('Google')) return 'Google';
+    return null;
+  }
+
   void _selectItem(Map<String, dynamic> result) async {
     Map<String, dynamic> data = {
       'name': result['name'],
@@ -563,6 +582,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
       'remoteImageUrl': result['imagePath'],
       'genre': result['genre'],
       'externalRating': result['externalRating'],
+      'ratingSource': _ratingSourceLabel(result['source'] as String?),
     };
 
     if (widget.category == 'Book') {
@@ -573,17 +593,42 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
         data['publishedDate'] = result['publishedDate'];
       if (result['isbn'] != null) data['isbn'] = result['isbn'];
     } else if (widget.category == 'Anime') {
-      data['totalChapter'] = result['totalEpisodes'];
-      data['chapter'] = 0;
-      if (result['durationMinutes'] != null) {
-        data['durationMinutes'] = result['durationMinutes'];
+      if (result['source'] == 'TMDb') {
+        setState(() => _isLoading = true);
+        try {
+          final settings = Provider.of<SettingsProvider>(context, listen: false);
+          final details = await _apiService.getTMDbDetails(
+            result['remoteId'],
+            settings.tmdbApiKey,
+            type: 'tv',
+          );
+          if (details != null) {
+            data['description'] = details['description'];
+            data['genre'] = details['genre'];
+            data['externalRating'] = details['externalRating'];
+            data['totalChapter'] = details['totalEpisodes'];
+            data['totalSeason'] = details['seasons'];
+            data['year'] = details['year'];
+            data['studio'] = details['studio'];
+            data['runtime'] = details['runtime'];
+          }
+        } catch (e) {
+          debugPrint("Error fetching TMDb anime details: $e");
+        } finally {
+          if (mounted) setState(() => _isLoading = false);
+        }
+      } else {
+        data['totalChapter'] = result['totalEpisodes'];
+        data['chapter'] = 0;
+        if (result['durationMinutes'] != null)
+          data['durationMinutes'] = result['durationMinutes'];
+        if (result['studio'] != null) data['studio'] = result['studio'];
+        if (result['statusRaw'] != null) data['statusRaw'] = result['statusRaw'];
+        if (result['nameEnglish'] != null)
+          data['nameEnglish'] = result['nameEnglish'];
+        if (result['nameJapanese'] != null)
+          data['nameJapanese'] = result['nameJapanese'];
       }
-      if (result['studio'] != null) data['studio'] = result['studio'];
-      if (result['statusRaw'] != null) data['statusRaw'] = result['statusRaw'];
-      if (result['nameEnglish'] != null)
-        data['nameEnglish'] = result['nameEnglish'];
-      if (result['nameJapanese'] != null)
-        data['nameJapanese'] = result['nameJapanese'];
     } else if (widget.category == 'Manga' || widget.category == 'Comic') {
       data['totalChapter'] = result['totalChapters'] ?? result['chapters'];
       data['totalVolume'] = result['totalVolumes'] ?? result['volumes'];
