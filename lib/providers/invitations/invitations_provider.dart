@@ -7,7 +7,10 @@ class InvitationsProvider extends ChangeNotifier {
 
   List<InvitationModel> _pendingInvitations = [];
   bool _isLoading = false;
+  DateTime? _lastLoaded;
   String? _error;
+
+  static const _staleDuration = Duration(minutes: 2);
 
   InvitationsProvider(this._repository);
 
@@ -16,6 +19,10 @@ class InvitationsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  bool get isStale =>
+      _lastLoaded == null ||
+      DateTime.now().difference(_lastLoaded!) > _staleDuration;
+
   Future<void> loadPendingInvitations() async {
     _isLoading = true;
     _error = null;
@@ -23,6 +30,7 @@ class InvitationsProvider extends ChangeNotifier {
 
     try {
       _pendingInvitations = await _repository.getPendingInvitations();
+      _lastLoaded = DateTime.now();
     } catch (e) {
       _error = e.toString();
     } finally {

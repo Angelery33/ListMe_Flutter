@@ -4,8 +4,21 @@ import '../../providers/invitations/invitations_provider.dart';
 import '../../providers/lists/lists_provider.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 
-class InvitationsScreen extends StatelessWidget {
+class InvitationsScreen extends StatefulWidget {
   const InvitationsScreen({super.key});
+
+  @override
+  State<InvitationsScreen> createState() => _InvitationsScreenState();
+}
+
+class _InvitationsScreenState extends State<InvitationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<InvitationsProvider>().loadPendingInvitations();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

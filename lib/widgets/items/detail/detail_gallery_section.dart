@@ -8,8 +8,9 @@ import 'full_screen_image_viewer.dart';
 
 class DetailGallerySection extends StatelessWidget {
   final ItemModel item;
+  final bool canEdit;
 
-  const DetailGallerySection({super.key, required this.item});
+  const DetailGallerySection({super.key, required this.item, this.canEdit = true});
 
   @override
   Widget build(BuildContext context) {
@@ -65,27 +66,28 @@ class DetailGallerySection extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: GestureDetector(
-                          onTap: () => context.read<ItemDetailsProvider>().setFavoriteImage(img.id!),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              img.isFavorite == true ? Icons.star : Icons.star_border,
-                              color: img.isFavorite == true
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Colors.white,
-                              size: 16,
+                      if (canEdit)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: () => context.read<ItemDetailsProvider>().setFavoriteImage(img.id!),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                img.isFavorite == true ? Icons.star : Icons.star_border,
+                                color: img.isFavorite == true
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 );

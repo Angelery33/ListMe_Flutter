@@ -5,8 +5,9 @@ import '../../../../providers/items/item_details_provider.dart';
 
 class DetailRatingSection extends StatelessWidget {
   final ListModel? library;
+  final bool canEdit;
 
-  const DetailRatingSection({super.key, this.library});
+  const DetailRatingSection({super.key, this.library, this.canEdit = true});
 
   int get _ratingScale => library?.ratingScale ?? 10;
 
@@ -100,17 +101,19 @@ class DetailRatingSection extends StatelessWidget {
               }
 
               return GestureDetector(
-                onTap: () {
-                  double newScore;
-                  if (_ratingScale == 5) {
-                    newScore = (index + 1).toDouble();
-                  } else if (_ratingScale == 100) {
-                    newScore = (index + 1) * 20.0;
-                  } else {
-                    newScore = (index + 1) * 2.0;
-                  }
-                  provider.updateScore(newScore);
-                },
+                onTap: canEdit
+                    ? () {
+                        double newScore;
+                        if (_ratingScale == 5) {
+                          newScore = (index + 1).toDouble();
+                        } else if (_ratingScale == 100) {
+                          newScore = (index + 1) * 20.0;
+                        } else {
+                          newScore = (index + 1) * 2.0;
+                        }
+                        provider.updateScore(newScore);
+                      }
+                    : null,
                 child: Icon(icon, color: Colors.amber, size: 28),
               );
             }),

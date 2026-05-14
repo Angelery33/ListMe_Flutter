@@ -107,22 +107,23 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
           icon: Icon(Icons.more_vert, color: textColor),
           onSelected: widget.onMenuSelected,
           itemBuilder: (context) => [
-            if (!widget.isCloud)
+            if (widget.list.owner && !widget.isCloud)
               PopupMenuItem(
                 value: 'share',
                 child: Text(context.l10n.listsShareTitle),
               ),
-            if (widget.canEdit && widget.onEditPressed != null)
+            if (widget.list.owner && widget.onEditPressed != null)
               PopupMenuItem(value: 'edit', child: Text(context.l10n.commonEdit)),
             if (widget.onSyncPressed != null)
               PopupMenuItem(value: 'sync', child: Text(context.l10n.commonSync)),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text(
-                context.l10n.listsDeleteTitle,
-                style: TextStyle(color: Colors.red),
+            if (widget.list.owner)
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(
+                  context.l10n.listsDeleteTitle,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
-            ),
           ],
         ),
       ],

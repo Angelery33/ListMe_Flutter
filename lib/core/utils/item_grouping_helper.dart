@@ -74,17 +74,36 @@ class ItemGroupingHelper {
     // 3. Agrupación
     Map<String, List<ItemModel>> grouped = {};
 
-    // En modo búsqueda, mantener grouping si la lista lo soporta
     if (list.supportsCompletion) {
       _groupByStatus(filtered, grouped);
     } else if (list.supportsWishlist && !isSearching) {
       _groupByWishlist(filtered, grouped);
-    } else if (list.thematic && list.genreLayoutMode == 1 && !isSearching) {
-      _groupByGenre(filtered, grouped);
+    } else if (list.thematic && !isSearching) {
+      if (list.genreLayoutMode == 1) {
+        // Secciones con cabeceras de género
+        _groupByGenre(filtered, grouped);
+      } else if (list.genreLayoutMode == 2) {
+        // Agrupado sin cabeceras: un único grupo pero ordenado por género
+        filtered.sort((a, b) => (a.genre ?? '').compareTo(b.genre ?? ''));
+        grouped['Todos'] = filtered;
+      } else {
+        grouped['Todos'] = filtered;
+      }
     } else {
       grouped['Todos'] = filtered;
     }
 
+    return grouped;
+  }
+
+  /// Agrupa items por género para uso como segundo nivel dentro de una sección
+  /// de estado o wishlist. Mantiene el orden en que aparecen los géneros.
+  static Map<String, List<ItemModel>> subGroupByGenre(List<ItemModel> items) {
+    final Map<String, List<ItemModel>> grouped = {};
+    for (final item in items) {
+      final genre = item.genre ?? 'Otros';
+      grouped.putIfAbsent(genre, () => []).add(item);
+    }
     return grouped;
   }
 

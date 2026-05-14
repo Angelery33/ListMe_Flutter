@@ -8,9 +8,9 @@ class InvitationsRepository {
 
   Future<List<InvitationModel>> getPendingInvitations() async {
     final response = await _apiClient.dio.get('/invitations/pending');
-    return (response.data as List)
-        .map((json) => InvitationModel.fromJson(json))
-        .toList();
+    final data = response.data;
+    if (data == null || data is! List) return [];
+    return data.map((json) => InvitationModel.fromJson(json)).toList();
   }
 
   Future<void> sendInvitation(int libraryId, String username, bool readOnly) async {

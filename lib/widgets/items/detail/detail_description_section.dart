@@ -8,8 +8,9 @@ import '../../shared/expandable_text.dart';
 
 class DetailDescriptionSection extends StatelessWidget {
   final ItemModel item;
+  final bool canEdit;
 
-  const DetailDescriptionSection({super.key, required this.item});
+  const DetailDescriptionSection({super.key, required this.item, this.canEdit = true});
 
   Future<void> _editDescription(BuildContext context) async {
     final controller = TextEditingController(text: item.description ?? '');
@@ -84,15 +85,16 @@ class DetailDescriptionSection extends StatelessWidget {
                   ),
                 ],
               ),
-              IconButton(
-                icon: Icon(
-                  hasDescription ? Icons.edit_outlined : Icons.add,
-                  size: 20,
+              if (canEdit)
+                IconButton(
+                  icon: Icon(
+                    hasDescription ? Icons.edit_outlined : Icons.add,
+                    size: 20,
+                  ),
+                  tooltip: hasDescription ? context.l10n.descriptionEdit : context.l10n.descriptionAdd,
+                  onPressed: () => _editDescription(context),
+                  color: primary,
                 ),
-                tooltip: hasDescription ? context.l10n.descriptionEdit : context.l10n.descriptionAdd,
-                onPressed: () => _editDescription(context),
-                color: primary,
-              ),
             ],
           ),
           const SizedBox(height: 12),

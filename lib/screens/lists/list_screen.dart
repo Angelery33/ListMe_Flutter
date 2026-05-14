@@ -131,26 +131,28 @@ class _ListScreenState extends State<ListScreen> {
         isCloud: widget.remoteId != null,
         canEdit: widget.listId != 0 && widget.remoteId == null,
       ),
-      floatingActionButton: Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: theme.colorScheme.primary.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () => _navigateToAddItem(),
-          backgroundColor: theme.colorScheme.primary,
-          foregroundColor: theme.colorScheme.onPrimary,
-          child: const Icon(Icons.add_rounded, size: 28),
-        ),
-      ),
+      floatingActionButton: _currentList.canEdit
+          ? Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                onPressed: () => _navigateToAddItem(),
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                child: const Icon(Icons.add_rounded, size: 28),
+              ),
+            )
+          : null,
       body: Column(
         children: [
           ListSortFilterBar(
@@ -254,40 +256,86 @@ class _ListScreenState extends State<ListScreen> {
       );
 
       if (!isCollapsed) {
-        if (_currentList.compact) {
-          widgets.add(_buildGrid(items, itemsProvider));
-        } else {
-          final responsive = context.read<ResponsiveProvider>();
-          if (responsive.isExpanded) {
-            widgets.add(_buildStandardGrid(items, itemsProvider));
-          } else {
-            widgets.addAll(
-              items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: ItemCard(
-                    item: item,
-                    onTap: () => _navigateToItemDetails(item),
-                    onLongPress: () => _showItemOptions(item),
-                    isCompact: false,
-                    showStatus: _currentList.supportsCompletion,
-                    isGradeable: _currentList.gradeable,
-                    isThematic: _currentList.thematic,
-                    supportsPrice: _currentList.supportsPrice,
-                    supportsProgress: _currentList.supportsProgress,
-                    onIncrement: _currentList.supportsProgress
-                        ? () => itemsProvider.incrementProgress(item)
-                        : null,
-                  ),
-                ),
-              ),
-            );
-          }
-        }
+        widgets.addAll(
+          _buildSectionContent(items, itemsProvider),
+        );
       }
     });
 
     return widgets;
+  }
+
+  /// Renderiza el contenido de una sección (puede ser plano o con sub-agrupación
+  /// temática si la lista es temática con secciones de estado/wishlist).
+  List<Widget> _buildSectionContent(
+    List<ItemModel> items,
+    ItemsProvider itemsProvider,
+  ) {
+    final responsive = context.read<ResponsiveProvider>();
+    final useSubGenres =
+        _currentList.thematic &&
+        _currentList.genreLayoutMode == 1 &&
+        (_currentList.supportsCompletion || _currentList.supportsWishlist);
+
+    if (useSubGenres) {
+      final subGroups = ItemGroupingHelper.subGroupByGenre(items);
+      final List<Widget> widgets = [];
+      subGroups.forEach((genre, genreItems) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(left: 4, top: 12, bottom: 6),
+            child: Text(
+              genre.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.4,
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
+              ),
+            ),
+          ),
+        );
+        if (_currentList.compact) {
+          widgets.add(_buildGrid(genreItems, itemsProvider));
+        } else if (responsive.isExpanded) {
+          widgets.add(_buildStandardGrid(genreItems, itemsProvider));
+        } else {
+          widgets.addAll(_buildItemList(genreItems, itemsProvider));
+        }
+      });
+      return widgets;
+    }
+
+    if (_currentList.compact) {
+      return [_buildGrid(items, itemsProvider)];
+    }
+    if (responsive.isExpanded) {
+      return [_buildStandardGrid(items, itemsProvider)];
+    }
+    return _buildItemList(items, itemsProvider);
+  }
+
+  List<Widget> _buildItemList(List<ItemModel> items, ItemsProvider itemsProvider) {
+    return items
+        .map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: ItemCard(
+              item: item,
+              onTap: () => _navigateToItemDetails(item),
+              onLongPress: () => _showItemOptions(item),
+              isCompact: false,
+              showStatus: _currentList.supportsCompletion,
+              isGradeable: _currentList.gradeable,
+              isThematic: _currentList.thematic,
+              supportsPrice: _currentList.supportsPrice,
+              supportsProgress: _currentList.supportsProgress,
+              onIncrement: _currentList.supportsProgress
+                  ? () => itemsProvider.incrementProgress(item)
+                  : null,
+            ),
+          ),
+        )
+        .toList();
   }
 
   Widget _buildGrid(List<ItemModel> items, ItemsProvider itemsProvider) {
@@ -483,6 +531,7 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   void _showItemOptions(ItemModel item) {
+    if (!_currentList.canEdit) return;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(

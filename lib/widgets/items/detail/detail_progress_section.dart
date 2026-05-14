@@ -20,9 +20,10 @@ class DetailProgressSection extends StatelessWidget {
     if (item == null || !supportsProgress) return const SizedBox.shrink();
 
     final progressType = library?.progressType;
+    final canEdit = library?.canEdit ?? true;
 
     if (progressType == null) {
-      return _buildBasicProgress(context, item, provider);
+      return _buildBasicProgress(context, item, provider, canEdit: canEdit);
     }
 
     return Container(
@@ -67,7 +68,7 @@ class DetailProgressSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          ..._buildProgressFields(context, item, provider, progressType),
+          ..._buildProgressFields(context, item, provider, progressType, canEdit: canEdit),
         ],
       ),
     );
@@ -76,8 +77,9 @@ class DetailProgressSection extends StatelessWidget {
   Widget _buildBasicProgress(
     BuildContext context,
     ItemModel item,
-    ItemDetailsProvider provider,
-  ) {
+    ItemDetailsProvider provider, {
+    bool canEdit = true,
+  }) {
     final current = item.currentProgress ?? 0;
     final total = item.totalProgress;
     final unit = item.progressUnit ?? 'unidades';
@@ -131,7 +133,7 @@ class DetailProgressSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              if (total == null || current < total)
+              if (canEdit && (total == null || current < total))
                 ElevatedButton.icon(
                   onPressed: () => provider.incrementProgress(),
                   icon: const Icon(Icons.add, size: 18),
@@ -146,7 +148,7 @@ class DetailProgressSection extends StatelessWidget {
                     ),
                   ),
                 )
-              else
+              else if (total != null && current >= total)
                 const Icon(Icons.check_circle, color: Colors.green, size: 36),
             ],
           ),
@@ -159,8 +161,9 @@ class DetailProgressSection extends StatelessWidget {
     BuildContext context,
     ItemModel item,
     ItemDetailsProvider provider,
-    String? progressType,
-  ) {
+    String? progressType, {
+    bool canEdit = true,
+  }) {
     List<Widget> widgets = [];
 
     if (progressType == 'Libro') {
@@ -170,15 +173,10 @@ class DetailProgressSection extends StatelessWidget {
           context.l10n.progressChapter,
           item.chapter ?? 0,
           item.totalChapter,
-          () => provider.updateProgressField(
-            'chapter',
-            (item.chapter ?? 0) + 1,
-          ),
-          () => provider.updateProgressField(
-            'chapter',
-            (item.chapter ?? 0) - 1,
-          ),
+          () => provider.updateProgressField('chapter', (item.chapter ?? 0) + 1),
+          () => provider.updateProgressField('chapter', (item.chapter ?? 0) - 1),
           (val) => provider.updateProgressField('chapter', val),
+          canEdit: canEdit,
         ),
       );
       widgets.add(
@@ -190,6 +188,7 @@ class DetailProgressSection extends StatelessWidget {
           () => provider.updateProgressField('page', (item.page ?? 0) + 1),
           () => provider.updateProgressField('page', (item.page ?? 0) - 1),
           (val) => provider.updateProgressField('page', val),
+          canEdit: canEdit,
         ),
       );
     } else if (progressType == 'Serie' || progressType == 'Anime') {
@@ -202,6 +201,7 @@ class DetailProgressSection extends StatelessWidget {
           () => provider.updateProgressField('season', (item.season ?? 0) + 1),
           () => provider.updateProgressField('season', (item.season ?? 0) - 1),
           (val) => provider.updateProgressField('season', val),
+          canEdit: canEdit,
         ),
       );
       widgets.add(
@@ -210,15 +210,10 @@ class DetailProgressSection extends StatelessWidget {
           context.l10n.progressEpisode,
           item.chapter ?? 0,
           item.totalChapter,
-          () => provider.updateProgressField(
-            'chapter',
-            (item.chapter ?? 0) + 1,
-          ),
-          () => provider.updateProgressField(
-            'chapter',
-            (item.chapter ?? 0) - 1,
-          ),
+          () => provider.updateProgressField('chapter', (item.chapter ?? 0) + 1),
+          () => provider.updateProgressField('chapter', (item.chapter ?? 0) - 1),
           (val) => provider.updateProgressField('chapter', val),
+          canEdit: canEdit,
         ),
       );
     } else if (progressType == 'Manga') {
@@ -231,6 +226,7 @@ class DetailProgressSection extends StatelessWidget {
           () => provider.updateProgressField('volume', (item.volume ?? 0) + 1),
           () => provider.updateProgressField('volume', (item.volume ?? 0) - 1),
           (val) => provider.updateProgressField('volume', val),
+          canEdit: canEdit,
         ),
       );
       widgets.add(
@@ -239,15 +235,10 @@ class DetailProgressSection extends StatelessWidget {
           context.l10n.progressChapter,
           item.chapter ?? 0,
           item.totalChapter,
-          () => provider.updateProgressField(
-            'chapter',
-            (item.chapter ?? 0) + 1,
-          ),
-          () => provider.updateProgressField(
-            'chapter',
-            (item.chapter ?? 0) - 1,
-          ),
+          () => provider.updateProgressField('chapter', (item.chapter ?? 0) + 1),
+          () => provider.updateProgressField('chapter', (item.chapter ?? 0) - 1),
           (val) => provider.updateProgressField('chapter', val),
+          canEdit: canEdit,
         ),
       );
       widgets.add(
@@ -259,6 +250,7 @@ class DetailProgressSection extends StatelessWidget {
           () => provider.updateProgressField('page', (item.page ?? 0) + 1),
           () => provider.updateProgressField('page', (item.page ?? 0) - 1),
           (val) => provider.updateProgressField('page', val),
+          canEdit: canEdit,
         ),
       );
     } else {
@@ -273,6 +265,7 @@ class DetailProgressSection extends StatelessWidget {
           () => provider.incrementProgress(),
           () => provider.decrementProgress(),
           (val) => provider.updateProgress(val, item.totalProgress),
+          canEdit: canEdit,
         ),
       );
     }
@@ -287,8 +280,9 @@ class DetailProgressSection extends StatelessWidget {
     int? total,
     VoidCallback onIncrement,
     VoidCallback onDecrement,
-    Function(int) onManualSet,
-  ) {
+    Function(int) onManualSet, {
+    bool canEdit = true,
+  }) {
     final percentage = (total != null && total > 0)
         ? (current / total * 100).toStringAsFixed(1)
         : null;
@@ -302,72 +296,75 @@ class DetailProgressSection extends StatelessWidget {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () async {
-                    final controller =
-                        TextEditingController(text: current.toString());
-                    final newVal = await showDialog<int>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text('Establecer $label'),
-                        content: TextField(
-                          controller: controller,
-                          keyboardType: TextInputType.number,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                            suffixText: total != null ? '/ $total' : null,
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('CANCELAR'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(
-                              ctx,
-                              int.tryParse(controller.text),
+                  onTap: canEdit
+                      ? () async {
+                          final controller =
+                              TextEditingController(text: current.toString());
+                          final newVal = await showDialog<int>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: Text('Establecer $label'),
+                              content: TextField(
+                                controller: controller,
+                                keyboardType: TextInputType.number,
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  suffixText: total != null ? '/ $total' : null,
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('CANCELAR'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(
+                                    ctx,
+                                    int.tryParse(controller.text),
+                                  ),
+                                  child: const Text('GUARDAR'),
+                                ),
+                              ],
                             ),
-                            child: const Text('GUARDAR'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (newVal != null) {
-                      onManualSet(newVal);
-                    }
-                  },
+                          );
+                          if (newVal != null) {
+                            onManualSet(newVal);
+                          }
+                        }
+                      : null,
                   child: Text(
                     '$label: $current${total != null ? ' / $total' : ''}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
+                      decoration: canEdit ? TextDecoration.underline : null,
                       decorationStyle: TextDecorationStyle.dotted,
                     ),
                   ),
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline, size: 20),
-                    onPressed: onDecrement,
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline, size: 20),
-                    onPressed: onIncrement,
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ],
-              ),
+              if (canEdit)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, size: 20),
+                      onPressed: onDecrement,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline, size: 20),
+                      onPressed: onIncrement,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
+                ),
               if (percentage != null) ...[
                 const SizedBox(width: 12),
                 Text(

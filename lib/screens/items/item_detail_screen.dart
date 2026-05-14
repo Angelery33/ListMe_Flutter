@@ -97,24 +97,27 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     }
   }
 
-  List<Widget> _detailSections(ItemModel item, ListModel? library) => [
-    DetailInfoSection(item: item, library: library),
-    const SizedBox(height: 16),
-    DetailProgressSection(library: library),
-    const SizedBox(height: 16),
-    DetailRatingSection(library: library),
-    const SizedBox(height: 16),
-    DetailDescriptionSection(item: item),
-    const SizedBox(height: 16),
-    DetailCollectionSection(library: library),
-    const SizedBox(height: 16),
-    DetailDatesSection(item: item),
-    const SizedBox(height: 16),
-    DetailAttributesSection(),
-    const SizedBox(height: 16),
-    DetailGallerySection(item: item),
-    const SizedBox(height: 32),
-  ];
+  List<Widget> _detailSections(ItemModel item, ListModel? library) {
+    final canEdit = library?.canEdit ?? true;
+    return [
+      DetailInfoSection(item: item, library: library),
+      const SizedBox(height: 16),
+      DetailProgressSection(library: library),
+      const SizedBox(height: 16),
+      DetailRatingSection(library: library, canEdit: canEdit),
+      const SizedBox(height: 16),
+      DetailDescriptionSection(item: item, canEdit: canEdit),
+      const SizedBox(height: 16),
+      DetailCollectionSection(library: library),
+      const SizedBox(height: 16),
+      DetailDatesSection(item: item),
+      const SizedBox(height: 16),
+      DetailAttributesSection(),
+      const SizedBox(height: 16),
+      DetailGallerySection(item: item, canEdit: canEdit),
+      const SizedBox(height: 32),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,18 +126,21 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     final item = detailsProvider.item ?? widget.item;
     final library = widget.list;
 
+    final canEdit = library?.canEdit ?? true;
     final appBar = CustomGradientAppBar(
       title: item.name,
       showBackButton: true,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () => _onEditTapped(context, item),
-        ),
-        IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () => _onDeleteTapped(context),
-        ),
+        if (canEdit)
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _onEditTapped(context, item),
+          ),
+        if (canEdit)
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _onDeleteTapped(context),
+          ),
       ],
     );
 
