@@ -962,4 +962,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get groupOthers => 'Autres';
+
+  @override
+  String get configStatusOrderTitle => 'Sections de statut';
+
+  @override
+  String get configStatusOrderDesc =>
+      'Activer et réordonner les sections visibles dans la liste';
 }

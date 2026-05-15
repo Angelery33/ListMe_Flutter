@@ -16,6 +16,7 @@ import '../../widgets/lists/detail/active_items_section.dart';
 import '../../widgets/items/item_card.dart';
 import '../../widgets/shared/app_shell.dart';
 import '../../providers/invitations/invitations_provider.dart';
+import '../../widgets/lists/detail/list_table_view.dart';
 
 class ListScreen extends StatefulWidget {
   final int listId;
@@ -42,6 +43,7 @@ class _ListScreenState extends State<ListScreen> {
   final Set<String> _collapsedSections = {};
   bool _isStatsVisible = true;
   bool _isSearchVisible = false;
+  bool _isTableView = false;
   late ListModel _currentList;
   bool _initialized = false;
 
@@ -92,8 +94,10 @@ class _ListScreenState extends State<ListScreen> {
   @override
   Widget build(BuildContext context) {
     final itemsProvider = context.watch<ItemsProvider>();
+    final responsive = context.watch<ResponsiveProvider>();
     final isSearching = itemsProvider.searchQuery.isNotEmpty;
     final theme = Theme.of(context);
+    final showTable = _isTableView && !responsive.isCompact;
 
     final groupedItems = ItemGroupingHelper.groupItems(
       items: itemsProvider.items,
@@ -130,6 +134,9 @@ class _ListScreenState extends State<ListScreen> {
             : null,
         isCloud: widget.remoteId != null,
         canEdit: widget.listId != 0 && widget.remoteId == null,
+        showTableToggle: !responsive.isCompact,
+        isTableView: showTable,
+        onTableToggle: () => setState(() => _isTableView = !_isTableView),
       ),
       floatingActionButton: _currentList.canEdit
           ? Container(
@@ -153,7 +160,12 @@ class _ListScreenState extends State<ListScreen> {
               ),
             )
           : null,
-      body: Column(
+      body: showTable
+          ? ListTableView(
+              list: _currentList,
+              items: itemsProvider.items,
+            )
+          : Column(
         children: [
           ListSortFilterBar(
             currentSort: itemsProvider.sortOption,

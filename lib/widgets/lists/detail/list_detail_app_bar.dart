@@ -16,6 +16,9 @@ class ListDetailAppBar extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onSyncPressed;
   final VoidCallback? onEditPressed;
   final VoidCallback? onUploadPressed;
+  final bool showTableToggle;
+  final bool isTableView;
+  final VoidCallback? onTableToggle;
 
   const ListDetailAppBar({
     super.key,
@@ -31,6 +34,9 @@ class ListDetailAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.onSyncPressed,
     this.onEditPressed,
     this.onUploadPressed,
+    this.showTableToggle = false,
+    this.isTableView = false,
+    this.onTableToggle,
   });
 
   @override
@@ -103,6 +109,17 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
         ],
       ),
       actions: [
+        if (widget.showTableToggle)
+          IconButton(
+            icon: Icon(
+              widget.isTableView ? Icons.view_list_rounded : Icons.table_chart_rounded,
+              color: widget.isTableView
+                  ? Theme.of(context).colorScheme.primary
+                  : textColor,
+            ),
+            tooltip: widget.isTableView ? 'Vista lista' : 'Vista tabla',
+            onPressed: widget.onTableToggle,
+          ),
         PopupMenuButton<String>(
           icon: Icon(Icons.more_vert, color: textColor),
           onSelected: widget.onMenuSelected,

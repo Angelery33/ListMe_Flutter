@@ -15,6 +15,7 @@ import '../../widgets/lists/config/config_icon_color_section.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/app_shell.dart';
 import '../../widgets/lists/config/config_collaboration_section.dart';
+import '../../widgets/lists/config/config_status_order_section.dart';
 
 /// Géneros por defecto por tipo de lista (igual que la versión legacy)
 const Map<String, List<String>> kDefaultGenres = {
@@ -131,6 +132,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
   String? _defaultCategory;
   int _ratingScale = 10;
 
+  List<String>? _statusOrder;
+
   bool _isLoading = false;
   List<LibraryGenreModel> _displayedGenres = [];
   late String _selectedColor;
@@ -158,6 +161,7 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     _supportsProgress = widget.library?.supportsProgress ?? false;
     _progressType = widget.library?.progressType;
     _ratingScale = widget.library?.ratingScale ?? 10;
+    _statusOrder = widget.library?.statusOrder;
     _selectedColor = widget.library?.color ?? 'titanium';
     _selectedIcon = widget.library?.icon ?? 'list';
 
@@ -336,6 +340,7 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
       ratingScale: _ratingScale,
       color: _selectedColor,
       icon: _selectedIcon,
+      statusOrder: _statusOrder,
     );
 
     try {
@@ -443,6 +448,13 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
                       onSupportsProgressChanged: (v) =>
                           setState(() => _supportsProgress = v),
                     ),
+                    if (_supportsCompletion) ...[
+                      const SizedBox(height: 16),
+                      ConfigStatusOrderSection(
+                        statusOrder: _statusOrder,
+                        onChanged: (v) => setState(() => _statusOrder = v),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     ConfigRatingProgressSection(
                       isGradeable: _isGradeable,

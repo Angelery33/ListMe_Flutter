@@ -319,5 +319,8 @@
   "groupCompleted": "Abgeschlossen",
   "groupAcquired": "Erworben",
   "groupWishlist": "Wunschliste",
-  "groupOthers": "Andere"
+  "groupOthers": "Andere",
+
+  "configStatusOrderTitle": "Statusabschnitte",
+  "configStatusOrderDesc": "Sichtbare Abschnitte aktivieren und neu anordnen"
 }

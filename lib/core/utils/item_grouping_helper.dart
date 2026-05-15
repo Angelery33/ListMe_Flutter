@@ -74,8 +74,12 @@ class ItemGroupingHelper {
     // 3. Agrupación
     Map<String, List<ItemModel>> grouped = {};
 
-    if (list.supportsCompletion) {
-      _groupByStatus(filtered, grouped);
+    final hasNonDefaultStatus = filtered.any(
+      (i) => i.status != null && i.status != 'PENDING',
+    );
+
+    if (list.supportsCompletion || hasNonDefaultStatus) {
+      _groupByStatus(filtered, grouped, statusOrder: list.statusOrder);
     } else if (list.supportsWishlist && !isSearching) {
       _groupByWishlist(filtered, grouped);
     } else if (list.thematic && !isSearching) {
@@ -130,23 +134,40 @@ class ItemGroupingHelper {
     }
   }
 
+  static const _statusToGroupKey = {
+    'PENDING': kGroupKeyPending,
+    'IN_PROGRESS': kGroupKeyInProgress,
+    'PAUSED': kGroupKeyPaused,
+    'DROPPED': kGroupKeyDropped,
+    'COMPLETED': kGroupKeyCompleted,
+  };
+
+  static const _defaultStatusOrder = [
+    'PENDING',
+    'IN_PROGRESS',
+    'PAUSED',
+    'DROPPED',
+    'COMPLETED',
+  ];
+
   static void _groupByStatus(
     List<ItemModel> items,
-    Map<String, List<ItemModel>> grouped,
-  ) {
-    grouped[kGroupKeyPending] =
-        items.where((i) => i.status == 'PENDING').toList();
-    grouped[kGroupKeyInProgress] =
-        items.where((i) => i.status == 'IN_PROGRESS').toList();
-    grouped[kGroupKeyPaused] =
-        items.where((i) => i.status == 'PAUSED').toList();
-    grouped[kGroupKeyDropped] =
-        items.where((i) => i.status == 'DROPPED').toList();
-    grouped[kGroupKeyCompleted] =
-        items.where((i) => i.status == 'COMPLETED').toList();
+    Map<String, List<ItemModel>> grouped, {
+    List<String>? statusOrder,
+  }) {
+    final order =
+        (statusOrder != null && statusOrder.isNotEmpty)
+            ? statusOrder
+            : _defaultStatusOrder;
 
-    // Eliminar grupos vacíos
-    grouped.removeWhere((key, value) => value.isEmpty);
+    for (final status in order) {
+      final key = _statusToGroupKey[status];
+      if (key == null) continue;
+      final group = items.where((i) => i.status == status).toList();
+      if (group.isNotEmpty) grouped[key] = group;
+    }
+
+    // Items with statuses not in the configured order fall into their natural group
   }
 
   static void _groupByWishlist(

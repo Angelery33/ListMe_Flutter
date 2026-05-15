@@ -40,20 +40,24 @@ class ListCard extends StatelessWidget {
     }
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+      
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       elevation: isDark ? 4 : 1,
       color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
+            crossAxisAlignment: (list.description?.isNotEmpty == true)
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.center,
             children: [
               // Icono con color personalizado
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
@@ -61,7 +65,7 @@ class ListCard extends StatelessWidget {
                 child: Icon(
                   _getIconData(list.icon),
                   color: accentColor,
-                  size: 24,
+                  size: 30,
                 ),
               ),
               const SizedBox(width: 16),
@@ -69,6 +73,7 @@ class ListCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
                       children: [
@@ -78,18 +83,18 @@ class ListCard extends StatelessWidget {
                             children: [
                               Text(
                                 list.name,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w500,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(height: 2),
                               Text(
                                 '${list.itemCount} ${list.itemCount == 1 ? context.l10n.commonItem : context.l10n.commonItems}',
-                                style: theme.textTheme.labelSmall?.copyWith(
+                                style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant
                                       .withValues(alpha: 0.7),
-                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                             ],
@@ -99,7 +104,7 @@ class ListCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Icon(
                             Icons.people_alt_rounded,
-                            size: 16,
+                            size: 18,
                             color: theme.colorScheme.onSurfaceVariant
                                 .withValues(alpha: 0.6),
                           ),
@@ -109,12 +114,12 @@ class ListCard extends StatelessWidget {
                     if (list.description != null &&
                         list.description!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: 2),
+                        padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           list.description!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
+                          style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),

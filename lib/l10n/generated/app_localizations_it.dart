@@ -959,4 +959,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get groupOthers => 'Altri';
+
+  @override
+  String get configStatusOrderTitle => 'Sezioni di stato';
+
+  @override
+  String get configStatusOrderDesc =>
+      'Abilita e riordina le sezioni visibili nella lista';
 }

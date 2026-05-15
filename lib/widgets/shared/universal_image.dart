@@ -41,8 +41,11 @@ class UniversalImage extends StatelessWidget {
     }
 
     if (url.startsWith('http') || url.startsWith('blob:')) {
+      final displayUrl = _shouldProxy(url)
+          ? 'https://images.weserv.nl/?url=${Uri.encodeComponent(url)}'
+          : url;
       return Image.network(
-        url,
+        displayUrl,
         fit: fit,
         width: width,
         height: height,
@@ -83,6 +86,16 @@ class UniversalImage extends StatelessWidget {
 
   bool _isFirebaseStorageUrl(String url) =>
       url.contains('firebasestorage.googleapis.com');
+
+  bool _shouldProxy(String url) {
+    if (!url.startsWith('http')) return false;
+    if (_isFirebaseStorageUrl(url)) return false;
+    if (url.contains('images.weserv.nl')) return false;
+    // MAL blocks hotlinking on all platforms (both cdn. and direct domain)
+    if (url.contains('myanimelist.net')) return true;
+    // On web, proxy everything else too (CORS)
+    return kIsWeb;
+  }
 
   Widget _placeholder(BuildContext context) {
     return Container(

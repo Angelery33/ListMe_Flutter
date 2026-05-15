@@ -93,13 +93,13 @@ class _ListsScreenState extends State<ListsScreen> {
     }
 
     // Medium / Expanded: grid that grows with screen width
-    final maxCrossAxisExtent = responsive.isExpanded ? 360.0 : 420.0;
+    final maxCrossAxisExtent = responsive.isExpanded ? 520.0 : 560.0;
     return GridView.builder(
       padding: padding,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: maxCrossAxisExtent,
-        mainAxisExtent: 80,
-        crossAxisSpacing: 12,
+        mainAxisExtent: 110,
+        crossAxisSpacing: 18,
         mainAxisSpacing: 12,
       ),
       itemCount: listsProvider.lists.length,

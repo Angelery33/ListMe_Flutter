@@ -56,6 +56,9 @@ class ListModel {
   @HiveField(23)
   final int itemCount;
 
+  @HiveField(24)
+  final List<String>? statusOrder;
+
   bool get isShared => shared;
 
   const ListModel({
@@ -83,6 +86,7 @@ class ListModel {
     this.color = 'titanium',
     this.icon = 'list',
     this.itemCount = 0,
+    this.statusOrder,
   });
 
   factory ListModel.fromJson(Map<String, dynamic> json) {
@@ -110,11 +114,15 @@ class ListModel {
       gradeable: json['gradeable'] as bool? ?? false,
       color: json['color'] as String? ?? 'titanium',
       icon: json['icon'] as String? ?? 'list',
-      itemCount: (json['itemCount'] != null) 
-          ? json['itemCount'] as int 
-          : (json['itemsCount'] != null) 
-              ? json['itemsCount'] as int 
+      itemCount: (json['itemCount'] != null)
+          ? json['itemCount'] as int
+          : (json['itemsCount'] != null)
+              ? json['itemsCount'] as int
               : 0,
+      statusOrder: (json['statusOrder'] as String?)
+          ?.split(',')
+          .where((s) => s.isNotEmpty)
+          .toList(),
     );
   }
   Map<String, dynamic> toJson() {
@@ -143,7 +151,10 @@ class ListModel {
     if (customProgressUnit != null) map['customProgressUnit'] = customProgressUnit;
     if (defaultCategory != null) map['defaultCategory'] = defaultCategory;
     if (ratingScale != null) map['ratingScale'] = ratingScale;
-    
+    if (statusOrder != null && statusOrder!.isNotEmpty) {
+      map['statusOrder'] = statusOrder!.join(',');
+    }
+
     return map;
   }
 
@@ -172,6 +183,7 @@ class ListModel {
     String? color,
     String? icon,
     int? itemCount,
+    List<String>? statusOrder,
   }) {
     return ListModel(
       id: id ?? this.id,
@@ -198,6 +210,7 @@ class ListModel {
       color: color ?? this.color,
       icon: icon ?? this.icon,
       itemCount: itemCount ?? this.itemCount,
+      statusOrder: statusOrder ?? this.statusOrder,
     );
   }
 }

@@ -1985,6 +1985,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Otros'**
   String get groupOthers;
+
+  /// No description provided for @configStatusOrderTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Secciones de estado'**
+  String get configStatusOrderTitle;
+
+  /// No description provided for @configStatusOrderDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa y reordena las secciones visibles en la lista'**
+  String get configStatusOrderDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -960,4 +960,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get groupOthers => 'Andere';
+
+  @override
+  String get configStatusOrderTitle => 'Statusabschnitte';
+
+  @override
+  String get configStatusOrderDesc =>
+      'Sichtbare Abschnitte aktivieren und neu anordnen';
 }

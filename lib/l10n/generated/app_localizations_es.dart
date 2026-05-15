@@ -958,4 +958,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get groupOthers => 'Otros';
+
+  @override
+  String get configStatusOrderTitle => 'Secciones de estado';
+
+  @override
+  String get configStatusOrderDesc =>
+      'Activa y reordena las secciones visibles en la lista';
 }

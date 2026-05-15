@@ -953,4 +953,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupOthers => 'Others';
+
+  @override
+  String get configStatusOrderTitle => 'Status sections';
+
+  @override
+  String get configStatusOrderDesc =>
+      'Enable and reorder the sections visible in your list';
 }

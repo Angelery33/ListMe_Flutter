@@ -319,5 +319,8 @@
   "groupCompleted": "Concluidos",
   "groupAcquired": "Adquiridos",
   "groupWishlist": "Lista de Desejos",
-  "groupOthers": "Outros"
+  "groupOthers": "Outros",
+
+  "configStatusOrderTitle": "Secções de estado",
+  "configStatusOrderDesc": "Ativa e reordena as secções visíveis na lista"
 }

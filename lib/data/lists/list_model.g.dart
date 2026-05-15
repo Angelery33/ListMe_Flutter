@@ -41,13 +41,14 @@ class ListModelAdapter extends TypeAdapter<ListModel> {
       color: fields[21] as String,
       icon: fields[22] as String,
       itemCount: fields[23] as int,
+      statusOrder: (fields[24] as List?)?.cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, ListModel obj) {
     writer
-      ..writeByte(24)
+      ..writeByte(25)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -95,7 +96,9 @@ class ListModelAdapter extends TypeAdapter<ListModel> {
       ..writeByte(22)
       ..write(obj.icon)
       ..writeByte(23)
-      ..write(obj.itemCount);
+      ..write(obj.itemCount)
+      ..writeByte(24)
+      ..write(obj.statusOrder);
   }
 
   @override

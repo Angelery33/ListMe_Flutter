@@ -317,251 +317,224 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
             Expanded(child: Center(child: Text(context.l10n.searchImportNoResults)))
           else
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: _results.length + (_isLoadingMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == _results.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(child: CircularProgressIndicator()),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final isWide = w > 700;
+                  if (isWide) {
+                    final colW = (w - 8 - 24) / 2; // spacing + padding
+                    final cardH = (colW * 0.38).clamp(140.0, 240.0);
+                    return GridView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        mainAxisExtent: cardH,
+                      ),
+                      itemCount: _results.length + (_isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _results.length) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        return _buildResultCard(_results[index], colW);
+                      },
                     );
                   }
-                  final item = _results[index];
-                  final title = item['name'] ?? "Sin título";
-                  final imageUrl = item['imagePath'];
-                  final year = item['year'];
-                  final rating = item['externalRating'];
-                  final author = item['author'];
-                  final description = item['description'] ?? '';
-                  final status = item['status'];
-                  final source = item['source'] ?? "Unknown";
-
-                  String? secondaryInfo;
-                  if (author != null && author.isNotEmpty) {
-                    secondaryInfo = author;
-                  } else if (year != null && year.isNotEmpty) {
-                    secondaryInfo = year;
-                  }
-
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    child: InkWell(
-                      onTap: () => _selectItem(item),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: imageUrl != null && imageUrl.isNotEmpty
-                                  ? UniversalImage(
-                                      "",
-                                      remoteImageUrl: imageUrl,
-                                      width: 60,
-                                      height: 90,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Container(
-                                      width: 60,
-                                      height: 90,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.surfaceContainerHighest,
-                                      child: const Icon(Icons.image, size: 30),
-                                    ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    title,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  if (secondaryInfo != null) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      secondaryInfo,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                          ),
-                                    ),
-                                  ],
-                                  if (description.isNotEmpty) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      description.length > 80
-                                          ? '${description.substring(0, 80)}...'
-                                          : description,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 6,
-                                    runSpacing: 4,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primaryContainer
-                                              .withValues(alpha: 0.5),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          source,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimaryContainer,
-                                          ),
-                                        ),
-                                      ),
-                                      if (year != null &&
-                                          year.isNotEmpty &&
-                                          secondaryInfo != year)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondaryContainer
-                                                .withValues(alpha: 0.5),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            year,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSecondaryContainer,
-                                            ),
-                                          ),
-                                        ),
-                                      if (status != null && status.isNotEmpty)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                status.toLowerCase().contains(
-                                                      'finish',
-                                                    ) ||
-                                                    status
-                                                        .toLowerCase()
-                                                        .contains('complete')
-                                                ? Colors.green.withValues(
-                                                    alpha: 0.2,
-                                                  )
-                                                : Colors.blue.withValues(
-                                                    alpha: 0.2,
-                                                  ),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            status,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color:
-                                                  status.toLowerCase().contains(
-                                                        'finish',
-                                                      ) ||
-                                                      status
-                                                          .toLowerCase()
-                                                          .contains('complete')
-                                                  ? Colors.green.shade700
-                                                  : Colors.blue.shade700,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (rating != null && rating > 0)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Colors.amber.withValues(alpha: 0.5),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.star,
-                                      size: 16,
-                                      color: Colors.amber,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      rating.toStringAsFixed(1),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _results.length + (_isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _results.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _buildResultCard(_results[index], w),
+                      );
+                    },
                   );
                 },
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildResultCard(Map<String, dynamic> item, double columnWidth) {
+    final title = item['name'] ?? 'Sin título';
+    final imageUrl = item['imagePath'];
+    final year = item['year'];
+    final rating = item['externalRating'];
+    final author = item['author'];
+    final description = item['description'] ?? '';
+    final status = item['status'];
+    final source = item['source'] ?? 'Unknown';
+
+    String? secondaryInfo;
+    if (author != null && (author as String).isNotEmpty) {
+      secondaryInfo = author;
+    } else if (year != null && (year as String).isNotEmpty) {
+      secondaryInfo = year;
+    }
+
+    // All sizes scale proportionally to column width (base: 400px mobile)
+    final scale = (columnWidth / 400).clamp(0.85, 1.4);
+    final imgH = (145.0 * scale).clamp(100.0, 200.0);
+    final imgW = imgH * 0.70;
+    final titleSize = (15.0 * scale).clamp(14.0, 20.0);
+    final bodySize = (13.0 * scale).clamp(12.0, 16.0);
+    final tagSize = (11.0 * scale).clamp(10.0, 14.0);
+    final ratingSize = (12.0 * scale).clamp(11.0, 16.0);
+    final ratingIconSize = (16.0 * scale).clamp(14.0, 22.0);
+    final descLimit = (100 * scale).toInt();
+    final descLines = scale > 1.2 ? 4 : 3;
+    final cardPadding = (12.0 * scale).clamp(10.0, 16.0);
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () => _selectItem(item),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: EdgeInsets.all(cardPadding),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: imageUrl != null && (imageUrl as String).isNotEmpty
+                    ? UniversalImage(
+                        '',
+                        remoteImageUrl: imageUrl,
+                        width: imgW,
+                        height: imgH,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: imgW,
+                        height: imgH,
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.image, size: 30),
+                      ),
+              ),
+              SizedBox(width: (12 * scale).clamp(8, 18)),
+              Expanded(
+                child: SizedBox(
+                  height: imgH,
+                  child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: titleSize,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (secondaryInfo != null) ...[
+                      SizedBox(height: (4 * scale).clamp(3, 8)),
+                      Text(
+                        secondaryInfo,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: bodySize,
+                        ),
+                      ),
+                    ],
+                    if (description.isNotEmpty) ...[
+                      SizedBox(height: (4 * scale).clamp(3, 8)),
+                      Text(
+                        description.length > descLimit
+                            ? '${description.substring(0, descLimit)}...'
+                            : description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: bodySize,
+                        ),
+                        maxLines: descLines,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    SizedBox(height: (8 * scale).clamp(6, 14)),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        _buildTag(source, Theme.of(context).colorScheme.primaryContainer,
+                            Theme.of(context).colorScheme.onPrimaryContainer, tagSize),
+                        if (year != null && (year as String).isNotEmpty && secondaryInfo != year)
+                          _buildTag(year, Theme.of(context).colorScheme.secondaryContainer,
+                              Theme.of(context).colorScheme.onSecondaryContainer, tagSize),
+                        if (status != null && (status as String).isNotEmpty)
+                          _buildTag(
+                            status,
+                            status.toLowerCase().contains('finish') ||
+                                    status.toLowerCase().contains('complete')
+                                ? Colors.green.withValues(alpha: 0.2)
+                                : Colors.blue.withValues(alpha: 0.2),
+                            status.toLowerCase().contains('finish') ||
+                                    status.toLowerCase().contains('complete')
+                                ? Colors.green.shade700
+                                : Colors.blue.shade700,
+                            tagSize,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+                ),
+              ),
+              if (rating != null && (rating as num) > 0) ...[
+                SizedBox(width: (8 * scale).clamp(6, 14)),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: (8 * scale).clamp(6, 14),
+                    vertical: (4 * scale).clamp(3, 8),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star, size: ratingIconSize, color: Colors.amber),
+                      SizedBox(width: (4 * scale).clamp(3, 8)),
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: ratingSize),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTag(String text, Color bg, Color fg, [double fontSize = 10]) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold, color: fg),
       ),
     );
   }
