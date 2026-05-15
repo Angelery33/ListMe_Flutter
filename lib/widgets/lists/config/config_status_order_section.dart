@@ -110,11 +110,13 @@ class _ConfigStatusOrderSectionState extends State<ConfigStatusOrderSection> {
             ReorderableListView(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
               onReorder: _onReorder,
               children: [
                 for (int i = 0; i < _entries.length; i++)
                   _StatusEntryTile(
                     key: ValueKey(_entries[i].key),
+                    index: i,
                     label: groupLabelFor(context, _statusGroupKey(_entries[i].key)),
                     enabled: _entries[i].enabled,
                     onToggle: (v) => _toggle(i, v),
@@ -146,12 +148,14 @@ String _statusGroupKey(String status) {
 }
 
 class _StatusEntryTile extends StatelessWidget {
+  final int index;
   final String label;
   final bool enabled;
   final ValueChanged<bool> onToggle;
 
   const _StatusEntryTile({
     super.key,
+    required this.index,
     required this.label,
     required this.enabled,
     required this.onToggle,
@@ -165,9 +169,12 @@ class _StatusEntryTile extends StatelessWidget {
       child: ListTile(
         dense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-        leading: Icon(
-          Icons.drag_handle_rounded,
-          color: colorScheme.onSurfaceVariant,
+        leading: ReorderableDragStartListener(
+          index: index,
+          child: Icon(
+            Icons.drag_handle_rounded,
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         title: Text(
           label,
