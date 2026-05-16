@@ -5,9 +5,17 @@ import '../../../core/i18n/l10n_extension.dart';
 import '../../../core/services/external_api_service.dart';
 import '../../../providers/settings/settings_provider.dart';
 import '../../../widgets/shared/custom_gradient_app_bar.dart';
-import '../../../widgets/shared/universal_image.dart';
+import '../../../widgets/items/search/search_result_card.dart';
 
+/// Pantalla que permite al usuario buscar en APIs externas e importar metadatos en
+/// el formulario de entrada de elementos.
+///
+/// La fuente de búsqueda se determina automáticamente a partir de [category], pero el usuario
+/// puede sobrescribirla con los chips selectores de fuente. Admite paginación de scroll infinito
+/// a través de un campo de búsqueda con rebote (debounced).
 class SearchImportScreen extends StatefulWidget {
+  /// La categoría de la lista (ej. `'Book'`, `'Anime'`, `'Movie'`) que determina
+  /// a qué API externa consultar por defecto.
   final String category;
 
   const SearchImportScreen({super.key, required this.category});
@@ -16,17 +24,38 @@ class SearchImportScreen extends StatefulWidget {
   State<SearchImportScreen> createState() => _SearchImportScreenState();
 }
 
+/// Estado para [SearchImportScreen].
+///
+/// Gestiona la búsqueda con rebote, la carga de resultados paginados, la selección de fuente y
+/// las llamadas de enriquecimiento de detalles realizadas cuando el usuario selecciona un resultado.
 class _SearchImportScreenState extends State<SearchImportScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ExternalApiService _apiService = ExternalApiService.instance;
+
+  /// Filas de resultados de búsqueda de la consulta activa.
   List<Map<String, dynamic>> _results = [];
+
+  /// Indica si se está cargando la primera página.
   bool _isLoading = false;
+
+  /// Indica si se está añadiendo una página posterior.
   bool _isLoadingMore = false;
+
+  /// Mensaje de error de la búsqueda fallida más reciente, o `null`.
   String? _error;
+
+  /// El número de página del lote cargado más recientemente (basado en 1).
   int _currentPage = 1;
+
+  /// Indica si hay páginas adicionales disponibles para la consulta actual.
   bool _hasMore = true;
+
   final ScrollController _scrollController = ScrollController();
+
+  /// Temporizador de rebote (debounce) para que la búsqueda no se active en cada pulsación de tecla.
   Timer? _debounce;
+
+  /// Fuente de API seleccionada manualmente, o `null` para usar el valor por defecto de la categoría.
   String? _selectedSource;
 
   @override
@@ -43,6 +72,8 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     super.dispose();
   }
 
+  /// Aplica rebote al cambio de [query] para que la búsqueda se dispare solo después de que el usuario deje
+  /// de escribir durante 600 ms.
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
@@ -50,6 +81,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     });
   }
 
+  /// Activa [_loadMore] cuando la posición del scroll alcanza el 90% de la lista.
   void _onScroll() {
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent * 0.9 &&
@@ -59,6 +91,8 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     }
   }
 
+  /// Ejecuta una nueva búsqueda para la consulta actual, reiniciando la paginación y
+  /// mostrando un indicador de carga. Muestra un mensaje de error en caso de fallo.
   void _search() async {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
@@ -99,6 +133,8 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     }
   }
 
+  /// Obtiene la siguiente página de resultados para la consulta actual y los añade
+  /// a [_results].
   Future<void> _loadMore() async {
     final query = _searchController.text.trim();
     if (query.isEmpty || _isLoadingMore || !_hasMore) return;
@@ -129,6 +165,10 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     }
   }
 
+  /// Dirige la búsqueda de [query] para [page] al método correcto de [ExternalApiService]
+  /// basado en [widget.category] y la [_selectedSource] activa.
+  ///
+  /// Devuelve la lista de resultados brutos de la API que luego se normaliza en [_selectItem].
   Future<List<Map<String, dynamic>>> _performSearch(
     String query,
     int page,
@@ -217,6 +257,8 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     }
   }
 
+  /// Construye una fila de [ChoiceChip]s que permiten al usuario sobrescribir la fuente de búsqueda
+  /// por defecto para la [widget.category] actual.
   Widget _buildSourceSelector() {
     List<String> sources = [];
     if (widget.category == 'Manga' || widget.category == 'Comic') {
@@ -259,6 +301,8 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     );
   }
 
+  /// Devuelve una cadena de título localizada que combina la etiqueta de búsqueda base con el
+  /// nombre de [widget.category] legible por humanos.
   String _getTitle(BuildContext context) {
     final l = context.l10n;
     final base = l.searchImportTitle;
@@ -338,7 +382,11 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
                         if (index == _results.length) {
                           return const Center(child: CircularProgressIndicator());
                         }
-                        return _buildResultCard(_results[index], colW);
+                        return SearchResultCard(
+                          item: _results[index],
+                          columnWidth: colW,
+                          onSelect: () => _selectItem(_results[index]),
+                        );
                       },
                     );
                   }
@@ -355,7 +403,11 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
                       }
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
-                        child: _buildResultCard(_results[index], w),
+                        child: SearchResultCard(
+                          item: _results[index],
+                          columnWidth: w,
+                          onSelect: () => _selectItem(_results[index]),
+                        ),
                       );
                     },
                   );
@@ -367,178 +419,10 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     );
   }
 
-  Widget _buildResultCard(Map<String, dynamic> item, double columnWidth) {
-    final title = item['name'] ?? 'Sin título';
-    final imageUrl = item['imagePath'];
-    final year = item['year'];
-    final rating = item['externalRating'];
-    final author = item['author'];
-    final description = item['description'] ?? '';
-    final status = item['status'];
-    final source = item['source'] ?? 'Unknown';
-
-    String? secondaryInfo;
-    if (author != null && (author as String).isNotEmpty) {
-      secondaryInfo = author;
-    } else if (year != null && (year as String).isNotEmpty) {
-      secondaryInfo = year;
-    }
-
-    // All sizes scale proportionally to column width (base: 400px mobile)
-    final scale = (columnWidth / 400).clamp(0.85, 1.4);
-    final imgH = (145.0 * scale).clamp(100.0, 200.0);
-    final imgW = imgH * 0.70;
-    final titleSize = (15.0 * scale).clamp(14.0, 20.0);
-    final bodySize = (13.0 * scale).clamp(12.0, 16.0);
-    final tagSize = (11.0 * scale).clamp(10.0, 14.0);
-    final ratingSize = (12.0 * scale).clamp(11.0, 16.0);
-    final ratingIconSize = (16.0 * scale).clamp(14.0, 22.0);
-    final descLimit = (100 * scale).toInt();
-    final descLines = scale > 1.2 ? 4 : 3;
-    final cardPadding = (12.0 * scale).clamp(10.0, 16.0);
-
-    return Card(
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        onTap: () => _selectItem(item),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.all(cardPadding),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: imageUrl != null && (imageUrl as String).isNotEmpty
-                    ? UniversalImage(
-                        '',
-                        remoteImageUrl: imageUrl,
-                        width: imgW,
-                        height: imgH,
-                        fit: BoxFit.cover,
-                      )
-                    : Container(
-                        width: imgW,
-                        height: imgH,
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.image, size: 30),
-                      ),
-              ),
-              SizedBox(width: (12 * scale).clamp(8, 18)),
-              Expanded(
-                child: SizedBox(
-                  height: imgH,
-                  child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: titleSize,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (secondaryInfo != null) ...[
-                      SizedBox(height: (4 * scale).clamp(3, 8)),
-                      Text(
-                        secondaryInfo,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: bodySize,
-                        ),
-                      ),
-                    ],
-                    if (description.isNotEmpty) ...[
-                      SizedBox(height: (4 * scale).clamp(3, 8)),
-                      Text(
-                        description.length > descLimit
-                            ? '${description.substring(0, descLimit)}...'
-                            : description,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: bodySize,
-                        ),
-                        maxLines: descLines,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    SizedBox(height: (8 * scale).clamp(6, 14)),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: [
-                        _buildTag(source, Theme.of(context).colorScheme.primaryContainer,
-                            Theme.of(context).colorScheme.onPrimaryContainer, tagSize),
-                        if (year != null && (year as String).isNotEmpty && secondaryInfo != year)
-                          _buildTag(year, Theme.of(context).colorScheme.secondaryContainer,
-                              Theme.of(context).colorScheme.onSecondaryContainer, tagSize),
-                        if (status != null && (status as String).isNotEmpty)
-                          _buildTag(
-                            status,
-                            status.toLowerCase().contains('finish') ||
-                                    status.toLowerCase().contains('complete')
-                                ? Colors.green.withValues(alpha: 0.2)
-                                : Colors.blue.withValues(alpha: 0.2),
-                            status.toLowerCase().contains('finish') ||
-                                    status.toLowerCase().contains('complete')
-                                ? Colors.green.shade700
-                                : Colors.blue.shade700,
-                            tagSize,
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-                ),
-              ),
-              if (rating != null && (rating as num) > 0) ...[
-                SizedBox(width: (8 * scale).clamp(6, 14)),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: (8 * scale).clamp(6, 14),
-                    vertical: (4 * scale).clamp(3, 8),
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.star, size: ratingIconSize, color: Colors.amber),
-                      SizedBox(width: (4 * scale).clamp(3, 8)),
-                      Text(
-                        rating.toStringAsFixed(1),
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: ratingSize),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTag(String text, Color bg, Color fg, [double fontSize = 10]) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: bg.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold, color: fg),
-      ),
-    );
-  }
-
+  /// Asocia una cadena de [source] de API bruta con una etiqueta corta legible por humanos para la
+  /// placa de calificación (ej. `'MyAnimeList'` → `'MAL'`).
+  ///
+  /// Devuelve `null` cuando la fuente no es reconocida.
   String? _ratingSourceLabel(String? source) {
     if (source == null) return null;
     if (source.contains('MyAnimeList')) return 'MAL';
@@ -548,6 +432,10 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     return null;
   }
 
+  /// Maneja un toque en una tarjeta de [result] obteniendo opcionalmente detalles más completos
+  /// (ej. información extendida de TMDb para películas/series/anime) y luego cerrando la
+  /// pantalla con un `Map<String, dynamic>` normalizado que el formulario de entrada de elementos
+  /// puede consumir directamente.
   void _selectItem(Map<String, dynamic> result) async {
     Map<String, dynamic> data = {
       'name': result['name'],

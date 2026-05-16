@@ -18,11 +18,27 @@ import '../../widgets/shared/app_shell.dart';
 import '../../providers/invitations/invitations_provider.dart';
 import '../../widgets/lists/detail/list_table_view.dart';
 
+/// Pantalla que muestra los elementos dentro de una sola biblioteca.
+///
+/// Admite tres contextos de carga: una biblioteca local ([listId] con un objeto [list]
+/// opcional), una lista remota compartida ([remoteId]) y una subcolección
+/// ([parentId]). La pantalla se adapta a las opciones de la lista para mostrar u ocultar
+/// resúmenes de precios, indicadores de progreso, filtros de género y el botón flotante.
 class ListScreen extends StatefulWidget {
+  /// El ID de la biblioteca a mostrar. `0` cuando solo se conoce el [remoteId].
   final int listId;
+
+  /// Nombre visible mostrado en la barra de la aplicación mientras se carga el objeto [list] completo.
   final String listName;
+
+  /// Identificador de lista compartida remota, establecido al visualizar una biblioteca pública.
   final String? remoteId;
+
+  /// ID del elemento padre cuando la pantalla muestra una subcolección.
   final int? parentId;
+
+  /// El objeto [ListModel] completo, pasado directamente desde la pantalla de listas para
+  /// evitar una obtención adicional.
   final ListModel? list;
 
   const ListScreen({
@@ -38,13 +54,29 @@ class ListScreen extends StatefulWidget {
   State<ListScreen> createState() => _ListScreenState();
 }
 
+/// Estado para [ListScreen].
+///
+/// Gestiona la visibilidad de la búsqueda, el estado de colapso de las secciones, la alternancia entre tabla/cuadrícula y
+/// la carga de elementos según el contexto actual (local, remoto o subcolección).
 class _ListScreenState extends State<ListScreen> {
   final TextEditingController _searchController = TextEditingController();
+
+  /// Títulos de las secciones que el usuario ha colapsado manualmente.
   final Set<String> _collapsedSections = {};
+
+  /// Indica si la fila de resumen de precios/estadísticas es visible.
   bool _isStatsVisible = true;
+
+  /// Indica si la barra de búsqueda está expandida debajo de la barra de la aplicación.
   bool _isSearchVisible = false;
+
+  /// Indica si se deben renderizar los elementos en vista de tabla (solo disponible en pantallas anchas).
   bool _isTableView = false;
+
+  /// El [ListModel] resuelto utilizado en toda esta pantalla.
   late ListModel _currentList;
+
+  /// Guardia para asegurar que [didChangeDependencies] solo se inicialice una vez.
   bool _initialized = false;
 
   @override
@@ -65,6 +97,7 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
+  /// Carga los elementos de la fuente adecuada basándose en los argumentos del widget.
   void _loadItems() {
     final itemsProvider = context.read<ItemsProvider>();
 
@@ -80,6 +113,7 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
+  /// Envía el texto de búsqueda actual al [ItemsProvider] para que los resultados se filtren.
   void _onSearchChanged() {
     context.read<ItemsProvider>().setSearchQuery(_searchController.text);
   }
@@ -240,6 +274,35 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  /// Devuelve un [ItemCard] ya configurado con las propiedades de [_currentList].
+  ///
+  /// Centraliza los 10+ parámetros comunes que antes se repetían en [_buildItemList],
+  /// [_buildGrid] y [_buildStandardGrid].
+  Widget _buildItemCard(
+    ItemModel item,
+    ItemsProvider itemsProvider, {
+    required bool isCompact,
+  }) {
+    return ItemCard(
+      item: item,
+      onTap: () => _navigateToItemDetails(item),
+      onLongPress: () => _showItemOptions(item),
+      isCompact: isCompact,
+      showStatus: _currentList.supportsCompletion,
+      isGradeable: _currentList.gradeable,
+      isThematic: _currentList.thematic,
+      supportsPrice: _currentList.supportsPrice,
+      supportsProgress: _currentList.supportsProgress,
+      onIncrement: _currentList.supportsProgress
+          ? () => itemsProvider.incrementProgress(item)
+          : null,
+    );
+  }
+
+  /// Construye la lista completa de encabezados de sección + widgets de elementos para [grouped].
+  ///
+  /// Cada sección puede colapsarse/expandirse tocando su encabezado. Los títulos de las secciones
+  /// colapsadas se rastrean en [_collapsedSections].
   List<Widget> _buildGroupedItems(
     Map<String, List<ItemModel>> grouped,
     ItemsProvider itemsProvider,
@@ -326,30 +389,20 @@ class _ListScreenState extends State<ListScreen> {
     return _buildItemList(items, itemsProvider);
   }
 
+  /// Construye una lista vertical de [ItemCard]s para [items].
   List<Widget> _buildItemList(List<ItemModel> items, ItemsProvider itemsProvider) {
     return items
         .map(
           (item) => Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
-            child: ItemCard(
-              item: item,
-              onTap: () => _navigateToItemDetails(item),
-              onLongPress: () => _showItemOptions(item),
-              isCompact: false,
-              showStatus: _currentList.supportsCompletion,
-              isGradeable: _currentList.gradeable,
-              isThematic: _currentList.thematic,
-              supportsPrice: _currentList.supportsPrice,
-              supportsProgress: _currentList.supportsProgress,
-              onIncrement: _currentList.supportsProgress
-                  ? () => itemsProvider.incrementProgress(item)
-                  : null,
-            ),
+            child: _buildItemCard(item, itemsProvider, isCompact: false),
           ),
         )
         .toList();
   }
 
+  /// Construye una cuadrícula compacta de portadas para [items] utilizando el recuento de columnas
+  /// adaptativo de [ResponsiveProvider.compactGridColumns].
   Widget _buildGrid(List<ItemModel> items, ItemsProvider itemsProvider) {
     final columns = context.read<ResponsiveProvider>().compactGridColumns;
     return GridView.builder(
@@ -362,26 +415,13 @@ class _ListScreenState extends State<ListScreen> {
         crossAxisSpacing: 8,
       ),
       itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return ItemCard(
-          item: item,
-          onTap: () => _navigateToItemDetails(item),
-          onLongPress: () => _showItemOptions(item),
-          isCompact: true,
-          showStatus: _currentList.supportsCompletion,
-          isGradeable: _currentList.gradeable,
-          isThematic: _currentList.thematic,
-          supportsPrice: _currentList.supportsPrice,
-          supportsProgress: _currentList.supportsProgress,
-          onIncrement: _currentList.supportsProgress
-              ? () => itemsProvider.incrementProgress(item)
-              : null,
-        );
-      },
+      itemBuilder: (context, index) =>
+          _buildItemCard(items[index], itemsProvider, isCompact: true),
     );
   }
 
+  /// Construye una cuadrícula de dos columnas para pantalla ancha para [items] donde cada tarjeta se
+  /// renderiza en estilo no compacto (fila de lista).
   Widget _buildStandardGrid(List<ItemModel> items, ItemsProvider itemsProvider) {
     return GridView.builder(
       shrinkWrap: true,
@@ -393,26 +433,16 @@ class _ListScreenState extends State<ListScreen> {
         crossAxisSpacing: 8,
       ),
       itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return ItemCard(
-          item: item,
-          onTap: () => _navigateToItemDetails(item),
-          onLongPress: () => _showItemOptions(item),
-          isCompact: false,
-          showStatus: _currentList.supportsCompletion,
-          isGradeable: _currentList.gradeable,
-          isThematic: _currentList.thematic,
-          supportsPrice: _currentList.supportsPrice,
-          supportsProgress: _currentList.supportsProgress,
-          onIncrement: _currentList.supportsProgress
-              ? () => itemsProvider.incrementProgress(item)
-              : null,
-        );
-      },
+      itemBuilder: (context, index) =>
+          _buildItemCard(items[index], itemsProvider, isCompact: false),
     );
   }
 
+  /// Devuelve el widget de estado vacío que se muestra cuando la lista no tiene elementos o cuando
+  /// una búsqueda no arroja resultados.
+  ///
+  /// Cuando [isSearching] is `true`, se muestra una ilustración y un mensaje específicos de la búsqueda;
+  /// de lo contrario, se muestra el estado vacío de "añade tu primer elemento".
   Widget _buildEmptyState(bool isSearching) {
     final theme = Theme.of(context);
     return Padding(
@@ -452,6 +482,8 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  /// Vuelve a obtener los elementos de la fuente activa (remota, subcolección o biblioteca
+  /// local) y actualiza [_currentList] desde el proveedor de listas.
   void _refreshItems() async {
     final itemsProvider = context.read<ItemsProvider>();
     if (widget.remoteId != null) {
@@ -476,6 +508,7 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
+  /// Navega a [ItemDetailScreen] para [item] y actualiza al volver.
   void _navigateToItemDetails(ItemModel item) {
     Navigator.pushNamed(
       context,
@@ -484,6 +517,7 @@ class _ListScreenState extends State<ListScreen> {
     ).then((_) => _refreshItems());
   }
 
+  /// Abre la pantalla de entrada de elementos para añadir un nuevo elemento a la lista actual.
   void _navigateToAddItem() {
     Navigator.pushNamed(
       context,
@@ -492,6 +526,7 @@ class _ListScreenState extends State<ListScreen> {
     ).then((_) => _refreshItems());
   }
 
+  /// Abre [ListConfigScreen] para [_currentList] y actualiza al volver.
   void _navigateToListConfig() {
     Navigator.pushNamed(
       context,
@@ -502,6 +537,7 @@ class _ListScreenState extends State<ListScreen> {
     });
   }
 
+  /// Navega a la pantalla de configuración de la lista para editar y actualiza al volver.
   void _showEditListDialog() async {
     if (widget.listId == 0) return;
     await Navigator.pushNamed(
@@ -514,6 +550,7 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
+  /// Muestra un diálogo de confirmación antes de sincronizar (volver a obtener) la lista de elementos.
   void _showSyncDialog() {
     showDialog(
       context: context,
@@ -542,6 +579,9 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  /// Muestra una hoja inferior con opciones de edición y eliminación para [item].
+  ///
+  /// Sin efecto cuando [_currentList.canEdit] es `false` (lista compartida de solo lectura).
   void _showItemOptions(ItemModel item) {
     if (!_currentList.canEdit) return;
     showModalBottomSheet(
@@ -579,6 +619,7 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  /// Muestra un diálogo de confirmación y elimina [item] al confirmar.
   void _confirmDeleteItem(ItemModel item) {
     showDialog(
       context: context,
@@ -613,6 +654,7 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  /// Despacha las cadenas de acción del menú desde el menú de desbordamiento de la barra de la aplicación.
   void _handleMenuSelection(String value) {
     switch (value) {
       case 'share':
@@ -630,6 +672,8 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
+  /// Muestra un diálogo que permite al propietario publicar la lista en la nube
+  /// para que pueda compartirse con otros usuarios a través de un ID remoto.
   void _showUploadDialog() {
     showDialog(
       context: context,
@@ -669,6 +713,8 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  /// Muestra un diálogo de confirmación de eliminación y elimina [_currentList] del
+  /// servidor al confirmar, luego cierra la pantalla.
   void _confirmDeleteList() {
     showDialog(
       context: context,
@@ -702,6 +748,8 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  /// Muestra un diálogo para enviar una invitación de colaboración para [_currentList]
+  /// a otro usuario por nombre de usuario.
   void _showShareDialog() {
     final usernameController = TextEditingController();
     bool readOnly = true;

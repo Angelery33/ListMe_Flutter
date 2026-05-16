@@ -2,12 +2,23 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'logger_service.dart';
 
+/// Servicio singleton que envuelve múltiples APIs de medios de terceros (Google Books,
+/// MyAnimeList a través de Jikan, MangaDex, OMDb y TMDb).
+///
+/// Cada método de búsqueda devuelve una lista normalizada de registros `Map<String, dynamic>`
+/// para que el resto de la aplicación pueda tratar los resultados de diferentes fuentes
+/// de manera uniforme. Los nombres de los campos se mantienen consistentes en todas las fuentes (ej. `name`,
+/// `description`, `imagePath`, `year`, `externalRating`).
 class ExternalApiService {
+  /// Instancia global singleton.
   static final ExternalApiService instance = ExternalApiService._();
   final LoggerService _logger = LoggerService.instance;
   ExternalApiService._();
 
-  // Mapeo de estados de MAL a español
+  /// Traduce una cadena de estado cruda de MAL/MangaDex al español.
+  ///
+  /// Devuelve [status] sin cambios cuando la cadena no coincide con ningún valor conocido,
+  /// y devuelve una cadena vacía cuando [status] es `null`.
   String _translateStatus(String? status) {
     if (status == null) return '';
     switch (status.toLowerCase()) {
@@ -32,6 +43,11 @@ class ExternalApiService {
     }
   }
 
+  /// Busca volúmenes en Google Books que coincidan con [query] y devuelve hasta 10
+  /// resultados normalizados para la [page] dada.
+  ///
+  /// [query] La cadena de búsqueda (título, autor, ISBN, etc.).
+  /// [page] Número de página basado en 1; convertido internamente a un `startIndex`.
   Future<List<Map<String, dynamic>>> searchBooks({
     int page = 1,
     required String query,
@@ -108,6 +124,10 @@ class ExternalApiService {
     }
   }
 
+  /// Busca anime en MyAnimeList (a través de la API Jikan v4) que coincida con [query].
+  ///
+  /// [query] El título del anime a buscar.
+  /// [page] Número de página basado en 1.
   Future<List<Map<String, dynamic>>> searchAnime({
     required String query,
     int page = 1,
@@ -115,6 +135,10 @@ class ExternalApiService {
     return _searchJikan('anime', query, page: page);
   }
 
+  /// Busca manga en MyAnimeList (a través de la API Jikan v4) que coincida con [query].
+  ///
+  /// [query] El título del manga a buscar.
+  /// [page] Número de página basado en 1.
   Future<List<Map<String, dynamic>>> searchMangaMAL({
     required String query,
     int page = 1,
@@ -122,6 +146,15 @@ class ExternalApiService {
     return _searchJikan('manga', query, page: page);
   }
 
+  /// Busca manga combinando Google Books (volúmenes físicos) y el
+  /// catálogo de manga de MyAnimeList.
+  ///
+  /// Cuando [query] contiene un número (indicador de volumen), el método intenta primero con Google
+  /// Books y devuelve los resultados pronto si los encuentra. De lo contrario, se consultan ambas fuentes
+  /// en paralelo y se fusionan.
+  ///
+  /// [query] El título del manga/volumen a buscar.
+  /// [page] Número de página basado en 1 reenviado a cada subfuente.
   Future<List<Map<String, dynamic>>> searchManga({
     required String query,
     int page = 1,
@@ -242,6 +275,14 @@ class ExternalApiService {
     return [];
   }
 
+  /// Busca manga en MangaDex que coincida con [query] y devuelve hasta 10 resultados
+  /// para la [page] dada.
+  ///
+  /// Incluye arte de portada, autor y relaciones de artistas. Los títulos se devuelven
+  /// con prioridad ES > EN > JA para adaptarse mejor a la audiencia principal de la aplicación.
+  ///
+  /// [query] El título del manga a buscar.
+  /// [page] Número de página basado en 1.
   Future<List<Map<String, dynamic>>> searchMangaDex({
     required String query,
     int page = 1,
@@ -364,6 +405,15 @@ class ExternalApiService {
     return [];
   }
 
+  /// Busca películas o series en OMDb que coincidan con [query].
+  ///
+  /// Lanza una [Exception] cuando [apiKey] está vacía, la clave de API es inválida,
+  /// o el servidor devuelve un código de estado que no es 200.
+  ///
+  /// [query] El título a buscar.
+  /// [apiKey] Una clave de API de OMDb válida.
+  /// [page] Número de página basado en 1.
+  /// [type] Filtro de tipo OMDb opcional (`'movie'`, `'series'`, `'episode'`).
   Future<List<Map<String, dynamic>>> searchMovies({
     required String query,
     required String apiKey,
@@ -415,6 +465,13 @@ class ExternalApiService {
     }
   }
 
+  /// Obtiene detalles completos de películas/series de OMDb para el [imdbId] dado.
+  ///
+  /// Devuelve un mapa normalizado con campos extendidos (trama, duración, director,
+  /// actores, premios, etc.) o `null` si la solicitud falla.
+  ///
+  /// [imdbId] El identificador de IMDb (ej. `'tt0133093'`).
+  /// [apiKey] Una clave de API de OMDb válida.
   Future<Map<String, dynamic>?> getMovieDetails(
     String imdbId,
     String apiKey,
@@ -473,6 +530,15 @@ class ExternalApiService {
     return null;
   }
 
+  /// Busca películas o series de TV en TMDb que coincidan con [query].
+  ///
+  /// Los resultados se devuelven en español (`language=es-ES`). Lanza una [Exception]
+  /// cuando [apiKey] está vacía o el servidor devuelve un error.
+  ///
+  /// [query] El título a buscar.
+  /// [apiKey] Una clave de API de TMDb v3 válida.
+  /// [page] Número de página basado en 1.
+  /// [type] `'movie'` (por defecto) o `'tv'`.
   Future<List<Map<String, dynamic>>> searchTMDb({
     required String query,
     required String apiKey,
@@ -531,6 +597,14 @@ class ExternalApiService {
     }
   }
 
+  /// Obtiene detalles completos de películas o series de TV de TMDb para el [id] dado.
+  ///
+  /// Añade créditos e imágenes a la solicitud. Devuelve un mapa normalizado o
+  /// `null` si la solicitud falla.
+  ///
+  /// [id] El identificador numérico de TMDb como cadena.
+  /// [apiKey] Una clave de API de TMDb v3 válida.
+  /// [type] `'movie'` (por defecto) o `'tv'`.
   Future<Map<String, dynamic>?> getTMDbDetails(
     String id,
     String apiKey, {
@@ -621,6 +695,12 @@ class ExternalApiService {
     return null;
   }
 
+  /// Ordena [results] en el lugar priorizando los títulos que coinciden exactamente con [query],
+  /// luego los que empiezan por él, luego los que lo contienen, y finalmente
+  /// los demás alfabéticamente.
+  ///
+  /// Cuando dos resultados comparten el mismo prefijo de texto antes del primer número,
+  /// se ordenan numéricamente por ese número (útil para listas de volúmenes).
   void _sortResults(List<Map<String, dynamic>> results, String query) {
     final lowerQuery = query.toLowerCase().trim();
 
