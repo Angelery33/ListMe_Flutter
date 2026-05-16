@@ -48,6 +48,10 @@ class InfoScreen extends StatelessWidget {
     );
   }
 
+  /// Construye un mosaico de tarjeta redondeada que muestra un [title] y un cuerpo de [content].
+  ///
+  /// Se utiliza para presentar cada bloque de información en la pantalla de información con un
+  /// estilo visual consistente.
   Widget _buildInfoTile(BuildContext context,
       {required String title, required String content}) {
     final theme = Theme.of(context);

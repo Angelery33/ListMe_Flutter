@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// Widget informativo que se muestra cuando el usuario no tiene ninguna lista creada.
+/// Widget informativo de estado vacío que se muestra cuando el usuario aún no tiene bibliotecas.
+///
+/// Guía al usuario hacia el FAB mostrando un icono grande, un titular y
+/// un breve mensaje de instrucción. Centrado verticalmente dentro de su padre.
 class EmptyListsState extends StatelessWidget {
   const EmptyListsState({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Center(

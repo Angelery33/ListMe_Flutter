@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../core/i18n/l10n_extension.dart';
 import '../../data/lists/list_model.dart';
 import '../../core/theme/theme.dart';
-import '../../providers/invitations/invitations_provider.dart';
 
-/// Tarjeta visual que representa una lista del usuario en el listado principal.
+/// Tarjeta visual que representa una única biblioteca de usuario en la pantalla de vista general de listas.
+///
+/// Muestra el icono personalizado de la biblioteca (con color de énfasis), su nombre, recuento de elementos,
+/// descripción opcional y una insignia indicadora de uso compartido. Un menú de desbordamiento de tres puntos
+/// expone las acciones de editar, compartir y eliminar.
 class ListCard extends StatelessWidget {
+  /// El modelo de biblioteca cuyos datos se renderizan en la tarjeta.
   final ListModel list;
+
+  /// Se llama cuando el usuario toca el cuerpo de la tarjeta para abrir la pantalla de detalles de la biblioteca.
   final VoidCallback onTap;
+
+  /// Llamada de retorno opcional para el elemento de menú de desbordamiento "editar".
+  /// Cuando es `null`, la opción de editar se sigue mostrando pero no hará nada a través de `?.call()`.
   final VoidCallback? onEdit;
+
+  /// Llamada de retorno opcional para el elemento de menú de desbordamiento "eliminar".
+  /// Solo se muestra cuando [ListModel.owner] es `true`.
   final VoidCallback? onDelete;
+
+  /// Llamada de retorno opcional para el elemento de menú de desbordamiento "compartir".
   final VoidCallback? onShare;
 
   const ListCard({
@@ -40,7 +53,7 @@ class ListCard extends StatelessWidget {
     }
 
     return Card(
-      
+
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       elevation: isDark ? 4 : 1,
       color: cardColor,
@@ -166,6 +179,8 @@ class ListCard extends StatelessWidget {
     );
   }
 
+  /// Resuelve una cadena de nombre de icono (como se almacena en [ListModel.icon]) a su
+  /// correspondiente [IconData]. Recurre a un icono de lista genérico para claves desconocidas.
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'shopping_cart':

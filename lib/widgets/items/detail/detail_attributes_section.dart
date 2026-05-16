@@ -3,6 +3,11 @@ import 'package:provider/provider.dart';
 import '../../../../data/attributes/attribute_item_model.dart';
 import '../../../../providers/items/item_details_provider.dart';
 
+/// Muestra los atributos personalizados de un elemento en la pantalla de detalles.
+///
+/// Lee la lista de valores de [AttributeItemModel] del [ItemDetailsProvider]
+/// y renderiza cada uno como una fila etiquetada con un icono. Devuelve un widget
+/// vacío cuando no hay atributos para mostrar.
 class DetailAttributesSection extends StatelessWidget {
   const DetailAttributesSection({super.key});
 
@@ -41,6 +46,8 @@ class DetailAttributesSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza un único atributo [attr] como una fila con un icono de avatar circular,
+  /// el nombre del tipo resuelto como una leyenda y el valor del atributo como el cuerpo.
   Widget _buildAttributeItem(BuildContext context, AttributeItemModel attr) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -90,6 +97,8 @@ class DetailAttributesSection extends StatelessWidget {
     );
   }
 
+  /// Mapea un ID de tipo de atributo numérico a una etiqueta en español legible por humanos.
+  /// Recurre a 'Detalle' para IDs desconocidos.
   String _getTypeName(int typeId) {
     // Map type IDs to readable names - this could be enhanced with actual type names from API
     const typeNames = {

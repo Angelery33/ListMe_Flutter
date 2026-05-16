@@ -5,7 +5,17 @@ import 'package:list_me/core/config/constants.dart';
 import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/core/services/token_storage.dart';
 
+/// Cliente HTTP singleton basado en [Dio] que maneja la autenticación JWT,
+/// el refresco transparente de tokens y el encolado de solicitudes.
+///
+/// Cada solicitud saliente adjunta automáticamente el token Bearer almacenado.
+/// Cuando el servidor devuelve un 401 con un encabezado `x-token-expired` (o un
+/// mensaje "Unauthorized"), el cliente intenta un refresco silencioso del token a través de
+/// [AuthService] y reintenta la solicitud original. Las solicitudes concurrentes que
+/// llegan durante un refresco se encolan y se vuelven a ejecutar una vez que el nuevo token esté
+/// disponible.
 class ApiClient {
+  /// Instancia global singleton.
   static final ApiClient instance = ApiClient._();
   static final LoggerService _logger = LoggerService.instance;
   late final Dio _dio;
@@ -98,6 +108,8 @@ class ApiClient {
     );
   }
 
+  /// La instancia subyacente de [Dio], expuesta para que los repositorios puedan realizar solicitudes
+  /// tipadas mientras siguen beneficiándose de los interceptores de autenticación.
   Dio get dio => _dio;
 
   void _processQueuedRequests() {

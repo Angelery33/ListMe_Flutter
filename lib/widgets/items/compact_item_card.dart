@@ -3,11 +3,24 @@ import '../../data/items/item_model.dart';
 import '../shared/universal_image.dart';
 
 /// Vista compacta (Grid) para el elemento de una lista.
+///
+/// Renderiza el elemento como una tarjeta cuadrada adecuada para diseños de cuadrícula. La imagen llena
+/// toda la tarjeta y varias insignias superpuestas (puntuación, número de elemento, edición,
+/// progreso, "siguiendo") se colocan en la parte superior.
 class CompactItemCard extends StatelessWidget {
+  /// El modelo de datos para el elemento a mostrar.
   final ItemModel item;
+
+  /// Se llama cuando el usuario toca la tarjeta para abrir el detalle del elemento.
   final VoidCallback onTap;
+
+  /// Se llama cuando el usuario mantiene presionada la tarjeta, ej. para un menú contextual.
   final VoidCallback? onLongPress;
+
+  /// Indica si se debe mostrar la insignia de puntuación numérica cuando el elemento tiene una puntuación establecida.
   final bool isGradeable;
+
+  /// Indica si se debe mostrar una barra de progreso/superposición cuando el elemento tiene progreso activo.
   final bool supportsProgress;
 
   const CompactItemCard({
@@ -103,6 +116,7 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye la imagen de fondo de la tarjeta completa utilizando [UniversalImage].
   Widget _buildImage(BuildContext context) {
     return UniversalImage(
       item.imagePath ?? "",
@@ -112,6 +126,8 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una pequeña insignia redondeada que muestra la etiqueta de edición del elemento.
+  /// [s] es el tamaño del lado de la tarjeta utilizado para derivar tamaños proporcionales de fuente/relleno.
   Widget _buildEditionBadge(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
@@ -134,6 +150,8 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye un degradado vertical semitransparente sobre la imagen para que las superposiciones
+  /// de texto en la parte inferior sean legibles independientemente del contenido de la imagen.
   Widget _buildGradientOverlay(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Positioned.fill(
@@ -154,6 +172,8 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una insignia circular en la esquina superior izquierda que muestra el número
+  /// secuencial del elemento dentro de su serie o colección. [s] impulsa el tamaño.
   Widget _buildItemNumberBadge(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
     final badgeSize = s * 0.22;
@@ -184,6 +204,8 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una insignia de tipo píldora de estrella y puntuación en la esquina superior derecha. Solo se muestra
+  /// cuando [isGradeable] es true y el elemento tiene una puntuación positiva. [s] impulsa el tamaño.
   Widget _buildScoreBadge(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
@@ -217,6 +239,8 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una insignia con icono de reproducción de "siguiendo actualmente / disfrutando ahora" que
+  /// reemplaza la insignia de número de elemento cuando [ItemModel.current] es true.
   Widget _buildFollowingBadge(BuildContext context, double s) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: s * 0.06, vertical: s * 0.02),
@@ -231,6 +255,9 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una superposición inferior que contiene una barra de progreso lineal opcional y una
+  /// fila de texto que muestra el progreso actual/total. Solo se muestra cuando
+  /// [supportsProgress] es true y [ItemModel.currentProgress] es positivo.
   Widget _buildProgressOverlay(BuildContext context, double s) {
     final colorScheme = Theme.of(context).colorScheme;
     final progress = (item.totalProgress != null && item.totalProgress! > 0)
@@ -271,6 +298,8 @@ class CompactItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una píldora semitransparente centrada que muestra el nombre del elemento en la
+  /// parte inferior de la tarjeta, posicionada sobre la superposición de progreso cuando está presente.
   Widget _buildNameOverlay(BuildContext context, double s) {
     return Align(
       alignment: Alignment.center,

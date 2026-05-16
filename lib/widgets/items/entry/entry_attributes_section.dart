@@ -3,11 +3,29 @@ import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/attributes/attribute_type_model.dart';
 import '../../../data/attributes/attribute_item_model.dart';
 
+/// Una sección de formulario para gestionar la lista de atributos personalizados de un elemento durante
+/// la entrada / edición.
+///
+/// Muestra un [ListTile] para cada atributo existente con un botón de eliminar, y
+/// proporciona botones de acción para añadir un nuevo valor de atributo o crear un nuevo
+/// tipo de atributo desde cero.
 class EntryAttributesSection extends StatefulWidget {
+  /// La lista actual de valores de atributos ya añadidos al elemento.
   final List<AttributeItemModel> attributes;
+
+  /// Todos los tipos de atributos disponibles en la biblioteca, mostrados en el menú desplegable
+  /// del diálogo de adición.
   final List<AttributeTypeModel> allTypes;
+
+  /// Se llama con el nuevo [AttributeItemModel] cuando el usuario confirma el diálogo de
+  /// adición.
   final Function(AttributeItemModel) onAdd;
+
+  /// Se llama con el índice de la lista del atributo que el usuario desea eliminar.
   final Function(int) onRemove;
+
+  /// Fábrica opcional llamada cuando el usuario desea crear un tipo de atributo
+  /// completamente nuevo. Devuelve el nombre del tipo creado, o nulo al cancelar.
   final Future<String?> Function()? onCreateAttributeType;
 
   const EntryAttributesSection({
@@ -23,7 +41,11 @@ class EntryAttributesSection extends StatefulWidget {
   State<EntryAttributesSection> createState() => _EntryAttributesSectionState();
 }
 
+/// Estado para [EntryAttributesSection]. Contiene ayudantes de diálogo que requieren
+/// acceso a las funciones de retorno del widget.
 class _EntryAttributesSectionState extends State<EntryAttributesSection> {
+  /// Abre un diálogo que permite al usuario elegir un tipo de atributo de [allTypes]
+  /// e introducir un valor, luego llama a [EntryAttributesSection.onAdd].
   void _showAddAttributeDialog(BuildContext context) {
     if (widget.allTypes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -97,6 +119,8 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
     );
   }
 
+  /// Abre un diálogo para crear un nuevo tipo de atributo por nombre, luego delega en
+  /// [EntryAttributesSection.onCreateAttributeType].
   void _showCreateTypeDialog(BuildContext context) {
     final controller = TextEditingController();
     showDialog(
@@ -209,6 +233,7 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
     );
   }
 
+  /// Renderiza la etiqueta del encabezado de la sección con estilo en color primario en mayúsculas.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),

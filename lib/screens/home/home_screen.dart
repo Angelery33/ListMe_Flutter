@@ -5,7 +5,7 @@ import '../../widgets/home/menu_card.dart';
 import '../../widgets/shared/app_logo_title.dart';
 
 /// Pantalla de inicio de la aplicación ListMe.
-/// 
+///
 /// Presenta un menú central con las opciones principales sobre un fondo completo.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +14,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// Estado para [HomeScreen].
+///
+/// Es Stateful para permitir futuros estados locales (por ejemplo, animaciones) sin cambiar la
+/// API pública. Actualmente construye un diseño de menú estático e inmersivo.
 class _HomeScreenState extends State<HomeScreen> {
 
   @override

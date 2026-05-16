@@ -2,11 +2,28 @@ import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/lists/library_genre_model.dart';
 
+/// Sección de configuración para gestionar la lista de géneros/categorías de una biblioteca temática.
+///
+/// Muestra un campo de texto para agregar nuevos géneros y una lista desplazable de entradas existentes
+/// de [LibraryGenreModel], cada una con un botón de eliminar.
+/// Solo visible cuando [isThematic] es `true`.
 class ConfigGenresSection extends StatelessWidget {
+  /// Indica si la biblioteca es temática (utiliza agrupación por géneros).
+  /// Cuando es `false`, esta sección se renderiza como un widget vacío.
   final bool isThematic;
+
+  /// La lista actual de géneros a mostrar.
   final List<LibraryGenreModel> displayedGenres;
+
+  /// Controlador para el campo de texto "agregar nuevo género".
   final TextEditingController genreController;
+
+  /// Se llama cuando el usuario toca el botón "Agregar" para confirmar la adición de un nuevo género.
   final VoidCallback onAddGenre;
+
+  /// Se llama cuando el usuario toca el icono de eliminar en una entrada de género existente.
+  ///
+  /// Recibe el [LibraryGenreModel] a eliminar y su [index] actual en la lista.
   final void Function(LibraryGenreModel genre, int index) onDeleteGenre;
 
   const ConfigGenresSection({

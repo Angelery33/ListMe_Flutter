@@ -3,7 +3,15 @@ import '../../core/theme/theme.dart';
 import '../../providers/settings/settings_provider.dart';
 
 /// Widget especializado para seleccionar el color de acento (gemas).
+///
+/// Renderiza una fila horizontal desplazable de círculos coloreados, uno por cada nombre de
+/// acento disponible. El acento actualmente activo se resalta con un resplandor y un
+/// icono de marca de verificación. Tocar un círculo aplica inmediatamente el color de acento a través de
+/// [SettingsProvider.setAccentColor].
 class AccentColorSelector extends StatelessWidget {
+  /// El proveedor de ajustes que contiene el acento actual y expone el
+  /// método de mutación. Debe ser proporcionado por el llamador (no buscado desde el
+  /// árbol aquí) para que el hot-reload/testing funcione sin un ancestro Provider.
   final SettingsProvider settings;
 
   const AccentColorSelector({
@@ -47,8 +55,8 @@ class AccentColorSelector extends StatelessWidget {
                   )
                 ] : [],
               ),
-              child: isSelected 
-                ? const Icon(Icons.check, color: Colors.white, size: 20) 
+              child: isSelected
+                ? const Icon(Icons.check, color: Colors.white, size: 20)
                 : null,
             ),
           );

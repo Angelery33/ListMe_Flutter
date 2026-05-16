@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../../../data/items/item_model.dart';
 
+/// Muestra el precio (o precio estimado de la lista de deseos) de un elemento en la pantalla de
+/// detalles dentro de una tarjeta con estilo utilizando la paleta de colores terciarios.
+///
+/// Devuelve un widget vacío cuando el elemento no tiene precio o el precio es cero,
+/// para que no se añada espacio en blanco innecesario.
 class DetailPriceSection extends StatelessWidget {
+  /// El elemento cuyos campos [ItemModel.price] e [ItemModel.wishlist] se utilizan.
   final ItemModel item;
 
   const DetailPriceSection({super.key, required this.item});

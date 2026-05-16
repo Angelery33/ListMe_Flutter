@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
+/// Sección de configuración que permite al usuario elegir un icono visual y un color de énfasis
+/// para su biblioteca, mostrados como selectores horizontales desplazables de chips/círculos.
 class ConfigIconColorSection extends StatelessWidget {
+  /// La clave del icono actualmente seleccionado (debe existir en [icons]).
   final String selectedIcon;
+
+  /// La clave del color actualmente seleccionado (debe existir en [colors]).
   final String selectedColor;
+
+  /// Se llama con la nueva clave de icono cuando el usuario selecciona un chip de icono diferente.
   final ValueChanged<String> onIconChanged;
+
+  /// Se llama con la nueva clave de color cuando el usuario toca un círculo de color.
   final ValueChanged<String> onColorChanged;
 
   const ConfigIconColorSection({
@@ -15,6 +24,9 @@ class ConfigIconColorSection extends StatelessWidget {
     required this.onColorChanged,
   });
 
+  /// Mapa de todas las claves de iconos disponibles a sus correspondientes [IconData].
+  ///
+  /// La clave se almacena en el modelo de biblioteca; el valor se renderiza en la IU.
   static const Map<String, IconData> icons = {
     'list': Icons.list_rounded,
     'shopping_cart': Icons.shopping_cart_rounded,
@@ -30,6 +42,9 @@ class ConfigIconColorSection extends StatelessWidget {
     'favorite': Icons.favorite_rounded,
   };
 
+  /// Mapa de todas las claves de colores disponibles a sus correspondientes valores de [Color].
+  ///
+  /// Nombrados como piedras preciosas/materiales para una sensación premium; almacenados como claves en el modelo.
   static const Map<String, Color> colors = {
     'emerald': Color(0xFF256A4A),
     'amethyst': Color(0xFF7D4E7E),
@@ -70,8 +85,8 @@ class ConfigIconColorSection extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: ChoiceChip(
                       label: Icon(
-                        entry.value, 
-                        size: 20, 
+                        entry.value,
+                        size: 20,
                         color: isSelected ? Colors.white : theme.colorScheme.onSurfaceVariant
                       ),
                       selected: isSelected,
@@ -113,8 +128,8 @@ class ConfigIconColorSection extends StatelessWidget {
                           )
                         ] : null,
                       ),
-                      child: isSelected 
-                        ? const Icon(Icons.check, size: 16, color: Colors.white) 
+                      child: isSelected
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
                         : null,
                     ),
                   );

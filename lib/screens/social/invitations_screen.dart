@@ -4,6 +4,12 @@ import '../../providers/invitations/invitations_provider.dart';
 import '../../providers/lists/lists_provider.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 
+/// Pantalla que enumera todas las invitaciones de colaboración pendientes para el usuario actual.
+///
+/// Cada tarjeta de invitación muestra el avatar del remitente, el nombre de la biblioteca y el
+/// nivel de permiso (solo lectura o editor), con botones de aceptar y rechazar.
+/// Aceptar una invitación activa una actualización de la lista de bibliotecas para que la biblioteca recién compartida
+/// aparezca inmediatamente.
 class InvitationsScreen extends StatefulWidget {
   const InvitationsScreen({super.key});
 
@@ -11,6 +17,10 @@ class InvitationsScreen extends StatefulWidget {
   State<InvitationsScreen> createState() => _InvitationsScreenState();
 }
 
+/// Estado para [InvitationsScreen].
+///
+/// Activa [InvitationsProvider.loadPendingInvitations] en el primer frame
+/// para asegurar que se muestren datos frescos cada vez que se abra la pantalla.
 class _InvitationsScreenState extends State<InvitationsScreen> {
   @override
   void initState() {
@@ -123,6 +133,7 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
     );
   }
 
+  /// Devuelve el widget de estado vacío que se muestra cuando no hay invitaciones pendientes.
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
     return Center(

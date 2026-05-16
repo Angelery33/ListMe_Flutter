@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 /// Definiciones de [ColorScheme] para cada acento visual.
+///
+/// Los temas Emerald y Amethyst usan esquemas completamente manuales con todos
+/// los roles M3 especificados. El resto de temas (Sapphire, Ruby, Titanium,
+/// Amber, Cobalt, Cyan, Magenta) se generan con [ColorScheme.fromSeed] para
+/// que Flutter calcule automáticamente los roles derivados.
 class ColorSchemes {
   ColorSchemes._();
 
   // ---------------------------------------------------------------------------
   // EMERALD
   // ---------------------------------------------------------------------------
+
+  /// Esquema claro del tema Esmeralda (verde bosque), con todos los roles M3.
   static final ColorScheme emeraldLight = ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.emeraldPrimaryLight,
@@ -34,6 +41,7 @@ class ColorSchemes {
     outlineVariant: AppColors.emeraldOutlineVariantLight,
   );
 
+  /// Esquema oscuro del tema Esmeralda (verde bosque), con todos los roles M3.
   static final ColorScheme emeraldDark = ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.emeraldPrimaryDark,
@@ -63,6 +71,8 @@ class ColorSchemes {
   // ---------------------------------------------------------------------------
   // AMETHYST
   // ---------------------------------------------------------------------------
+
+  /// Esquema claro del tema Amatista (púrpura), con todos los roles M3.
   static final ColorScheme amethystLight = ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.amethystPrimaryLight,
@@ -86,6 +96,7 @@ class ColorSchemes {
     outline: AppColors.amethystOutlineLight,
   );
 
+  /// Esquema oscuro del tema Amatista (púrpura), con todos los roles M3.
   static final ColorScheme amethystDark = ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.amethystPrimaryDark,
@@ -113,12 +124,15 @@ class ColorSchemes {
   // SEED-BASED
   // ---------------------------------------------------------------------------
 
+  /// Esquema claro del tema Zafiro (verde-azulado), generado por semilla.
   static final ColorScheme sapphireLight = ColorScheme.fromSeed(
     seedColor: AppColors.sapphirePrimaryLight,
     primary: AppColors.sapphirePrimaryLight,
     surface: AppColors.sapphireSurfaceLight,
     brightness: Brightness.light,
   );
+
+  /// Esquema oscuro del tema Zafiro, generado por semilla.
   static final ColorScheme sapphireDark = ColorScheme.fromSeed(
     seedColor: AppColors.sapphirePrimaryDark,
     primary: AppColors.sapphirePrimaryDark,
@@ -126,12 +140,15 @@ class ColorSchemes {
     brightness: Brightness.dark,
   );
 
+  /// Esquema claro del tema Rubí (rojo oscuro), generado por semilla.
   static final ColorScheme rubyLight = ColorScheme.fromSeed(
     seedColor: AppColors.rubyPrimaryLight,
     primary: AppColors.rubyPrimaryLight,
     surface: AppColors.rubySurfaceLight,
     brightness: Brightness.light,
   );
+
+  /// Esquema oscuro del tema Rubí, generado por semilla.
   static final ColorScheme rubyDark = ColorScheme.fromSeed(
     seedColor: AppColors.rubyPrimaryDark,
     primary: AppColors.rubyPrimaryDark,
@@ -139,6 +156,8 @@ class ColorSchemes {
     brightness: Brightness.dark,
   );
 
+  /// Esquema claro del tema Titanio (monocromático), definido manualmente para
+  /// un look minimalista negro/blanco.
   static final ColorScheme titaniumLight = ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.titaniumPrimaryLight,
@@ -153,6 +172,7 @@ class ColorSchemes {
     outline: const Color(0xFF7D747D),
   );
 
+  /// Esquema oscuro del tema Titanio, definido manualmente.
   static final ColorScheme titaniumDark = ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.titaniumPrimaryDark,
@@ -167,12 +187,15 @@ class ColorSchemes {
     outline: const Color(0xFF978E97),
   );
 
+  /// Esquema claro del tema Ámbar (naranja/dorado), generado por semilla.
   static final ColorScheme amberLight = ColorScheme.fromSeed(
     seedColor: AppColors.amberPrimaryLight,
     primary: AppColors.amberPrimaryLight,
     surface: AppColors.amberSurfaceLight,
     brightness: Brightness.light,
   );
+
+  /// Esquema oscuro del tema Ámbar, generado por semilla.
   static final ColorScheme amberDark = ColorScheme.fromSeed(
     seedColor: AppColors.amberPrimaryDark,
     primary: AppColors.amberPrimaryDark,
@@ -180,12 +203,15 @@ class ColorSchemes {
     brightness: Brightness.dark,
   );
 
+  /// Esquema claro del tema Cobalto (azul profundo), generado por semilla.
   static final ColorScheme cobaltLight = ColorScheme.fromSeed(
     seedColor: AppColors.cobaltPrimaryLight,
     primary: AppColors.cobaltPrimaryLight,
     surface: AppColors.cobaltSurfaceLight,
     brightness: Brightness.light,
   );
+
+  /// Esquema oscuro del tema Cobalto, generado por semilla.
   static final ColorScheme cobaltDark = ColorScheme.fromSeed(
     seedColor: AppColors.cobaltPrimaryDark,
     primary: AppColors.cobaltPrimaryDark,
@@ -193,12 +219,15 @@ class ColorSchemes {
     brightness: Brightness.dark,
   );
 
+  /// Esquema claro del tema Cian (azul claro), generado por semilla.
   static final ColorScheme cyanLight = ColorScheme.fromSeed(
     seedColor: AppColors.cyanPrimaryLight,
     primary: AppColors.cyanPrimaryLight,
     surface: AppColors.cyanSurfaceLight,
     brightness: Brightness.light,
   );
+
+  /// Esquema oscuro del tema Cian, generado por semilla.
   static final ColorScheme cyanDark = ColorScheme.fromSeed(
     seedColor: AppColors.cyanPrimaryDark,
     primary: AppColors.cyanPrimaryDark,
@@ -206,12 +235,15 @@ class ColorSchemes {
     brightness: Brightness.dark,
   );
 
+  /// Esquema claro del tema Magenta (rosa/fucsia), generado por semilla.
   static final ColorScheme magentaLight = ColorScheme.fromSeed(
     seedColor: AppColors.magentaPrimaryLight,
     primary: AppColors.magentaPrimaryLight,
     surface: AppColors.magentaSurfaceLight,
     brightness: Brightness.light,
   );
+
+  /// Esquema oscuro del tema Magenta, generado por semilla.
   static final ColorScheme magentaDark = ColorScheme.fromSeed(
     seedColor: AppColors.magentaPrimaryDark,
     primary: AppColors.magentaPrimaryDark,

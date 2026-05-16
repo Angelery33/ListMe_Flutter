@@ -9,8 +9,17 @@ import '../../widgets/items/compact_item_card.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import 'item_detail_screen.dart';
 
+/// Pantalla que muestra los sub-elementos (volúmenes, episodios, etc.) de una
+/// colección [ItemModel].
+///
+/// Lee los datos de los sub-elementos de [ItemDetailsProvider] y permite al usuario
+/// abrir sub-elementos individuales o añadir nuevos.
 class ItemCollectionScreen extends StatefulWidget {
+  /// El elemento de colección padre cuyos sub-elementos se muestran.
   final ItemModel parent;
+
+  /// La biblioteca a la que pertenece [parent], pasada a las pantallas hijas para que
+  /// puedan respetar la configuración a nivel de lista (por ejemplo, [ListModel.canEdit]).
   final ListModel? list;
 
   const ItemCollectionScreen({super.key, required this.parent, this.list});
@@ -19,6 +28,10 @@ class ItemCollectionScreen extends StatefulWidget {
   State<ItemCollectionScreen> createState() => _ItemCollectionScreenState();
 }
 
+/// Estado para [ItemCollectionScreen].
+///
+/// Activa la carga de sub-elementos en el primer frame y se actualiza después de regresar de
+/// cualquier pantalla de detalle o entrada.
 class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
   @override
   void initState() {
@@ -28,6 +41,8 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
     });
   }
 
+  /// Navega a [ItemDetailScreen] para [sub] y actualiza los sub-elementos al
+  /// regresar.
   Future<void> _openSubItem(ItemModel sub) async {
     await Navigator.push(
       context,
@@ -40,6 +55,8 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
     }
   }
 
+  /// Abre la pantalla de entrada de elementos pre-rellenada con el ID del padre para que el nuevo
+  /// elemento se vincule a esta colección, luego actualiza al regresar.
   Future<void> _addSubItem() async {
     final result = await Navigator.pushNamed(
       context,

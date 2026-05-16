@@ -6,12 +6,23 @@ import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart';
 
+/// Proporciona operaciones de acceso a datos para elementos y sus imágenes asociadas,
+/// comunicándose con la API REST del backend a través de [ApiClient].
+///
+/// Soporta CRUD completo para elementos, gestión de imágenes (subida, eliminación, favorita)
+/// y consultas especializadas como sub-colecciones y elementos por ID de biblioteca remota.
 class ItemsRepository {
   final ApiClient _apiClient;
   final LoggerService _logger = LoggerService.instance;
 
+  /// Crea un [ItemsRepository] utilizando el [_apiClient] proporcionado para la
+  /// comunicación HTTP.
   ItemsRepository(this._apiClient);
 
+  /// Obtiene los elementos de la API y los devuelve como una lista de [ItemModel].
+  ///
+  /// Cuando se proporciona [libraryId], solo se devuelven los elementos que pertenecen a esa biblioteca;
+  /// de lo contrario, se devuelven todos los elementos accesibles para el usuario autenticado.
   Future<List<ItemModel>> getAllItems({int? libraryId}) async {
     try {
       _logger.debug('ItemsRepository: Obteniendo todos los items');
@@ -31,6 +42,8 @@ class ItemsRepository {
     }
   }
 
+  /// Obtiene el elemento identificado por [id] de la API y lo devuelve como un
+  /// [ItemModel].
   Future<ItemModel> getItemById(int id) async {
     try {
       _logger.debug('ItemsRepository: Obteniendo item con id: $id');
@@ -42,6 +55,8 @@ class ItemsRepository {
     }
   }
 
+  /// Guarda un nuevo [item] en el backend y devuelve el [ItemModel] guardado
+  /// con su ID asignado.
   Future<ItemModel> createItem(ItemModel item) async {
     try {
       _logger.debug('ItemsRepository: Creando item: ${item.name}');
@@ -54,6 +69,8 @@ class ItemsRepository {
     }
   }
 
+  /// Actualiza el elemento identificado por [id] con los datos en [item] y devuelve
+  /// el [ItemModel] actualizado según lo confirmado por el backend.
   Future<ItemModel> updateItem(int id, ItemModel item) async {
     try {
       _logger.debug('ItemsRepository: Actualizando item $id: ${item.name}');
@@ -69,6 +86,7 @@ class ItemsRepository {
     }
   }
 
+  /// Elimina permanentemente el elemento identificado por [id] del backend.
   Future<void> deleteItem(int id) async {
     try {
       _logger.debug('ItemsRepository: Eliminando item $id');
@@ -80,6 +98,9 @@ class ItemsRepository {
     }
   }
 
+  /// Obtiene todas las imágenes asociadas con el elemento identificado por [itemId] y
+  /// las devuelve como una lista de [ItemImageModel], ordenadas con la imagen
+  /// favorita primero.
   Future<List<ItemImageModel>> getItemImages(int itemId) async {
     try {
       _logger.debug('ItemsRepository: Obteniendo imágenes del item $itemId');
@@ -101,6 +122,8 @@ class ItemsRepository {
     }
   }
 
+  /// Crea un registro de imagen descrito por [image] en el backend utilizando JSON
+  /// (para imágenes basadas en URL) y devuelve el [ItemImageModel] guardado.
   Future<ItemImageModel> createItemImage(ItemImageModel image) async {
     try {
       _logger.debug(
@@ -117,6 +140,7 @@ class ItemsRepository {
     }
   }
 
+  /// Elimina permanentemente la imagen identificada por [imageId] del backend.
   Future<void> deleteItemImage(int imageId) async {
     try {
       _logger.debug('ItemsRepository: Eliminando imagen $imageId');
@@ -128,6 +152,8 @@ class ItemsRepository {
     }
   }
 
+  /// Elimina todas las imágenes asociadas con el elemento identificado por [itemId] en una
+  /// única solicitud por lotes al backend.
   Future<void> deleteItemImagesByItemId(int itemId) async {
     try {
       _logger.debug('ItemsRepository: Eliminando imágenes del item $itemId');
@@ -142,6 +168,8 @@ class ItemsRepository {
     }
   }
 
+  /// Marca la imagen identificada por [imageId] como la favorita para el elemento
+  /// identificado por [itemId], para que se muestre como la imagen de portada principal.
   Future<void> setFavoriteImage(int itemId, int imageId) async {
     try {
       _logger.debug('ItemsRepository: Marcando imagen $imageId como favorita');
@@ -153,6 +181,9 @@ class ItemsRepository {
     }
   }
 
+  /// Sube el archivo de imagen ubicado en [imagePath] para el elemento identificado por
+  /// [itemId] utilizando una solicitud multipart form-data y devuelve el
+  /// [ItemImageModel] guardado.
   Future<ItemImageModel> uploadImage(int itemId, String imagePath) async {
     try {
       _logger.debug('ItemsRepository: Subiendo imagen para ítem $itemId');
@@ -178,6 +209,12 @@ class ItemsRepository {
     }
   }
 
+  /// Sube la imagen representada por [imageFile] para el elemento identificado por
+  /// [itemId] utilizando una solicitud multipart form-data y devuelve el
+  /// [ItemImageModel] guardado.
+  ///
+  /// Lee los bytes del archivo de [imageFile], resuelve el tipo MIME y
+  /// garantiza que el nombre del archivo tenga una extensión válida antes de enviarlo.
   Future<ItemImageModel> uploadImageFromFile(int itemId, XFile imageFile) async {
     try {
       _logger.debug('ItemsRepository: Subiendo imagen para ítem $itemId');
@@ -215,6 +252,12 @@ class ItemsRepository {
     }
   }
 
+  /// Determina el tipo MIME para una imagen dado su [fileName] y una
+  /// indicación opcional de [xfileMimeType] del selector de archivos de la plataforma.
+  ///
+  /// Prefiere [xfileMimeType] cuando es una cadena `image/*` válida; de lo contrario,
+  /// recurre a inspeccionar la extensión del [fileName]. Por defecto es
+  /// `image/jpeg` cuando la extensión es desconocida.
   String _resolveMimeType(String fileName, String? xfileMimeType) {
     if (xfileMimeType != null && xfileMimeType.isNotEmpty && xfileMimeType.startsWith('image/')) {
       return xfileMimeType;
@@ -226,6 +269,11 @@ class ItemsRepository {
     return 'image/jpeg';
   }
 
+  /// Garantiza que [fileName] tenga una extensión de archivo consistente con [mimeType].
+  ///
+  /// Si [fileName] ya contiene una extensión corta (≤ 5 caracteres) se devuelve
+  /// sin cambios; de lo contrario, se añade la extensión adecuada basada en
+  /// [mimeType].
   String _ensureFileExtension(String fileName, String mimeType) {
     final hasExtension = fileName.contains('.') &&
         fileName.split('.').last.length <= 5;
@@ -240,6 +288,9 @@ class ItemsRepository {
     }
   }
 
+  /// Obtiene todos los elementos hijos (entradas de sub-colección) que pertenecen al
+  /// elemento padre identificado por [parentId] dentro de la biblioteca [libraryId], y
+  /// los devuelve como una lista de [ItemModel].
   Future<List<ItemModel>> getSubCollections(int parentId, int libraryId) async {
     try {
       _logger.debug(
@@ -261,6 +312,11 @@ class ItemsRepository {
     }
   }
 
+  /// Obtiene los elementos que pertenecen a la biblioteca compartida identificada por la
+  /// cadena remota [remoteId] y los devuelve como una lista de [ItemModel].
+  ///
+  /// Esto se utiliza para cargar elementos de bibliotecas compartidas por otros usuarios donde
+  /// solo se conoce el identificador remoto.
   Future<List<ItemModel>> getItemsByRemoteId(String remoteId) async {
     try {
       _logger.debug(

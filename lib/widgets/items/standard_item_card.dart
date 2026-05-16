@@ -3,14 +3,33 @@ import '../../data/items/item_model.dart';
 import '../shared/universal_image.dart';
 
 /// Vista estándar para el elemento de una lista.
+///
+/// Renderiza el elemento como una tarjeta de fila horizontal de altura fija (160 px) con una
+/// imagen de portada cuadrada a la izquierda y metadatos (título, género, edición,
+/// descripción, estado, puntuación, progreso) a la derecha.
 class StandardItemCard extends StatelessWidget {
+  /// El modelo de datos del elemento a mostrar.
   final ItemModel item;
+
+  /// Se llama cuando se toca la tarjeta para abrir la pantalla de detalles del elemento.
   final VoidCallback onTap;
+
+  /// Se llama cuando se mantiene presionada la tarjeta, ej. para un menú contextual.
   final VoidCallback? onLongPress;
+
+  /// Indica si se debe renderizar el punto de estado de color y la etiqueta en la fila del pie de página.
   final bool showStatus;
+
+  /// Indica si se debe mostrar la insignia de puntuación con estrella cuando el elemento ha sido calificado.
   final bool isGradeable;
+
+  /// Indica si se debe renderizar la etiqueta de género debajo del título.
   final bool isThematic;
+
+  /// Indica si se debe mostrar el precio junto al título cuando esté disponible.
   final bool supportsPrice;
+
+  /// Indica si se debe renderizar la barra de progreso y la etiqueta de progreso en la parte inferior.
   final bool supportsProgress;
 
   const StandardItemCard({
@@ -113,6 +132,7 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye la imagen de portada que llena la columna izquierda de 100 px.
   Widget _buildImage(BuildContext context) {
     return UniversalImage(
       item.imagePath ?? "",
@@ -122,6 +142,8 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una pequeña insignia circular superpuesta en la imagen de portada que muestra el
+  /// número del elemento dentro de su serie (ej. volumen 3 de un manga).
   Widget _buildItemNumberBadge(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
@@ -148,6 +170,8 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye la fila del título, mostrando el nombre del elemento y opcionalmente el precio
+  /// alineado a la derecha cuando [supportsPrice] es true.
   Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,6 +199,7 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Renderiza la cadena de género en un estilo tenue debajo del título.
   Widget _buildGenre(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 2),
@@ -188,6 +213,7 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye un pequeño chip que muestra la etiqueta de edición (ej. "Chase", "Flocked").
   Widget _buildEditionBadge(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
@@ -210,6 +236,7 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Renderiza un extracto de dos líneas de la descripción del elemento en un color tenue.
   Widget _buildDescription(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 2),
@@ -226,6 +253,9 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye la fila del pie de página que contiene el indicador de estado (punto + etiqueta) a
+  /// la izquierda y la insignia de puntuación a la derecha. La insignia "siguiendo" se muestra
+  /// en lugar del punto de estado cuando [ItemModel.current] es true.
   Widget _buildStatusRow(
     BuildContext context,
     Color statusColor,
@@ -264,6 +294,8 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye un chip compacto "SIGUIENDO" con un icono de reproducción, que se muestra cuando el
+  /// usuario está disfrutando activamente del elemento ([ItemModel.current] == true).
   Widget _buildFollowingBadge(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -289,6 +321,8 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye un indicador de estrella + puntuación numérica en línea en el color primario.
+  /// Solo se muestra cuando [isGradeable] es true y la puntuación del elemento es positiva.
   Widget _buildScoreBadge(BuildContext context) {
     final color = Theme.of(context).colorScheme.primary;
     return Row(
@@ -308,6 +342,9 @@ class StandardItemCard extends StatelessWidget {
     );
   }
 
+  /// Construye una barra de progreso etiquetada debajo de la fila de estado que muestra el progreso actual y
+  /// total junto con un porcentaje. Solo se muestra cuando
+  /// [supportsProgress] es true y [ItemModel.currentProgress] es positivo.
   Widget _buildProgressBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final progress = (item.totalProgress != null && item.totalProgress! > 0)

@@ -1,14 +1,35 @@
 import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
+/// Sección de configuración que controla la escala de puntuación y el tipo de
+/// seguimiento de progreso para una biblioteca.
+///
+/// Se renderiza de forma condicional:
+/// - La subsección de puntuación aparece solo cuando [isGradeable] es `true`.
+/// - La subsección de progreso aparece solo cuando [supportsProgress] es `true`.
+/// - Si no se establece ninguno de los indicadores, el widget devuelve un [SizedBox] vacío.
 class ConfigRatingProgressSection extends StatelessWidget {
+  /// Indica si los elementos de esta biblioteca pueden recibir una puntuación numérica.
   final bool isGradeable;
+
+  /// La escala de puntuación actualmente seleccionada (5, 10 o 100).
   final int ratingScale;
+
+  /// Se llama cuando el usuario elige una escala de puntuación diferente del desplegable.
   final ValueChanged<int> onRatingScaleChanged;
 
+  /// Indica si los elementos de esta biblioteca rastrean un contador de progreso.
   final bool supportsProgress;
+
+  /// La clave de tipo de progreso actualmente seleccionada (ej. `"Libro"`, `"Manga"`,
+  /// `"Anime"`, `"Serie"`, `"Manual"`, o `null` para ninguno).
   final String? progressType;
+
+  /// Se llama cuando el usuario selecciona un tipo de progreso diferente.
   final ValueChanged<String?> onProgressTypeChanged;
+
+  /// Controlador para la etiqueta de unidad de progreso personalizada que se muestra cuando [progressType]
+  /// es `"Manual"` (ej. "Artículo", "Nivel", "Misión").
   final TextEditingController customProgressUnitController;
 
   const ConfigRatingProgressSection({

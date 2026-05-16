@@ -4,8 +4,18 @@ import '../../core/i18n/l10n_extension.dart';
 /// Barra de navegación inferior compartida por todas las pantallas principales.
 ///
 /// Contiene: Listas, Perfil, Ajustes, Social.
+///
+/// Envuelve la [NavigationBar] de Flutter dentro de un [Container] estilizado que añade un
+/// borde superior redondeado, un borde adaptativo para el modo oscuro y una suave sombra paralela
+/// para elevarla visualmente por encima del contenido de la pantalla.
 class AppBottomNavBar extends StatelessWidget {
+  /// El índice basado en cero del destino de navegación actualmente activo.
+  /// Se pasa directamente a [NavigationBar.selectedIndex].
   final int currentIndex;
+
+  /// Se llama cuando el usuario toca una pestaña de destino.
+  /// Recibe el índice del destino tocado para que el llamador pueda actualizar la
+  /// pantalla seleccionada.
   final ValueChanged<int> onTap;
 
   const AppBottomNavBar({

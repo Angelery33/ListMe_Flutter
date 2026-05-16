@@ -12,6 +12,11 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
+/// Estado para [RegisterScreen].
+///
+/// Gestiona cuatro controladores de texto (nombre de usuario, correo electrónico, contraseña, confirmar contraseña),
+/// los nodos de enfoque correspondientes y la visibilidad de la contraseña. Delega la creación de la cuenta
+/// a [AuthProvider.register].
 class _RegisterScreenState extends State<RegisterScreen> {
   final _userController = TextEditingController();
   final _emailController = TextEditingController();
@@ -21,6 +26,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late FocusNode _emailFocusNode;
   late FocusNode _passwordFocusNode;
   late FocusNode _confirmPasswordFocusNode;
+
+  /// Indica si los campos de contraseña muestran sus caracteres en texto plano.
   bool _isPasswordVisible = false;
 
   @override
@@ -45,6 +52,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  /// Valida todos los campos, llama a [AuthProvider.register] y vuelve a la
+  /// pantalla de inicio de sesión con un [SnackBar] de bienvenida si tiene éxito, o muestra un error si
+  /// falla.
   void _handleRegister(BuildContext context) async {
     final auth = context.read<AuthProvider>();
     final username = _userController.text.trim();
@@ -242,6 +252,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  /// Construye un campo de texto con estilo glassmorphism vinculado al [controller].
+  ///
+  /// Soporta la ocultación de la contraseña a través de [isPassword] y enfoca el siguiente campo
+  /// o activa [onSubmitted] cuando el usuario envía a través del teclado.
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -288,6 +302,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  /// Construye el botón de registro principal que activa [_handleRegister].
+  ///
+  /// Muestra un [CircularProgressIndicator] mientras [auth] está cargando para evitar
+  /// el doble envío.
   Widget _buildRegisterButton(BuildContext context, ThemeData theme, AuthProvider auth) {
     return Container(
       width: double.infinity,

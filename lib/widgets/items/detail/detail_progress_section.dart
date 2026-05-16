@@ -5,7 +5,16 @@ import '../../../../data/items/item_model.dart';
 import '../../../../data/lists/list_model.dart';
 import '../../../../providers/items/item_details_provider.dart';
 
+/// Muestra controles de seguimiento de progreso para un elemento en la pantalla de detalle.
+///
+/// Se adapta al [ListModel.progressType] de la biblioteca: los libros muestran capítulos y
+/// páginas; las series/anime muestran temporadas y episodios; el manga muestra volúmenes, capítulos
+/// y páginas; Funko muestra la cantidad; todo lo demás utiliza un contador genérico.
+/// Los botones de incrementar/decrementar llaman a [ItemDetailsProvider] para que
+/// los cambios se guarden inmediatamente.
 class DetailProgressSection extends StatelessWidget {
+  /// La biblioteca propietaria cuya configuración de [ListModel.progressType], [ListModel.canEdit] y
+  /// [ListModel.supportsProgress] controla el comportamiento de la sección.
   final ListModel? library;
 
   const DetailProgressSection({super.key, this.library});
@@ -74,6 +83,9 @@ class DetailProgressSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza una barra de progreso simple con un botón "+1" para bibliotecas que no
+  /// definen un [progressType] estructurado. Muestra una marca de verificación verde una vez que el
+  /// elemento está completado.
   Widget _buildBasicProgress(
     BuildContext context,
     ItemModel item,
@@ -157,6 +169,9 @@ class DetailProgressSection extends StatelessWidget {
     );
   }
 
+  /// Devuelve la lista de filas de campos de progreso apropiadas para [progressType].
+  /// Cada fila es producida por [_buildProgressRow] y conectada al método del
+  /// proveedor correspondiente para que al pulsar incrementar/decrementar se guarde el cambio.
   List<Widget> _buildProgressFields(
     BuildContext context,
     ItemModel item,
@@ -273,6 +288,15 @@ class DetailProgressSection extends StatelessWidget {
     return widgets;
   }
 
+  /// Construye una única fila de progreso etiquetada que muestra [current] / [total] con
+  /// botones de decrementar e incrementar. El texto de la etiqueta es pulsable (cuando
+  /// [canEdit]) para abrir un diálogo para escribir manualmente un valor exacto, que
+  /// luego llama a [onManualSet].
+  ///
+  /// [onIncrement] se llama cuando se pulsa el botón "+".
+  /// [onDecrement] se llama cuando se pulsa el botón "-".
+  /// [onManualSet] se llama con el entero analizado cuando el usuario envía el
+  /// diálogo de entrada manual.
   Widget _buildProgressRow(
     BuildContext context,
     String label,

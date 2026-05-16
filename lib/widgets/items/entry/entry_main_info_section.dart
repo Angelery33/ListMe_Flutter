@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
+/// Cadenas de tipo de producto Funko predefinidas utilizadas como sugerencias de autocompletado en
+/// el campo de tipo de producto de [EntryMainInfoSection].
 const List<String> kFunkoProductTypes = [
   'Funko Pop!',
   'Funko Pop! Deluxe',
@@ -24,6 +26,8 @@ const List<String> kFunkoProductTypes = [
   'Funko Hikari',
 ];
 
+/// Cadenas de edición Funko predefinidas utilizadas como sugerencias de autocompletado en el
+/// campo de edición de [EntryMainInfoSection].
 const List<String> kFunkoEditions = [
   'Estándar',
   'Chase',
@@ -54,16 +58,41 @@ const List<String> kFunkoEditions = [
   'Disney Parks Exclusive',
 ];
 
+/// Sección de formulario para los campos de identidad principales de un elemento: nombre, descripción,
+/// número de elemento opcional, tipo de producto y edición.
+///
+/// Renderiza condicionalmente campos adicionales basados en la configuración de la biblioteca.
+/// Cuando [showImportButton] es verdadero, aparece un icono de descarga en la nube en el sufijo del campo
+/// de nombre para activar un flujo de importación de API.
 class EntryMainInfoSection extends StatelessWidget {
+  /// Controlador vinculado al campo de texto del nombre del elemento.
   final TextEditingController nameController;
+
+  /// Controlador vinculado al campo de texto de la descripción del elemento.
   final TextEditingController descController;
+
+  /// Controlador para el campo opcional del número de elemento (ej. "42" para Funko #42).
   final TextEditingController? itemNumberController;
+
+  /// Controlador para el campo opcional de tipo de producto con autocompletado de Funko.
   final TextEditingController? productTypeController;
+
+  /// Controlador para el campo opcional de edición con autocompletado de Funko.
   final TextEditingController? editionController;
+
+  /// Se llama cuando el usuario pulsa el botón de importar desde API en el campo de nombre.
   final VoidCallback? onImportPressed;
+
+  /// Indica si se debe mostrar el botón de icono de importar desde API dentro del campo de nombre.
   final bool showImportButton;
+
+  /// Indica si se debe renderizar el campo de número de elemento (requiere [itemNumberController]).
   final bool showItemNumber;
+
+  /// Indica si se debe renderizar el campo de tipo de producto (requiere [productTypeController]).
   final bool showProductType;
+
+  /// Indica si se debe renderizar el campo de edición (requiere [editionController]).
   final bool showEdition;
 
   const EntryMainInfoSection({
@@ -189,6 +218,7 @@ class EntryMainInfoSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza la etiqueta del encabezado de la sección con estilo en color primario en mayúsculas.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),
@@ -201,10 +231,23 @@ class EntryMainInfoSection extends StatelessWidget {
   }
 }
 
+/// Un campo de texto con sugerencias de autocompletado en línea de [suggestions] y un
+/// botón de flecha desplegable para mostrar la lista completa de sugerencias como un menú emergente.
+///
+/// Utilizado para los campos de tipo de producto y edición donde se recomienda un conjunto predefinido
+/// de valores pero aún se permite texto libre.
 class _SuggestionField extends StatelessWidget {
+  /// Controlador vinculado al [TextFormField] subyacente.
   final TextEditingController controller;
+
+  /// Etiqueta mostrada en la decoración del campo.
   final String label;
+
+  /// Icono de prefijo para la decoración del campo.
   final IconData icon;
+
+  /// La lista de cadenas de sugerencias mostradas en la superposición de autocompletado y el
+  /// menú emergente desplegable.
   final List<String> suggestions;
 
   const _SuggestionField({

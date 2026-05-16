@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
+/// Sección de configuración que permite al usuario elegir cómo se muestran los elementos
+/// agrupados por género en una biblioteca temática.
+///
+/// Solo visible cuando [isThematic] es `true`; devuelve un widget vacío en caso contrario.
 class ConfigDisplaySection extends StatelessWidget {
+  /// Indica si la biblioteca es temática (organizada por género/categoría).
+  /// Controla si esta sección se muestra en absoluto.
   final bool isThematic;
+
+  /// El modo de diseño de género actualmente seleccionado.
+  /// `0` = sin agrupación, `1` = secciones temáticas, `2` = vista temática compacta.
   final int genreLayoutMode;
+
+  /// Se llama cuando el usuario selecciona un botón de opción de modo de diseño diferente.
   final ValueChanged<int?> onGenreLayoutModeChanged;
 
   const ConfigDisplaySection({

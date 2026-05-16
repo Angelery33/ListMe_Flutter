@@ -2,19 +2,49 @@ import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/lists/library_genre_model.dart';
 
+/// Sección de formulario para propiedades opcionales del elemento: puntuación personal, género y precio.
+///
+/// Cada bloque se muestra solo cuando la biblioteca lo admite a través del interruptor booleano
+/// correspondiente ([isGradeable], [isThematic], [supportsPrice]).
 class EntryPropertiesSection extends StatelessWidget {
+  /// El nombre del género seleccionado actualmente, o nulo cuando no hay ninguno seleccionado.
   final String? genre;
+
+  /// Opciones de género obtenidas de la configuración de la biblioteca para rellenar el
+  /// menú desplegable. Recurre a un campo de texto libre cuando la lista está vacía.
   final List<LibraryGenreModel> availableGenres;
+
+  /// Se llama cuando el valor del menú desplegable de género cambia durante la interacción.
   final Function(String?) onGenreChanged;
+
+  /// Se llama con el valor del género seleccionado actualmente cuando se guarda el formulario.
   final Function(String?) onGenreSaved;
+
+  /// Se llama cuando el usuario pulsa el botón de "añadir género" junto al menú desplegable.
   final VoidCallback? onAddGenrePressed;
+
+  /// Controlador vinculado al campo de texto del precio.
   final TextEditingController priceController;
+
+  /// Valor de puntuación actual reflejado en el campo numérico y la fila de estrellas.
   final double score;
+
+  /// Se llama con la cadena de puntuación formateada cuando cambia el campo numérico.
   final Function(String) onScoreChanged;
+
+  /// Se llama con la puntuación calculada cuando el usuario toca una estrella en la fila.
   final Function(double) onStarTap;
+
+  /// Indica si se debe renderizar el campo de texto del precio.
   final bool supportsPrice;
+
+  /// Indica si se debe renderizar el campo de puntuación y la fila de estrellas.
   final bool isGradeable;
+
+  /// Indica si se debe renderizar el menú desplegable de género o el campo de texto libre.
   final bool isThematic;
+
+  /// La escala de calificación (5, 10 o 100) que controla la conversión de estrella a puntuación.
   final int ratingScale;
 
   const EntryPropertiesSection({
@@ -81,6 +111,8 @@ class EntryPropertiesSection extends StatelessWidget {
     );
   }
 
+  /// Construye el editor de puntuación: un campo de texto numérico limitado a [ratingScale]
+  /// y una fila de cinco iconos de estrellas que establecen la puntuación al tocar.
   Widget _buildScoreSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final maxScore = ratingScale.toDouble();
@@ -182,6 +214,8 @@ class EntryPropertiesSection extends StatelessWidget {
     );
   }
 
+  /// Construye ya sea un menú desplegable (cuando [availableGenres] no está vacío) o un campo
+  /// de texto libre para el género, además de un botón de icono opcional para añadir género.
   Widget _buildGenreDropdown(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -247,6 +281,7 @@ class EntryPropertiesSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza la etiqueta del encabezado de la sección con estilo en color primario en mayúsculas.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),

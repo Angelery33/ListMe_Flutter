@@ -5,7 +5,15 @@ import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/core/services/token_storage.dart';
 import 'package:list_me/data/auth/auth_models.dart';
 
+/// Servicio singleton responsable de la lógica de refresco de JWT.
+///
+/// Utiliza una instancia de [Dio] dedicada (sin el interceptor de autenticación) para evitar
+/// bucles de refresco infinitos. Los intentos de refresco concurrentes se deduplican:
+/// solo se realiza una llamada HTTP a la vez; cualquier llamador adicional que llegue
+/// mientras un refresco está en progreso se encola y se resuelve una vez que se completa
+/// la primera llamada.
 class AuthService {
+  /// Instancia global singleton.
   static final AuthService instance = AuthService._();
   final LoggerService _logger = LoggerService.instance;
   bool _isRefreshing = false;
@@ -13,6 +21,12 @@ class AuthService {
 
   AuthService._();
 
+  /// Intercambia el token de refresco almacenado por un nuevo par de tokens de acceso/refresco.
+  ///
+  /// Devuelve `true` cuando los tokens se refrescan y persisten correctamente,
+  /// o `false` si no hay ningún token de refresco disponible, el servidor lo rechaza, o
+  /// ocurre cualquier error de red. En caso de fallo, los tokens almacenados se borran para que
+  /// el usuario sea redirigido a la pantalla de inicio de sesión en la próxima solicitud protegida.
   Future<bool> refreshToken() async {
     if (_isRefreshing) {
       _logger.debug('AuthService: Ya hay un refresh en progreso, esperando...');
@@ -84,6 +98,11 @@ class AuthService {
     return token != null;
   }
 
+  /// Añade un [completer] a la cola interna para que se resuelva la próxima vez que
+  /// se complete un intento de refresco de token.
+  ///
+  /// [completer] El completer que se resolverá con `true` o `false`
+  /// dependiendo de si la autenticación tuvo éxito después del refresco.
   void queueRequest(Completer<bool> completer) {
     _queuedRequests.add(completer);
   }

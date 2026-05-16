@@ -14,21 +14,53 @@ import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
 
 /// Gestión centralizada de las rutas de la aplicación.
+///
+/// Expone constantes de nombre de ruta y el mapa de [routes] listo para pasar
+/// a [MaterialApp.routes]. Las rutas que requieren argumentos extraen éstos de
+/// [ModalRoute.settings.arguments] para desacoplar la navegación del tipo
+/// exacto de objeto pasado.
 class AppRoutes {
   AppRoutes._();
 
+  /// Ruta de la pantalla de inicio de sesión.
   static const String login = '/login';
+
+  /// Ruta de la pantalla de registro de nueva cuenta.
   static const String register = '/register';
+
+  /// Ruta de la pantalla principal que lista todas las listas del usuario.
   static const String lists = '/lists';
+
+  /// Ruta de la pantalla de contenido de una lista concreta.
+  /// Argumentos esperados: [Map<String, dynamic>] con claves `id`, `name`,
+  /// `remoteId` y `parentId`, o directamente un [ListModel].
   static const String list = '/list';
+
+  /// Ruta de la pantalla de configuración de una lista o sublista.
   static const String listConfig = '/list-config';
+
+  /// Ruta de la pantalla de perfil del usuario autenticado.
   static const String profile = '/profile';
+
+  /// Ruta de la pantalla de preferencias y ajustes de la app.
   static const String settings = '/settings';
+
+  /// Ruta de la pantalla de información/about de la aplicación.
   static const String info = '/info';
+
+  /// Ruta de la pantalla social (comunidad, compartir listas, etc.).
   static const String social = '/social';
+
+  /// Ruta de la pantalla de alta/edición de un ítem.
   static const String itemEntry = '/item-entry';
+
+  /// Ruta de la pantalla de detalle de un ítem.
+  /// Argumentos esperados: [Map<String, dynamic>] con claves `item` ([ItemModel])
+  /// y opcionalmente `list` ([ListModel]).
   static const String itemDetail = '/item-detail';
 
+  /// Mapa de constructores de widgets indexado por nombre de ruta, listo para
+  /// pasar a [MaterialApp.routes].
   static Map<String, WidgetBuilder> get routes => {
     login: (_) => const LoginScreen(),
     register: (_) => const RegisterScreen(),

@@ -17,15 +17,24 @@ class ListsProvider extends ChangeNotifier {
   final LoggerService _logger = LoggerService.instance;
   final FirebaseStorageService _firebaseStorage = FirebaseStorageService();
 
+  /// Indica si hay una operación remota en ejecución actualmente.
   bool _isLoading = false;
+
+  /// La lista ordenada actual de bibliotecas para el usuario autenticado.
   List<ListModel> _lists = [];
+
+  /// Mensaje de error de la operación fallida más reciente, o `null`.
   String? _errorMessage;
 
+  /// Crea un [ListsProvider] respaldado por [_listsRepository] e
+  /// [_itemsRepository], cargando inmediatamente los datos en caché del disco y
+  /// luego sincronizándolos desde el servidor.
   ListsProvider(this._listsRepository, this._itemsRepository) {
     _loadFromLocal();
     fetchLists();
   }
 
+  /// Carga [_lists] desde el caché local de Hive para un primer renderizado instantáneo.
   void _loadFromLocal() {
     _logger.debug('ListsProvider: Cargando desde persistencia local');
     _lists = _localStorage.getLibraries();
@@ -33,10 +42,18 @@ class ListsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Indica si hay una operación remota en ejecución actualmente.
   bool get isLoading => _isLoading;
+
+  /// La lista ordenada de bibliotecas para el usuario actual.
   List<ListModel> get lists => _lists;
+
+  /// Mensaje de error de la última operación fallida, o `null`.
   String? get errorMessage => _errorMessage;
 
+  /// Obtiene todas las bibliotecas del servidor y realiza una mezcla inteligente
+  /// con las personalizaciones de icono/color/características almacenadas localmente para que las
+  /// personalizaciones del usuario no se sobrescriban con los valores por defecto del servidor.
   Future<void> fetchLists() async {
     _isLoading = true;
     _errorMessage = null;
@@ -95,6 +112,9 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Crea [newList] en el servidor, la añade a [lists] y la persiste
+  /// localmente. Devuelve `true` si tiene éxito, `false` y establece [errorMessage] en caso de
+  /// fallo.
   Future<bool> createList(ListModel newList) async {
     try {
       final createdList = await _listsRepository.createLibrary(newList);
@@ -109,6 +129,12 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Actualiza la biblioteca identificada por [id] con [updatedList].
+  ///
+  /// Guarda localmente primero (persistencia optimista), luego envía al servidor
+  /// y combina la respuesta con los indicadores de características locales que el servidor puede no
+  /// persistir. Devuelve `true` si tiene éxito, `false` y establece [errorMessage] en caso de
+  /// fallo.
   Future<bool> updateList(int id, ListModel updatedList) async {
     try {
       // 1. Guardar preventivamente en local (Persistencia optimista del diseño)
@@ -148,6 +174,11 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Elimina la biblioteca identificada por [id] junto con todos sus elementos e
+  /// imágenes asociadas en Firebase Storage.
+  ///
+  /// Elimina la biblioteca de [lists] y de la caché local si tiene éxito.
+  /// Devuelve `true` si tiene éxito, `false` y establece [errorMessage] en caso de fallo.
   Future<bool> deleteList(int id) async {
     try {
       final libraryItems = await _itemsRepository.getAllItems(libraryId: id);
@@ -179,6 +210,9 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Mueve la lista en [oldIndex] a [newIndex] en el orden local, persiste
+  /// el orden en Hive inmediatamente y luego sincroniza de forma asíncrona las nuevas posiciones con
+  /// el servidor en segundo plano.
   void reorderLists(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) newIndex -= 1;
     final item = _lists.removeAt(oldIndex);
@@ -190,6 +224,10 @@ class ListsProvider extends ChangeNotifier {
     _persistOrder();
   }
 
+  /// Envía los valores de posición actualizados para todas las bibliotecas al servidor.
+  ///
+  /// Los errores de red se ignoran silenciosamente porque el orden ya está
+  /// persistido localmente.
   Future<void> _persistOrder() async {
     final items = _lists
         .asMap()
@@ -205,6 +243,9 @@ class ListsProvider extends ChangeNotifier {
   }
 
   // Genre Management Helpers
+
+  /// Añade un género llamado [name] a la biblioteca identificada por [listId] y
+  /// devuelve el [LibraryGenreModel] creado, o `null` en caso de fallo.
   Future<LibraryGenreModel?> addGenreToList(int listId, String name) async {
     try {
       final newGenre = LibraryGenreModel(libraryId: listId, name: name);
@@ -216,6 +257,9 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Elimina el género identificado por [genreId] del servidor.
+  ///
+  /// Devuelve `true` si tiene éxito, `false` y establece [errorMessage] en caso de fallo.
   Future<bool> deleteGenreFromList(int genreId) async {
     try {
       await _listsRepository.deleteLibraryGenre(genreId);
@@ -227,10 +271,13 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Devuelve todos los géneros asociados con la biblioteca identificada por [libraryId].
   Future<List<LibraryGenreModel>> getLibraryGenres(int libraryId) async {
     return await _listsRepository.getLibraryGenres(libraryId);
   }
 
+  /// Crea y persiste un nuevo género llamado [name] para la biblioteca identificada
+  /// por [libraryId] y devuelve el [LibraryGenreModel] resultante.
   Future<LibraryGenreModel> addLibraryGenre(int libraryId, String name) async {
     final genre = LibraryGenreModel(libraryId: libraryId, name: name);
     return await _listsRepository.addLibraryGenre(genre);

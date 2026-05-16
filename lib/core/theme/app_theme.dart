@@ -5,10 +5,18 @@ import 'widget_themes.dart';
 import 'text_themes.dart';
 
 /// Orquestador principal del sistema de temas.
+///
+/// Centraliza la construcción de [ThemeData] a partir de un nombre de acento
+/// (p. ej. `'emerald'`) y un [Brightness], delegando los sub-temas a
+/// [ColorSchemes], [WidgetThemes] y [TextThemes].
 class AppTheme {
   AppTheme._();
 
   /// Devuelve el [ThemeData] para el acento y brillo indicados.
+  ///
+  /// [accent] Nombre del acento visual (p. ej. `'emerald'`, `'amethyst'`).
+  /// [brightness] Modo claro u oscuro.
+  /// [fontScale] Factor multiplicador aplicado a todos los tamaños de fuente M3.
   static ThemeData getTheme(
     String accent,
     Brightness brightness,
@@ -31,6 +39,9 @@ class AppTheme {
   }
 
   /// Devuelve el color primario de un acento específico.
+  ///
+  /// [accent] Nombre del acento cuyo color primario se quiere obtener.
+  /// [brightness] Determina si se usa la variante clara u oscura del color.
   static Color getPrimaryColor(String accent, Brightness brightness) {
     final (scheme, _) = _schemeAndSurface(
       accent,
@@ -40,6 +51,10 @@ class AppTheme {
   }
 
   /// Helper para gradientes de AppBar.
+  ///
+  /// Devuelve un [Container] decorado con un gradiente lineal que va del color
+  /// primario al terciario del esquema actual. Para el tema Titanium usa una
+  /// escala de grises específica para mantener la apariencia monocromática.
   static Widget appBarGradient(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -77,6 +92,9 @@ class AppTheme {
   }
 
   /// Devuelve si el texto del AppBar debe ser oscuro (Titanium claro).
+  ///
+  /// Cuando es `true` los íconos y el título del AppBar deben usar un color
+  /// oscuro para contraste con el fondo gris claro del tema Titanium.
   static bool appBarUsesDarkText(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;

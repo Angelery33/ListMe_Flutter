@@ -3,12 +3,21 @@ import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/data/attributes/attribute_type_model.dart';
 import 'package:list_me/data/attributes/attribute_item_model.dart';
 
+/// Proporciona operaciones de acceso a datos para tipos de atributos y valores
+/// de atributos de elementos, comunicándose con la API REST del backend a través de [ApiClient].
+///
+/// Los tipos de atributos definen definiciones de metadatos reutilizables (por ejemplo, "Director"),
+/// mientras que los elementos de atributo almacenan los valores reales asignados a elementos específicos.
 class AttributesRepository {
   final ApiClient _apiClient;
   final LoggerService _logger = LoggerService.instance;
 
+  /// Crea un [AttributesRepository] utilizando el [_apiClient] proporcionado para
+  /// realizar solicitudes HTTP.
   AttributesRepository(this._apiClient);
 
+  /// Obtiene todas las definiciones de tipos de atributos de la API y las devuelve como una
+  /// lista de [AttributeTypeModel].
   Future<List<AttributeTypeModel>> getAllAttributeTypes() async {
     try {
       _logger.debug('AttributesRepository: Obteniendo tipos de atributos');
@@ -25,6 +34,8 @@ class AttributesRepository {
     }
   }
 
+  /// Crea una nueva definición de tipo de atributo en el backend utilizando los datos de
+  /// [type] y devuelve el [AttributeTypeModel] persistido con su id asignado.
   Future<AttributeTypeModel> createAttributeType(
     AttributeTypeModel type,
   ) async {
@@ -46,6 +57,8 @@ class AttributesRepository {
     }
   }
 
+  /// Obtiene todos los valores de atributo asignados al elemento identificado por [itemId]
+  /// y los devuelve como una lista de [AttributeItemModel].
   Future<List<AttributeItemModel>> getItemAttributes(int itemId) async {
     try {
       _logger.debug(
@@ -66,6 +79,8 @@ class AttributesRepository {
     }
   }
 
+  /// Persiste un nuevo valor de atributo descrito por [attribute] en el backend
+  /// y devuelve el [AttributeItemModel] guardado con su id asignado.
   Future<AttributeItemModel> addAttributeToItem(
     AttributeItemModel attribute,
   ) async {
@@ -87,6 +102,8 @@ class AttributesRepository {
     }
   }
 
+  /// Elimina el registro de elemento de atributo identificado por [attributeItemId] del
+  /// backend, eliminando permanentemente ese valor del elemento.
   Future<void> removeAttributeFromItem(int attributeItemId) async {
     try {
       _logger.debug(

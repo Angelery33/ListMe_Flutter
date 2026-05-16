@@ -1,29 +1,59 @@
 import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
+/// Sección de configuración que expone un conjunto de indicadores de características activables para una biblioteca.
+///
+/// Cada indicador se asigna a una capacidad (seguimiento de finalización, puntuación, agrupación temática,
+/// lista de deseos, seguimiento de fechas, seguimiento de precios, diseño compacto, seguimiento de progreso).
+/// Al activar un interruptor se llama a la función de retorno correspondiente para que la pantalla principal pueda
+/// actualizar su estado.
 class ConfigFeaturesSection extends StatelessWidget {
+  /// Indica si los elementos de esta biblioteca pueden marcarse como completados/pendientes/etc.
   final bool supportsCompletion;
+
+  /// Se llama cuando el usuario activa el interruptor de "admite finalización".
   final ValueChanged<bool> onSupportsCompletionChanged;
-  
+
+  /// Indica si a los elementos se les puede asignar una puntuación/calificación numérica.
   final bool isGradeable;
+
+  /// Se llama cuando el usuario activa el interruptor de "calificable".
   final ValueChanged<bool> onIsGradeableChanged;
-  
+
+  /// Indica si los elementos están organizados en secciones de género/categoría.
   final bool isThematic;
+
+  /// Se llama cuando el usuario activa el interruptor de "temático".
   final ValueChanged<bool> onIsThematicChanged;
-  
+
+  /// Indica si la biblioteca admite una lista de deseos (elementos aún no adquiridos).
   final bool supportsWishlist;
+
+  /// Se llama cuando el usuario activa el interruptor de "admite lista de deseos".
   final ValueChanged<bool> onSupportsWishlistChanged;
-  
+
+  /// Indica si los elementos rastrean fechas de inicio/finalización.
   final bool tracksDates;
+
+  /// Se llama cuando el usuario activa el interruptor de "rastrea fechas".
   final ValueChanged<bool> onTracksDatesChanged;
-  
+
+  /// Indica si los elementos almacenan un precio de compra.
   final bool supportsPrice;
+
+  /// Se llama cuando el usuario activa el interruptor de "admite precio".
   final ValueChanged<bool> onSupportsPriceChanged;
-  
+
+  /// Indica si la tarjeta de lista utiliza un diseño de elementos compacto (más denso).
   final bool isCompact;
+
+  /// Se llama cuando el usuario activa el interruptor de "compacto".
   final ValueChanged<bool> onIsCompactChanged;
-  
+
+  /// Indica si los elementos rastrean un contador de progreso numérico (páginas, capítulos, niveles…).
   final bool supportsProgress;
+
+  /// Se llama cuando el usuario activa el interruptor de "admite progreso".
   final ValueChanged<bool> onSupportsProgressChanged;
 
   const ConfigFeaturesSection({
@@ -46,6 +76,11 @@ class ConfigFeaturesSection extends StatelessWidget {
     required this.onSupportsProgressChanged,
   });
 
+  /// Construye una única fila [SwitchListTile] para un interruptor de característica.
+  ///
+  /// [title] es la etiqueta principal, [subtitle] es el texto explicativo,
+  /// [value] es el estado actual del interruptor, [onChanged] se activa cuando el usuario
+  /// acciona el interruptor, e [icon] es el icono decorativo inicial.
   Widget _buildSwitch(
     String title,
     String subtitle,

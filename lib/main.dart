@@ -26,8 +26,9 @@ import 'core/providers/sidebar_provider.dart';
 import 'core/services/local_storage_service.dart';
 import 'core/auth/auth_wrapper.dart';
 import 'core/services/api_client.dart';
-import 'widgets/shared/app_shell.dart';
 
+/// Punto de entrada: inicializa los bindings de Flutter, Firebase, el almacenamiento local y
+/// el proveedor de ajustes antes de pasar el control a [runApp].
 void main() async {
   // Aseguramos que los bindings de Flutter estén inicializados
   WidgetsFlutterBinding.ensureInitialized();
@@ -100,6 +101,11 @@ void main() async {
   );
 }
 
+/// Widget raíz de la aplicación ListMe.
+///
+/// Escucha al [SettingsProvider] y reconstruye el [MaterialApp] cada vez que cambia el
+/// modo de tema, el color de acento, la escala de fuente o la configuración regional para que cada pantalla
+/// refleje las preferencias del usuario sin necesidad de reiniciar.
 class ListMeApp extends StatelessWidget {
   const ListMeApp({super.key});
 

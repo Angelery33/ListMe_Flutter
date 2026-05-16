@@ -3,21 +3,69 @@ import '../../../core/i18n/l10n_extension.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/lists/list_model.dart';
 
+/// [AppBar] personalizado para la pantalla de detalles de la biblioteca.
+///
+/// Implementa [PreferredSizeWidget] para que pueda colocarse directamente en un
+/// espacio [Scaffold.appBar] slot. Su altura preferida se expande en 50 dp cuando el
+/// campo de búsqueda en línea es visible ([isSearchVisible]).
+///
+/// La barra contiene:
+/// - Un botón opcional de navegación hacia atrás (se muestra solo cuando hay una ruta para regresar).
+/// - Un botón de alternancia de búsqueda.
+/// - El nombre de la biblioteca y el logo de la aplicación como título centrado.
+/// - Un botón opcional de alternancia de vista de tabla/lista.
+/// - Un menú emergente con acciones sensibles al contexto (compartir, editar, sincronizar, eliminar).
+/// - Un campo de texto de búsqueda en línea expandible en la parte inferior.
 class ListDetailAppBar extends StatefulWidget implements PreferredSizeWidget {
+  /// El modelo de biblioteca cuyo nombre se muestra en la barra de título.
   final ListModel list;
+
+  /// Controlador para el campo de texto de búsqueda en línea que se muestra cuando [isSearchVisible] es `true`.
   final TextEditingController searchController;
+
+  /// Se llama cuando el usuario toca la acción de configuración (engranaje): navega a la configuración de la lista.
   final VoidCallback onSettingsPressed;
+
+  /// Se llama cuando el usuario selecciona un elemento del menú desplegable emergente.
+  /// El valor pasado es la clave del elemento del menú (ej. `'share'`, `'edit'`, `'delete'`).
   final void Function(String)? onMenuSelected;
+
+  /// Se llama cuando el usuario toca la acción de compartir.
   final VoidCallback onSharePressed;
+
+  /// Se llama cuando el usuario toca el icono de búsqueda para alternar la barra de búsqueda en línea.
   final VoidCallback onSearchToggle;
+
+  /// Indica si el campo de texto de búsqueda en línea está actualmente visible.
+  /// Controla tanto la altura preferida de la barra como el estado del icono de búsqueda.
   final bool isSearchVisible;
+
+  /// Indica si esta lista se está viendo en modo "nube" (compartida por otro usuario).
+  /// Algunas acciones del menú (como "compartir") se ocultan en el modo nube.
   final bool isCloud;
+
+  /// Indica si el usuario actual tiene permisos de edición para esta biblioteca.
   final bool canEdit;
+
+  /// Función de retorno opcional para la acción de menú "sincronizar". Cuando es `null`, el elemento
+  /// de sincronización se omite del menú emergente.
   final VoidCallback? onSyncPressed;
+
+  /// Función de retorno opcional para la acción de menú "editar". Cuando es `null`, el elemento
+  /// de edición se omite del menú emergente.
   final VoidCallback? onEditPressed;
+
+  /// Función de retorno opcional para la acción de menú "subir".
   final VoidCallback? onUploadPressed;
+
+  /// Indica si se muestra el botón de alternancia de vista de tabla/lista en el área de acciones.
   final bool showTableToggle;
+
+  /// Indica si la biblioteca se muestra actualmente en vista de tabla (frente a vista de lista de tarjetas).
+  /// Controla el icono mostrado en el botón de alternancia.
   final bool isTableView;
+
+  /// Se llama cuando el usuario toca el botón de alternancia de tabla/lista.
   final VoidCallback? onTableToggle;
 
   const ListDetailAppBar({
@@ -42,11 +90,13 @@ class ListDetailAppBar extends StatefulWidget implements PreferredSizeWidget {
   @override
   State<ListDetailAppBar> createState() => _ListDetailAppBarState();
 
+  /// Expande la altura preferida en 50 dp cuando la barra de búsqueda es visible.
   @override
   Size get preferredSize =>
       Size.fromHeight(isSearchVisible ? kToolbarHeight + 50 : kToolbarHeight);
 }
 
+/// Estado para [ListDetailAppBar].
 class _ListDetailAppBarState extends State<ListDetailAppBar> {
   @override
   Widget build(BuildContext context) {

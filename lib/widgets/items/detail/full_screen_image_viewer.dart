@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../shared/universal_image.dart';
 
+/// Objeto de transferencia de datos inmutable que contiene la información que un
+/// [FullScreenImageViewer] necesita para mostrar una sola imagen.
 class ViewerImageData {
+  /// Ruta de archivo local o ruta de activo para la imagen. Puede estar vacía cuando solo
+  /// [remoteUrl] está disponible.
   final String path;
+
+  /// URL remota utilizada como respaldo (o fuente principal) cuando [path] está vacío.
   final String? remoteUrl;
+
+  /// ID de base de datos del registro de imagen, utilizado para llamar a la función de retorno de establecer favorita.
+  /// Nulo para entradas sintéticas (ej. la imagen principal del elemento).
   final int? imageId;
+
+  /// Indica si esta imagen es actualmente la imagen favorita (portada) del elemento.
   final bool isFavorite;
 
   const ViewerImageData({
@@ -16,10 +27,26 @@ class ViewerImageData {
   });
 }
 
+/// Visor de imágenes a pantalla completa y con zoom que admite múltiples imágenes a través de un
+/// [PageView] horizontal.
+///
+/// Se utiliza tanto como una ruta independiente en dispositivos móviles como dentro de un diálogo en diseños
+/// anchos/web. Muestra un contador de páginas, un botón de cierre y un botón de estrella opcional
+/// para marcar la imagen actual como favorita.
 class FullScreenImageViewer extends StatefulWidget {
+  /// La lista ordenada de imágenes para mostrar. No debe estar vacía.
   final List<ViewerImageData> images;
+
+  /// El índice de página que se mostrará cuando se abra el visor por primera vez.
   final int initialIndex;
+
+  /// Se llama cuando se pulsa el botón de cierre para que el llamador pueda cerrar la ruta
+  /// o el diálogo.
   final VoidCallback? onDismiss;
+
+  /// Cuando no es nulo, se muestra un botón de estrella. Se llama con el ID de la base de datos de la imagen
+  /// y se espera que devuelva `true` si tiene éxito. En caso de fallo, se revierte la actualización
+  /// optimista local.
   final Future<bool> Function(int imageId)? onSetFavorite;
 
   const FullScreenImageViewer({
@@ -34,9 +61,18 @@ class FullScreenImageViewer extends StatefulWidget {
   State<FullScreenImageViewer> createState() => _FullScreenImageViewerState();
 }
 
+/// Estado para [FullScreenImageViewer]. Mantiene el controlador de página, el índice de página
+/// visible actualmente y una copia mutable de la lista de imágenes para que los cambios de favorita
+/// puedan reflejarse de forma optimista mientras se completa la llamada de red.
 class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
+  /// Controla el [PageView] para saltos de página programáticos.
   late PageController _pageController;
+
+  /// Índice de la página de imagen visible actualmente.
   late int _currentIndex;
+
+  /// Copia de trabajo mutable de la lista de imágenes. Se modifica de forma optimista cuando el
+  /// usuario toca la estrella de favorita, luego se revierte si falla la llamada al backend.
   late List<ViewerImageData> _images;
 
   @override
@@ -53,12 +89,17 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
     super.dispose();
   }
 
+  /// Indica si la imagen visible actualmente está marcada como favorita.
   bool get _currentIsFavorite =>
       _images.isNotEmpty && _images[_currentIndex].isFavorite;
 
+  /// El ID de la base de datos de la imagen visible actualmente, o nulo para entradas sintéticas.
   int? get _currentImageId =>
       _images.isNotEmpty ? _images[_currentIndex].imageId : null;
 
+  /// Maneja una pulsación en la estrella de favorita: marca de forma optimista la imagen actual
+  /// como favorita, llama a [FullScreenImageViewer.onSetFavorite] y
+  /// revierte el estado local si la llamada devuelve false.
   void _onSetFavorite() async {
     final imageId = _currentImageId;
     if (imageId == null || widget.onSetFavorite == null) return;

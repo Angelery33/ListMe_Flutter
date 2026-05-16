@@ -1,16 +1,22 @@
 import 'package:flutter/widgets.dart';
 
-/// Material 3 adaptive breakpoints.
+/// Puntos de interrupción adaptativos de Material 3.
 ///
 /// compact  < 600dp  — phone portrait, narrow browser window
 /// medium   600–840  — phone landscape, tablet portrait, iPhone in browser
 /// expanded > 840dp  — tablet landscape, desktop, wide browser window
 enum Breakpoint { compact, medium, expanded }
 
+/// [ChangeNotifier] que rastrea el tamaño de pantalla lógico y expone
+/// valores de diseño conscientes del punto de interrupción utilizados en toda la aplicación.
+///
+/// Se registra como un [WidgetsBindingObserver] para que se actualice automáticamente
+/// siempre que cambien las métricas de la ventana/dispositivo (rotación, cambio de tamaño, etc.).
 class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   double _width = 0;
   double _height = 0;
 
+  /// Crea el proveedor y comienza a escuchar los cambios en las métricas de la plataforma.
   ResponsiveProvider() {
     WidgetsBinding.instance.addObserver(this);
     _updateSize();
@@ -35,25 +41,39 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── Raw dimensions ────────────────────────────────────────────────────────
+
+  /// Ancho de pantalla lógico actual en píxeles independientes de la densidad.
   double get screenWidth => _width;
+
+  /// Altura de pantalla lógico actual en píxeles independientes de la densidad.
   double get screenHeight => _height;
 
   // ── Breakpoint ────────────────────────────────────────────────────────────
+
+  /// [Breakpoint] activo derivado de [screenWidth].
   Breakpoint get breakpoint {
     if (_width < 600) return Breakpoint.compact;
     if (_width < 840) return Breakpoint.medium;
     return Breakpoint.expanded;
   }
 
+  /// `true` cuando el ancho de la pantalla está por debajo de 600 dp (móvil en vertical).
   bool get isCompact  => breakpoint == Breakpoint.compact;
+
+  /// `true` cuando el ancho de la pantalla está entre 600 y 840 dp.
   bool get isMedium   => breakpoint == Breakpoint.medium;
+
+  /// `true` cuando el ancho de la pantalla supera los 840 dp (tablet/escritorio).
   bool get isExpanded => breakpoint == Breakpoint.expanded;
 
   // ── Navigation ────────────────────────────────────────────────────────────
-  /// Use a side NavigationRail instead of a bottom NavigationBar.
+
+  /// Utiliza un NavigationRail lateral en lugar de una NavigationBar inferior.
   bool get useSideNav => !isCompact;
 
   // ── Grid columns (compact card grid in ListScreen) ────────────────────────
+
+  /// Número de columnas para la cuadrícula de tarjetas compactas, escalado por punto de interrupción.
   int get compactGridColumns {
     switch (breakpoint) {
       case Breakpoint.compact:  return 3;
@@ -63,6 +83,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── List columns (standard list view shown as multi-column on wide screens) ─
+
+  /// Número de columnas al renderizar elementos como una lista estándar en pantallas anchas.
   int get listColumns {
     switch (breakpoint) {
       case Breakpoint.compact:  return 1;
@@ -72,6 +94,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── Content width cap for expanded layouts ────────────────────────────────
+
+  /// Ancho máximo de contenido para evitar diseños excesivamente anchos en pantallas grandes.
   double get maxContentWidth {
     switch (breakpoint) {
       case Breakpoint.compact:  return double.infinity;
@@ -80,7 +104,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  /// Max width for single-column form screens (entry, config).
+  /// Ancho máximo para pantallas de formulario de una sola columna (entrada, configuración).
   double get formMaxWidth {
     switch (breakpoint) {
       case Breakpoint.compact:  return double.infinity;
@@ -90,6 +114,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── Padding ───────────────────────────────────────────────────────────────
+
+  /// Relleno de contenido horizontal apropiado para el punto de interrupción actual.
   double get horizontalPadding {
     switch (breakpoint) {
       case Breakpoint.compact:  return 12;
@@ -99,6 +125,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── Card item dimensions (ActiveItemsSection horizontal scroll) ─────────
+
+  /// Ancho de una tarjeta de elemento activo en la sección de desplazamiento horizontal.
   double get activeCardWidth {
     switch (breakpoint) {
       case Breakpoint.compact:  return 130;
@@ -107,6 +135,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  /// Altura de una tarjeta de elemento activo en la sección de desplazamiento horizontal.
   double get activeCardHeight {
     switch (breakpoint) {
       case Breakpoint.compact:  return 180;
@@ -116,6 +145,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── Section header font size ─────────────────────────────────────────────
+
+  /// Tamaño de fuente utilizado para las etiquetas de encabezado de grupo/sección.
   double get sectionHeaderFontSize {
     switch (breakpoint) {
       case Breakpoint.compact:  return 12;
@@ -125,6 +156,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── Tag font size (DetailHeaderTags) ──────────────────────────────────────
+
+  /// Tamaño de fuente utilizado para los chips de etiquetas de metadatos en los encabezados de detalles de los elementos.
   double get tagFontSize {
     switch (breakpoint) {
       case Breakpoint.compact:  return 10;
@@ -134,6 +167,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   // ── Tag icon size ────────────────────────────────────────────────────────
+
+  /// Tamaño de icono utilizado dentro de los chips de etiquetas de metadatos.
   double get tagIconSize {
     switch (breakpoint) {
       case Breakpoint.compact:  return 12;

@@ -5,8 +5,10 @@ import '../../core/config/routes.dart';
 import '../../core/providers/responsive_provider.dart';
 import '../../core/providers/sidebar_provider.dart';
 
-/// Destinations shared between bottom bar and navigation rail.
-/// Labels are resolved via l10n at build time.
+/// Pares de icono/icono seleccionado para cada destino de navegación.
+///
+/// Destinos compartidos entre la barra inferior y el riel de navegación.
+/// Las etiquetas se resuelven a través de l10n en el momento de la construcción.
 const _destinationIcons = [
   (icon: Icons.list_alt_outlined,   selectedIcon: Icons.list_alt_rounded),
   (icon: Icons.person_outline,      selectedIcon: Icons.person),
@@ -14,6 +16,8 @@ const _destinationIcons = [
   (icon: Icons.people_outline,      selectedIcon: Icons.people),
 ];
 
+/// Construye la lista completa de destinos (icono + icono seleccionado + etiqueta localizada)
+/// para el [BuildContext] actual.
 List<({IconData icon, IconData selectedIcon, String label})> _destinationsFor(
   BuildContext context,
 ) {
@@ -29,18 +33,27 @@ List<({IconData icon, IconData selectedIcon, String label})> _destinationsFor(
   ];
 }
 
-/// Adaptive navigation shell.
+/// Capa de navegación adaptativa.
 ///
-/// compact  (< 600dp) → NavigationBar at the bottom (mobile style)
-/// medium / expanded  → NavigationRail on the left  (desktop/tablet style)
+/// compact  (< 600dp) → NavigationBar en la parte inferior (estilo móvil)
+/// medium / expanded  → NavigationRail a la izquierda (estilo escritorio/tablet)
 ///
-/// Usage: replace Scaffold's [bottomNavigationBar] with this widget wrapping
-/// the entire screen body.
+/// Uso: reemplace el [bottomNavigationBar] del Scaffold con este widget que envuelve
+/// todo el cuerpo de la pantalla.
 class AppShell extends StatelessWidget {
+  /// El índice basado en cero del destino de nivel superior actualmente activo.
   final int currentIndex;
+
+  /// El widget de contenido principal colocado dentro del cuerpo del [Scaffold].
   final Widget body;
+
+  /// Barra de aplicaciones opcional colocada en la parte superior del [Scaffold].
   final PreferredSizeWidget? appBar;
+
+  /// Botón de acción flotante (FAB) opcional reenviado a [Scaffold.floatingActionButton].
   final Widget? floatingActionButton;
+
+  /// Controla dónde se ancla el FAB dentro del scaffold.
   final FloatingActionButtonLocation? floatingActionButtonLocation;
 
   const AppShell({
@@ -52,6 +65,8 @@ class AppShell extends StatelessWidget {
     this.floatingActionButtonLocation,
   });
 
+  /// Navega a la pantalla correspondiente al [index] utilizando rutas con nombre.
+  /// No hace nada cuando el [index] es igual al [currentIndex] para evitar empujes duplicados.
   void _onTap(BuildContext context, int index) {
     if (index == currentIndex) return;
     switch (index) {
@@ -93,12 +108,26 @@ class AppShell extends StatelessWidget {
 
 // ── Compact: NavigationBar at the bottom ──────────────────────────────────────
 
+/// Diseño móvil utilizado cuando el ancho de la pantalla está por debajo del punto de interrupción de la navegación lateral.
+///
+/// Envuelve un [Scaffold] con una [NavigationBar] estilizada en la parte inferior.
 class _CompactLayout extends StatelessWidget {
+  /// El índice basado en cero del destino actualmente activo.
   final int currentIndex;
+
+  /// El widget del cuerpo de la pantalla.
   final Widget body;
+
+  /// Barra de aplicaciones opcional.
   final PreferredSizeWidget? appBar;
+
+  /// FAB opcional.
   final Widget? floatingActionButton;
+
+  /// Posición de anclaje del FAB.
   final FloatingActionButtonLocation? floatingActionButtonLocation;
+
+  /// Se llama cuando el usuario toca un destino de la navegación inferior.
   final ValueChanged<int> onTap;
 
   const _CompactLayout({
@@ -170,14 +199,35 @@ class _CompactLayout extends StatelessWidget {
 
 // ── Wide: NavigationRail on the left ─────────────────────────────────────────
 
+/// Diseño para tablet/escritorio utilizado cuando el ancho de la pantalla supera el
+/// punto de interrupción de la navegación lateral.
+///
+/// Renderiza un [NavigationRail] animado a la izquierda que se puede alternar
+/// entre un modo colapsado solo con iconos y un modo expandido con etiquetas.
 class _WideLayout extends StatelessWidget {
+  /// El índice basado en cero del destino actualmente activo.
   final int currentIndex;
+
+  /// El widget del cuerpo de la pantalla colocado a la derecha del riel.
   final Widget body;
+
+  /// Barra de aplicaciones opcional.
   final PreferredSizeWidget? appBar;
+
+  /// FAB opcional.
   final Widget? floatingActionButton;
+
+  /// Posición de anclaje del FAB.
   final FloatingActionButtonLocation? floatingActionButtonLocation;
+
+  /// Se llama cuando el usuario toca un destino del riel.
   final ValueChanged<int> onTap;
+
+  /// Indica si el riel de navegación está en su estado expandido (con etiquetas).
   final bool isExpanded;
+
+  /// Se llama cuando el usuario toca el botón de alternancia colapsar/expandir en la
+  /// parte inferior del riel.
   final VoidCallback onToggleExpanded;
 
   const _WideLayout({

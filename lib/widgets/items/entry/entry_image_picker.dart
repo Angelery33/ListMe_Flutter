@@ -5,14 +5,39 @@ import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../shared/universal_image.dart';
 
+/// Un editor de galería desplazable horizontal utilizado en el formulario de entrada/edición de elementos.
+///
+/// Muestra miniaturas de imágenes existentes (cargadas de la BD) e imágenes locales recién seleccionadas,
+/// además de un botón "añadir" que abre una hoja inferior para elegir entre galería y cámara.
+/// Cada miniatura tiene un botón de eliminar y un botón de estrella para establecerla como la imagen
+/// favorita (portada).
 class EntryImagePicker extends StatelessWidget {
+  /// Rutas a las imágenes ya persistidas en la base de datos para este elemento.
   final List<String> existingImages;
+
+  /// URLs remotas correspondientes a [existingImages], utilizadas por [UniversalImage]
+  /// como respaldo cuando la ruta local no está disponible.
   final List<String> existingRemoteUrls;
+
+  /// Rutas a las imágenes locales recién seleccionadas que aún no se han guardado en la base de datos.
   final List<String> newImages;
+
+  /// Índice combinado (a través de [existingImages] + [newImages]) de la imagen
+  /// marcada actualmente como favorita. Nulo por defecto al índice 0.
   final int? favoriteIndex;
+
+  /// Se llama con la cadena de origen ('gallery' o 'camera') cuando el usuario
+  /// selecciona un origen de la hoja inferior.
   final Function(String) onPickImage;
+
+  /// Se llama con el índice de la lista de la imagen existente que el usuario desea eliminar.
   final Function(int) onRemoveExisting;
+
+  /// Se llama con el índice de la lista (dentro de [newImages]) de la nueva imagen a eliminar.
   final Function(int) onRemoveNew;
+
+  /// Se llama con el índice combinado cuando el usuario toca una estrella para convertir una imagen
+  /// en la favorita.
   final Function(int) onSetFavorite;
 
   const EntryImagePicker({
@@ -27,6 +52,9 @@ class EntryImagePicker extends StatelessWidget {
     required this.onSetFavorite,
   });
 
+  /// Muestra una hoja inferior modal pidiendo al usuario que elija entre galería y
+  /// cámara (la cámara está oculta en plataformas de escritorio). Llama a [onPickImage] con
+  /// la cadena de origen elegida.
   void _showImageSourceSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -58,6 +86,8 @@ class EntryImagePicker extends StatelessWidget {
     );
   }
 
+  /// Devuelve true si la imagen en el [index] combinado es la favorita actual.
+  /// Cuando [favoriteIndex] es nulo, el índice 0 se trata como favorito.
   bool _isFavorite(int index) {
     if (favoriteIndex == null) return index == 0;
     return index == favoriteIndex;
@@ -155,6 +185,10 @@ class EntryImagePicker extends StatelessWidget {
     );
   }
 
+  /// Construye una sola miniatura de 100 × 120 px con botones superpuestos.
+  /// Una X roja en la parte superior derecha llama a [onRemove]; una insignia de estrella en la parte inferior derecha
+  /// llama a [onSetFavorite] para promocionar esta imagen a favorita. Cuando [isFavorite]
+  /// es verdadero, se muestra una insignia de estrella dorada en la parte superior izquierda y el borde resplandece.
   Widget _buildImageItem(
     BuildContext context, {
     required int index,
@@ -249,6 +283,7 @@ class EntryImagePicker extends StatelessWidget {
     );
   }
 
+  /// Renderiza la etiqueta del encabezado de la sección con estilo en color primario en mayúsculas.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),

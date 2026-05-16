@@ -4,12 +4,21 @@ import 'package:list_me/data/lists/list_model.dart';
 import 'package:list_me/data/lists/library_genre_model.dart';
 import 'package:list_me/data/lists/share_request_model.dart';
 
+/// Proporciona operaciones de acceso a datos para bibliotecas (listas) y sus etiquetas
+/// de género, comunicándose con la API REST del backend a través de [ApiClient].
+///
+/// Cubre CRUD completo para bibliotecas, reordenación, uso compartido y gestión de
+/// etiquetas de género por biblioteca.
 class ListsRepository {
   final ApiClient _apiClient;
   final LoggerService _logger = LoggerService.instance;
 
+  /// Crea un [ListsRepository] utilizando el [_apiClient] proporcionado para la
+  /// comunicación HTTP.
   ListsRepository(this._apiClient);
 
+  /// Obtiene todas las bibliotecas accesibles para el usuario autenticado y las devuelve
+  /// como una lista de [ListModel].
   Future<List<ListModel>> getAllLibraries() async {
     try {
       _logger.debug('ListsRepository: Obteniendo todas las listas');
@@ -26,6 +35,7 @@ class ListsRepository {
     }
   }
 
+  /// Obtiene la biblioteca identificada por [id] y la devuelve como un [ListModel].
   Future<ListModel> getLibraryById(int id) async {
     try {
       _logger.debug('ListsRepository: Obteniendo lista con id: $id');
@@ -37,6 +47,8 @@ class ListsRepository {
     }
   }
 
+  /// Guarda una nueva [library] en el backend y devuelve el [ListModel] guardado
+  /// con su ID asignado.
   Future<ListModel> createLibrary(ListModel library) async {
     try {
       _logger.debug('ListsRepository: Creando lista: ${library.name}');
@@ -54,6 +66,8 @@ class ListsRepository {
     }
   }
 
+  /// Actualiza la biblioteca identificada por [id] con los datos en [library] y
+  /// devuelve el [ListModel] actualizado según lo confirmado por el backend.
   Future<ListModel> updateLibrary(int id, ListModel library) async {
     try {
       _logger.debug('ListsRepository: Actualizando lista $id: ${library.name}');
@@ -71,6 +85,7 @@ class ListsRepository {
     }
   }
 
+  /// Elimina permanentemente la biblioteca identificada por [id] del backend.
   Future<void> deleteLibrary(int id) async {
     try {
       _logger.debug('ListsRepository: Eliminando lista $id');
@@ -82,6 +97,8 @@ class ListsRepository {
     }
   }
 
+  /// Envía el nuevo orden de clasificación de las bibliotecas al backend. [items] es una lista
+  /// de mapas, cada uno con entradas `{"idLibrary": id, "position": pos}`.
   Future<void> reorderLibraries(List<Map<String, int>> items) async {
     try {
       _logger.debug('ListsRepository: Reordenando listas');
@@ -93,6 +110,8 @@ class ListsRepository {
     }
   }
 
+  /// Comparte la biblioteca identificada por [id] con otro usuario como se describe en
+  /// [request], que especifica el nombre de usuario de destino y el nivel de acceso.
   Future<void> shareLibrary(int id, ShareRequestModel request) async {
     try {
       _logger.debug('ListsRepository: Compartiendo lista $id');
@@ -104,6 +123,8 @@ class ListsRepository {
     }
   }
 
+  /// Obtiene todas las etiquetas de género definidas para la biblioteca identificada por [libraryId]
+  /// y las devuelve como una lista de [LibraryGenreModel].
   Future<List<LibraryGenreModel>> getLibraryGenres(int libraryId) async {
     try {
       _logger.debug('ListsRepository: Obteniendo géneros de lista $libraryId');
@@ -122,6 +143,8 @@ class ListsRepository {
     }
   }
 
+  /// Guarda la nueva etiqueta de género [genre] en el backend y devuelve el
+  /// [LibraryGenreModel] guardado con su ID asignado.
   Future<LibraryGenreModel> addLibraryGenre(LibraryGenreModel genre) async {
     try {
       _logger.debug('ListsRepository: Agregando género: ${genre.name}');
@@ -137,6 +160,8 @@ class ListsRepository {
     }
   }
 
+  /// Elimina permanentemente la etiqueta de género identificada por [genreId] del
+  /// backend, eliminándola de la lista de géneros de la biblioteca.
   Future<void> deleteLibraryGenre(int genreId) async {
     try {
       _logger.debug('ListsRepository: Eliminando género $genreId');

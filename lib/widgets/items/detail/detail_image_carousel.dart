@@ -7,9 +7,21 @@ import '../../../../widgets/shared/universal_image.dart';
 import '../../../../providers/items/item_details_provider.dart';
 import 'full_screen_image_viewer.dart';
 
+/// Un carrusel de imágenes desplazable que se muestra en la parte superior de la pantalla de detalles del elemento.
+///
+/// En pantallas compactas, renderiza un [PageView] con indicadores de puntos; en diseños
+/// más anchos, renderiza una galería vertical. Al tocar cualquier imagen se abre
+/// [FullScreenImageViewer]. La imagen favorita siempre se coloca primero.
 class DetailImageCarousel extends StatefulWidget {
+  /// El elemento que se muestra; se utiliza para las etiquetas de animación hero e imagen de respaldo.
   final ItemModel item;
+
+  /// Lista ordenada de imágenes de la galería. Las imágenes favoritas se ordenan al principio
+  /// mediante [_buildViewerImages].
   final List<ItemImageModel> images;
+
+  /// Función de retorno opcional invocada cuando un cambio relacionado con la imagen (ej. actualización
+  /// de favorita) debe desencadenar una reconstrucción del padre.
   final VoidCallback? onImageUpdated;
 
   const DetailImageCarousel({
@@ -23,8 +35,14 @@ class DetailImageCarousel extends StatefulWidget {
   State<DetailImageCarousel> createState() => _DetailImageCarouselState();
 }
 
+/// Estado para [DetailImageCarousel]. Mantiene el índice de la página actual y un
+/// [PageController] para el carrusel de deslizamiento horizontal.
 class _DetailImageCarouselState extends State<DetailImageCarousel> {
+  /// El índice de la página visible actualmente en el [PageView].
   int _currentIndex = 0;
+
+  /// Controla el [PageView] para habilitar saltos programáticos (ej. cuando la
+  /// imagen favorita cambia y debe moverse de nuevo a la posición 0).
   late PageController _pageController;
 
   @override
@@ -34,13 +52,35 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
   }
 
   @override
+  void didUpdateWidget(DetailImageCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldFavId = oldWidget.images
+        .where((i) => i.isFavorite)
+        .map((i) => i.id)
+        .firstOrNull;
+    final newFavId = widget.images
+        .where((i) => i.isFavorite)
+        .map((i) => i.id)
+        .firstOrNull;
+    if (oldFavId != newFavId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(0);
+        }
+        setState(() => _currentIndex = 0);
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
   }
 
-  /// Builds a deduplicated, ordered list of ViewerImageData from gallery images.
-  /// Favorites first, then the rest. Falls back to item fields if no gallery images.
+  /// Construye una lista ordenada y sin duplicados de ViewerImageData a partir de las imágenes de la galería.
+  /// Favoritas primero, luego el resto. Recurre a los campos del elemento si no hay imágenes en la galería.
   List<ViewerImageData> _buildViewerImages() {
     if (widget.images.isEmpty) {
       final remoteUrl = widget.item.remoteImageUrl;
@@ -78,6 +118,8 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
     return result;
   }
 
+  /// Abre el [FullScreenImageViewer] comenzando en [index].
+  /// Utiliza un diálogo en pantallas anchas (> 840 px) y una ruta completa en las estrechas.
   void _showFullScreenImage(BuildContext context, int index) {
     final viewerImages = _buildViewerImages();
     if (viewerImages.isEmpty) return;
@@ -100,6 +142,8 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
     }
   }
 
+  /// Muestra el visor de imágenes como un diálogo de tamaño fijo adecuado para diseños
+  /// anchos/web (595 × 842 px, coincidiendo con una relación A4).
   void _showWebModal(
       BuildContext context, List<ViewerImageData> viewerImages, int index) {
     showDialog(
@@ -236,6 +280,8 @@ class _DetailImageCarouselState extends State<DetailImageCarousel> {
     );
   }
 
+  /// Renderiza todas las imágenes apiladas verticalmente con una relación de aspecto de 0.8.
+  /// Se utiliza en diseños no compactos (anchos) en lugar del PageView horizontal.
   Widget _buildVerticalGallery(
       BuildContext context, List<ViewerImageData> viewerImages) {
     return SingleChildScrollView(

@@ -11,6 +11,11 @@ import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/app_shell.dart';
 import '../../providers/invitations/invitations_provider.dart';
 
+/// Pantalla que muestra todas las bibliotecas del usuario actual.
+///
+/// En pantallas compactas, las bibliotecas se muestran en una lista de una sola
+/// columna reordenable. En pantallas medianas y expandidas, cambian a una cuadrícula adaptable.
+/// Un botón de acción flotante abre [ListConfigScreen] para crear una nueva biblioteca.
 class ListsScreen extends StatefulWidget {
   const ListsScreen({super.key});
 
@@ -18,6 +23,10 @@ class ListsScreen extends StatefulWidget {
   State<ListsScreen> createState() => _ListsScreenState();
 }
 
+/// Estado para [ListsScreen].
+///
+/// Activa la obtención de la lista en el primer frame para que los datos en caché obsoletos se actualicen
+/// inmediatamente cuando aparece la pantalla.
 class _ListsScreenState extends State<ListsScreen> {
   @override
   void initState() {
@@ -73,6 +82,8 @@ class _ListsScreenState extends State<ListsScreen> {
     );
   }
 
+  /// Construye una lista reordenable (compacta) o una cuadrícula adaptable (mediana /
+  /// expandida) dependiendo de [responsive.isCompact].
   Widget _buildListBody(ListsProvider listsProvider, ResponsiveProvider responsive) {
     final padding = EdgeInsets.fromLTRB(
       responsive.horizontalPadding,
@@ -108,6 +119,8 @@ class _ListsScreenState extends State<ListsScreen> {
     );
   }
 
+  /// Construye una [ListCard] para [list] configurada para navegar y realizar acciones de editar, eliminar y
+  /// compartir.
   Widget _buildListCard(ListModel list) {
     return ListCard(
       key: ValueKey(list.id),
@@ -122,6 +135,8 @@ class _ListsScreenState extends State<ListsScreen> {
     );
   }
 
+  /// Muestra un diálogo para enviar una invitación de colaboración para [list] a otro
+  /// usuario identificado por su nombre de usuario.
   void _showShareDialog(ListModel list) {
     final usernameController = TextEditingController();
     bool readOnly = true;
@@ -169,8 +184,8 @@ class _ListsScreenState extends State<ListsScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(success 
-                          ? context.l10n.listsInviteSent 
+                        content: Text(success
+                          ? context.l10n.listsInviteSent
                           : "Error al enviar invitación"),
                       ),
                     );
@@ -185,6 +200,8 @@ class _ListsScreenState extends State<ListsScreen> {
     );
   }
 
+  /// Muestra un diálogo de confirmación y elimina [list] a través de [ListsProvider] al
+  /// confirmar.
   void _confirmDeleteList(ListModel list) {
     showDialog(
       context: context,

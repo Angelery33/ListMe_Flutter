@@ -14,11 +14,17 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+/// Estado para [LoginScreen].
+///
+/// Gestiona los controladores de texto, los nodos de enfoque y la visibilidad de la contraseña, y
+/// delega la autenticación real al [AuthProvider].
 class _LoginScreenState extends State<LoginScreen> {
   final _userController = TextEditingController();
   final _passwordController = TextEditingController();
   late FocusNode _userFocusNode;
   late FocusNode _passwordFocusNode;
+
+  /// Indica si el campo de contraseña muestra actualmente sus caracteres en texto plano.
   bool _isPasswordVisible = false;
 
   @override
@@ -37,6 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Valida los campos del formulario, llama a [AuthProvider.login] y navega a
+  /// la pantalla de listas si tiene éxito o muestra un [SnackBar] si falla.
   void _handleLogin(BuildContext context) async {
     final auth = context.read<AuthProvider>();
     final username = _userController.text.trim();
@@ -177,6 +185,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// Construye un campo de texto con estilo glassmorphism utilizando el [controller] y
+  /// [label] proporcionados.
+  ///
+  /// Cuando [isPassword] es `true`, se añade un botón de alternancia de visibilidad y el
+  /// texto se oculta a menos que [_isPasswordVisible] sea `true`. [onSubmitted] se
+  /// llama cuando el usuario envía el campo a través de la acción del teclado.
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -223,6 +237,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// Construye el botón de inicio de sesión principal que activa [_handleLogin].
+  ///
+  /// Muestra un [CircularProgressIndicator] mientras [auth] está cargando para evitar
+  /// el doble envío.
   Widget _buildLoginButton(BuildContext context, ThemeData theme, AuthProvider auth) {
     return Container(
       width: double.infinity,

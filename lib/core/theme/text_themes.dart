@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 
 /// Centraliza la generación de [TextTheme] escalable.
+///
+/// Todos los tamaños de fuente siguen la escala tipográfica de Material 3 y se
+/// multiplican por [fontScale] para respetar la preferencia de tamaño de letra
+/// del usuario configurada en los ajustes de la aplicación.
 class TextThemes {
   TextThemes._();
 
   /// Construye un [TextTheme] con tamaños M3 explícitos escalados por [fontScale].
+  ///
+  /// [scheme] El [ColorScheme] activo, del que se extrae el color `onSurface`
+  /// aplicado uniformemente a todos los estilos de texto.
+  /// [fontScale] Factor multiplicador (1.0 = tamaño estándar M3).
   static TextTheme scaledTextTheme(ColorScheme scheme, double fontScale) {
     final color = scheme.onSurface;
     return TextTheme(

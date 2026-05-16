@@ -2,10 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/responsive_provider.dart';
 
+/// Encabezado de sección táctil utilizado para etiquetar y colapsar/expandir un grupo de estados
+/// en la vista de detalles de la biblioteca.
+///
+/// Presenta un acento de borde izquierdo de color, un [title] en mayúsculas, una etiqueta
+/// secundaria de precio opcional y un icono de colapsar/expandir que refleja [isCollapsed].
 class ListSectionHeader extends StatelessWidget {
+  /// El título de la sección mostrado en mayúsculas (ej. "COMPLETADO", "PENDIENTE").
   final String title;
+
+  /// Indica si el cuerpo de la sección está actualmente colapsado (oculto).
+  /// Controla qué icono se muestra (agregar vs. eliminar).
   final bool isCollapsed;
+
+  /// Se llama cuando el usuario toca el encabezado para alternar el estado colapsado.
   final VoidCallback onTap;
+
+  /// Precio total opcional de los elementos en esta sección.
+  /// Se muestra como una etiqueta secundaria cuando no es nulo y es mayor que cero.
   final double? totalPrice;
 
   const ListSectionHeader({

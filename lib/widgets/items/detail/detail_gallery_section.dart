@@ -6,12 +6,24 @@ import '../../../../providers/items/item_details_provider.dart';
 import '../../shared/universal_image.dart';
 import 'full_screen_image_viewer.dart';
 
+/// Muestra la galería de fotos de un elemento en la pantalla de detalles como una franja
+/// horizontal desplazable de tarjetas de miniaturas.
+///
+/// Cada miniatura se puede pulsar para abrir el [FullScreenImageViewer]. Cuando
+/// [canEdit] es verdadero, se muestra un botón de estrella en cada miniatura para marcarla como
+/// la imagen favorita (portada).
 class DetailGallerySection extends StatelessWidget {
+  /// El elemento cuyas imágenes de galería se muestran.
   final ItemModel item;
+
+  /// Indica si se debe renderizar el botón de estrella favorita en cada miniatura, permitiendo
+  /// al usuario cambiar la imagen de portada. Se establece en falso en contextos de solo lectura.
   final bool canEdit;
 
   const DetailGallerySection({super.key, required this.item, this.canEdit = true});
 
+  /// Convierte la lista de objetos [ItemImageModel] en instancias de [ViewerImageData]
+  /// consumidas por [FullScreenImageViewer].
   List<ViewerImageData> _toViewerImages(List<ItemImageModel> images) {
     return images.map((img) => ViewerImageData(
       path: img.imageUri ?? '',
@@ -21,6 +33,9 @@ class DetailGallerySection extends StatelessWidget {
     )).toList();
   }
 
+  /// Abre el [FullScreenImageViewer] comenzando en [index].
+  /// En pantallas anchas (> 840 px) se abre como un diálogo; en pantallas estrechas
+  /// empuja una ruta de pantalla completa.
   void _showImageFullScreen(
     BuildContext context,
     List<ItemImageModel> images,

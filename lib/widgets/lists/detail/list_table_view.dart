@@ -9,8 +9,10 @@ import '../../../providers/lists/lists_provider.dart';
 
 // ─── Column definition ────────────────────────────────────────────────────────
 
+/// Identifica cada columna posible en la vista de tabla.
 enum _Col { name, status, score, genre, progress, price, wishlist }
 
+/// Empareja un identificador [_Col] con su etiqueta de visualización y ancho flex relativo.
 class _ColDef {
   final _Col col;
   final String label;
@@ -20,8 +22,20 @@ class _ColDef {
 
 // ─── Main widget ──────────────────────────────────────────────────────────────
 
+/// Vista de tabla estilo hoja de cálculo para los elementos de una biblioteca.
+///
+/// Renderiza una fila de encabezado fija seguida de una lista desplazable de filas de datos.
+/// Las columnas se derivan de los indicadores de características de la biblioteca (puntuación, género, progreso,
+/// precio, lista de deseos), por lo que solo se muestran los datos relevantes.
+///
+/// Las celdas individuales se pueden editar en línea: al tocar se abre un pequeño diálogo para valores de texto/
+/// numéricos, o un desplegable emergente para las celdas de estado y género.
 class ListTableView extends StatefulWidget {
+  /// El modelo de biblioteca que controla qué columnas son visibles.
   final ListModel list;
+
+  /// El conjunto inicial de elementos para mostrar. El widget mantiene su propia copia ordenada
+  /// internamente para que la lista principal no necesite estar ordenada.
   final List<ItemModel> items;
 
   const ListTableView({
@@ -34,10 +48,21 @@ class ListTableView extends StatefulWidget {
   State<ListTableView> createState() => _ListTableViewState();
 }
 
+/// Estado para [ListTableView].
+///
+/// Gestiona la lista de filas ordenadas mutables, la columna/dirección de ordenación activa
+/// y los nombres de género cargados de forma diferida para las celdas desplegables de género.
 class _ListTableViewState extends State<ListTableView> {
+  /// La copia de trabajo, posiblemente ordenada, de la lista de elementos.
   late List<ItemModel> _rows;
+
+  /// La columna utilizada actualmente para la ordenación, o `null` para ninguna ordenación.
   _Col? _sortCol;
+
+  /// Indica si la ordenación actual es ascendente (`true`) o descendente (`false`).
   bool _sortAsc = true;
+
+  /// Nombres de género cargados desde el servidor para las celdas desplegables de género.
   List<String> _genres = [];
 
   @override
@@ -49,6 +74,8 @@ class _ListTableViewState extends State<ListTableView> {
     }
   }
 
+  /// Obtiene los nombres de género para la biblioteca de [ListsProvider] y los almacena
+  /// para que las celdas de género puedan mostrar un desplegable en lugar de un campo de texto libre.
   Future<void> _loadGenres() async {
     final loaded = await context
         .read<ListsProvider>()
@@ -65,6 +92,7 @@ class _ListTableViewState extends State<ListTableView> {
     }
   }
 
+  /// Crea la lista de definiciones de columnas visibles basadas en los indicadores de la biblioteca.
   List<_ColDef> get _cols {
     final l = widget.list;
     return [
@@ -78,6 +106,10 @@ class _ListTableViewState extends State<ListTableView> {
     ];
   }
 
+  /// Alterna o cambia la columna de ordenación activa y vuelve a ordenar [_rows].
+  ///
+  /// Al tocar la misma columna se invierte la dirección de ordenación; al tocar una columna diferente
+  /// se restablece a ascendente.
   void _toggleSort(_Col col) {
     setState(() {
       if (_sortCol == col) {
@@ -90,6 +122,7 @@ class _ListTableViewState extends State<ListTableView> {
     });
   }
 
+  /// Ordena [_rows] en el lugar según [_sortCol] y [_sortAsc].
   void _doSort() {
     _rows.sort((a, b) {
       int cmp;
@@ -120,6 +153,7 @@ class _ListTableViewState extends State<ListTableView> {
     });
   }
 
+  /// Reemplaza la fila de [updated] en [_rows] y vuelve a aplicar la ordenación actual.
   void _updateRow(ItemModel updated) {
     setState(() {
       final idx = _rows.indexWhere((r) => r.id == updated.id);
@@ -220,11 +254,23 @@ class _ListTableViewState extends State<ListTableView> {
 
 // ─── Header row ───────────────────────────────────────────────────────────────
 
+/// Fila de encabezado fija que renderiza etiquetas de columna e indicadores de ordenación.
+///
+/// Al tocar un encabezado de columna se llama a [onSort] para cambiar la ordenación activa.
 class _HeaderRow extends StatelessWidget {
+  /// La lista ordenada de definiciones de columnas para renderizar.
   final List<_ColDef> cols;
+
+  /// La columna utilizada actualmente para la ordenación, o `null` para sin ordenar.
   final _Col? sortCol;
+
+  /// Indica si la dirección de ordenación actual es ascendente.
   final bool sortAsc;
+
+  /// Se llama cuando el usuario toca un encabezado de columna para ordenar por esa columna.
   final void Function(_Col) onSort;
+
+  /// El modelo de biblioteca, utilizado para resolver las etiquetas de columna localizadas.
   final ListModel list;
 
   const _HeaderRow({
@@ -235,6 +281,7 @@ class _HeaderRow extends StatelessWidget {
     required this.list,
   });
 
+  /// Devuelve la etiqueta de visualización localizada para una columna.
   String _label(BuildContext ctx, _Col col) {
     switch (col) {
       case _Col.name: return ctx.l10n.itemName;
@@ -299,12 +346,28 @@ class _HeaderRow extends StatelessWidget {
 
 // ─── Data row ─────────────────────────────────────────────────────────────────
 
+/// Una única fila de datos en la tabla que renderiza un [ItemModel].
+///
+/// Alterna el color de fondo entre filas pares e impares para mayor legibilidad.
+/// Cada celda se puede editar de forma independiente a través de diálogos en línea o desplegables.
 class _DataRow extends StatelessWidget {
+  /// El elemento cuyos datos se renderizan a través de las celdas de la fila.
   final ItemModel item;
+
+  /// Definiciones de columnas que controlan qué celdas se renderizan y sus anchos.
   final List<_ColDef> cols;
+
+  /// El modelo de biblioteca utilizado para buscar el tipo de progreso y la escala de puntuación.
   final ListModel list;
+
+  /// Nombres de género disponibles para la celda desplegable de género.
   final List<String> genres;
+
+  /// Indica si esta fila tiene un índice par, se utiliza para alternar los colores de fondo.
   final bool isEven;
+
+  /// Se llama cuando se confirma la edición de una celda con el [ItemModel] actualizado.
+  /// El llamador es responsable de persistir el cambio en el backend.
   final void Function(ItemModel) onUpdated;
 
   const _DataRow({
@@ -333,8 +396,8 @@ class _DataRow extends StatelessWidget {
     );
   }
 
+  /// Selecciona y construye el widget de celda apropiado para la [col] dada.
   Widget _buildCell(BuildContext context, _Col col) {
-    final theme = Theme.of(context);
     switch (col) {
       case _Col.name:
         return _TapToEditCell(
@@ -408,12 +471,18 @@ class _DataRow extends StatelessWidget {
 
 // ─── Status cell ──────────────────────────────────────────────────────────────
 
+/// Celda de tabla que muestra el estado actual del elemento como un punto coloreado + etiqueta
+/// y abre un menú emergente para cambiarlo.
 class _StatusCell extends StatelessWidget {
+  /// El elemento cuyo estado se muestra.
   final ItemModel item;
+
+  /// Se llama con la nueva clave de estado cuando el usuario selecciona una opción diferente.
   final void Function(String) onChanged;
 
   const _StatusCell({required this.item, required this.onChanged});
 
+  /// Todas las opciones de estado válidas con sus claves de visualización, claves l10n y colores.
   static const _options = [
     ('PENDING', 'statusPending', Color(0xFF9E9E9E)),
     ('IN_PROGRESS', 'statusInProgress', Color(0xFF2196F3)),
@@ -422,6 +491,7 @@ class _StatusCell extends StatelessWidget {
     ('COMPLETED', 'statusCompleted', Color(0xFF4CAF50)),
   ];
 
+  /// Devuelve la etiqueta localizada para una clave de [status] dada.
   String _label(BuildContext ctx, String status) {
     switch (status) {
       case 'PENDING': return ctx.l10n.statusPending;
@@ -433,6 +503,7 @@ class _StatusCell extends StatelessWidget {
     }
   }
 
+  /// Devuelve el color asociado con la clave de estado dada.
   Color _color(String? s) {
     for (final (k, _, c) in _options) {
       if (k == s) return c;
@@ -490,9 +561,18 @@ class _StatusCell extends StatelessWidget {
 
 // ─── Genre cell with dropdown ─────────────────────────────────────────────────
 
+/// Celda de tabla que muestra el género actual y permite al usuario elegir uno diferente
+/// de un menú emergente, o recurre a un diálogo de texto libre cuando aún no se han configurado
+/// géneros para la biblioteca.
 class _GenreCell extends StatelessWidget {
+  /// El género actual del elemento, o `null` si no está establecido.
   final String? current;
+
+  /// La lista de nombres de género disponibles. Cuando está vacía, se muestra una celda de edición de
+  /// texto libre en lugar de un desplegable.
   final List<String> genres;
+
+  /// Se llama con la cadena de género seleccionada (una cadena vacía significa "borrar").
   final void Function(String) onChanged;
 
   const _GenreCell({
@@ -556,13 +636,30 @@ class _GenreCell extends StatelessWidget {
 
 // ─── Generic tap-to-edit cell ─────────────────────────────────────────────────
 
+/// Celda de tabla que muestra una cadena [display] y abre un pequeño [AlertDialog]
+/// con un campo de texto al tocarla, permitiendo al usuario editar el valor en línea.
 class _TapToEditCell extends StatelessWidget {
+  /// La cadena formateada que se muestra en la celda cuando no se está editando.
   final String display;
+
+  /// El título del diálogo de edición.
   final String dialogTitle;
+
+  /// El valor inicial pre-rellenado en el campo de texto del diálogo de edición.
   final String initialValue;
+
+  /// Sufijo opcional añadido al campo de texto (ej. `"€"`, `"/10"`).
   final String suffix;
+
+  /// Cuando es `true`, el teclado se configura como numérico y se filtran las entradas
+  /// que no sean dígitos o puntos.
   final bool isNumeric;
+
+  /// Cuando es `true`, el texto de visualización se renderiza con un peso seminegrita.
   final bool bold;
+
+  /// Se llama con el nuevo valor de cadena cuando el usuario confirma el diálogo de edición.
+  /// Solo se llama cuando el valor ha cambiado realmente.
   final void Function(String) onSaved;
 
   const _TapToEditCell({
@@ -605,6 +702,7 @@ class _TapToEditCell extends StatelessWidget {
     );
   }
 
+  /// Abre el diálogo de edición y llama a [onSaved] si el usuario confirma un cambio.
   void _edit(BuildContext context) async {
     final ctrl = TextEditingController(text: initialValue);
     final result = await showDialog<String>(
@@ -651,11 +749,18 @@ class _TapToEditCell extends StatelessWidget {
 
 // ─── Progress cell ────────────────────────────────────────────────────────────
 
-typedef _ProgressMap = Map<String, int?>;
-
+/// Celda de tabla que muestra datos de progreso estructurados (temporadas, capítulos, páginas,
+/// volúmenes o un contador genérico) como chips compactos, y abre un diálogo de varios campos
+/// para editar al tocarla.
 class _ProgressCell extends StatelessWidget {
+  /// El elemento cuyos campos de progreso se renderizan.
   final ItemModel item;
+
+  /// El modelo de biblioteca, utilizado para determinar el [ListModel.progressType].
   final ListModel list;
+
+  /// Se llama con un [ItemModel] actualizado cuando el usuario guarda los cambios en el
+  /// diálogo de edición de progreso.
   final void Function(ItemModel) onUpdated;
 
   const _ProgressCell({
@@ -664,6 +769,7 @@ class _ProgressCell extends StatelessWidget {
     required this.onUpdated,
   });
 
+  /// Formatea un valor de progreso como `"<unidad> <act>[/<tot>]"`.
   String _fmt(int cur, int? tot, String unit) {
     final t = (tot != null && tot > 0) ? '/$tot' : '';
     return '$unit $cur$t';
@@ -708,6 +814,7 @@ class _ProgressCell extends StatelessWidget {
     );
   }
 
+  /// Construye un pequeño chip en forma de píldora para mostrar una única etiqueta de segmento de progreso.
   Widget _chip(BuildContext context, String label, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -721,6 +828,8 @@ class _ProgressCell extends StatelessWidget {
     );
   }
 
+  /// Abre un diálogo de edición de progreso de varios campos apropiado para el
+  /// [ListModel.progressType] de la biblioteca y llama a [onUpdated] cuando el usuario guarda.
   void _edit(BuildContext context) async {
     final pt = list.progressType;
     final fields = <String, (String label, TextEditingController ctrl, TextEditingController totCtrl)>{};

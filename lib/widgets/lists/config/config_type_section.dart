@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
+/// Sección de configuración que permite al usuario asignar una categoría de contenido a
+/// una biblioteca (ej. Libro, Anime, Película, etc.).
+///
+/// La categoría impulsa el comportamiento de la IU en otras partes de la aplicación; por ejemplo,
+/// qué API de búsqueda externa se consultan al agregar elementos. Seleccionar `null`
+/// crea una biblioteca genérica de contenido mixto.
 class ConfigTypeSection extends StatelessWidget {
+  /// La clave de categoría actualmente seleccionada, o `null` para una biblioteca genérica.
   final String? selectedCategory;
+
+  /// Se llama cuando el usuario elige una categoría diferente del desplegable.
   final ValueChanged<String?> onChanged;
 
   const ConfigTypeSection({

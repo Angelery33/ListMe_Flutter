@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
 /// Paleta de colores de todos los temas de la aplicación.
-/// 
+///
 /// Cada tema (gema) define su color primario, contenedor, secundario, terciario,
 /// error, surface y outline para modo claro y oscuro.
+///
+/// Los temas Emerald y Amethyst están completamente definidos con todos los
+/// roles M3. Los demás temas (Sapphire, Ruby, Titanium, Amber, Cobalt, Cyan y
+/// Magenta) sólo definen los colores primarios y de superficie, ya que el resto
+/// se genera con [ColorScheme.fromSeed].
 class AppColors {
   AppColors._();
 
@@ -102,39 +107,67 @@ class AppColors {
   // ---------------------------------------------------------------------------
   // Otros Temas (Sapphire, Ruby, Titanium, Amber, Cobalt, Cyan, Magenta)
   // ---------------------------------------------------------------------------
-  
+
+  /// Color primario para el tema Sapphire (verde azulado) en modo claro.
   static const sapphirePrimaryLight   = Color(0xFF00796B);
+  /// Superficie de fondo para el tema Sapphire en modo claro.
   static const sapphireSurfaceLight   = Color(0xFFE0F2F1);
+  /// Color primario para el tema Sapphire en modo oscuro.
   static const sapphirePrimaryDark    = Color(0xFF80CBC4);
+  /// Superficie de fondo para el tema Sapphire en modo oscuro.
   static const sapphireSurfaceDark    = Color(0xFF161F1E);
 
+  /// Color primario para el tema Ruby (rojo profundo) en modo claro.
   static const rubyPrimaryLight       = Color(0xFF800020);
+  /// Superficie de fondo para el tema Ruby en modo claro.
   static const rubySurfaceLight       = Color(0xFFFFF5F5);
+  /// Color primario para el tema Ruby en modo oscuro.
   static const rubyPrimaryDark        = Color(0xFFB71C1C);
+  /// Superficie de fondo para el tema Ruby en modo oscuro.
   static const rubySurfaceDark        = Color(0xFF241616);
 
+  /// Color primario para el tema Titanium (casi negro/blanco) en modo claro.
   static const titaniumPrimaryLight   = Color.fromARGB(255, 38, 36, 39);
+  /// Superficie de fondo para el tema Titanium en modo claro.
   static const titaniumSurfaceLight   = Color.fromARGB(255, 240, 240, 240);
+  /// Color primario para el tema Titanium en modo oscuro.
   static const titaniumPrimaryDark    = Color(0xFFE3E2E6);
+  /// Superficie de fondo para el tema Titanium en modo oscuro.
   static const titaniumSurfaceDark    = Color.fromARGB(255, 27, 27, 27);
 
+  /// Color primario para el tema Amber (naranja/oro) en modo claro.
   static const amberPrimaryLight      = Color(0xFFA66800);
+  /// Superficie de fondo para el tema Amber en modo claro.
   static const amberSurfaceLight      = Color(0xFFFFF8F0);
+  /// Color primario para el tema Amber en modo oscuro.
   static const amberPrimaryDark       = Color(0xFFFFB77C);
+  /// Superficie de fondo para el tema Amber en modo oscuro.
   static const amberSurfaceDark       = Color(0xFF2E1C0A);
 
+  /// Color primario para el tema Cobalt (azul profundo) en modo claro.
   static const cobaltPrimaryLight     = Color(0xFF2F48A8);
+  /// Superficie de fondo para el tema Cobalt en modo claro.
   static const cobaltSurfaceLight     = Color(0xFFEEF0FA);
+  /// Color primario para el tema Cobalt en modo oscuro.
   static const cobaltPrimaryDark      = Color(0xFFBCC4FF);
+  /// Superficie de fondo para el tema Cobalt en modo oscuro.
   static const cobaltSurfaceDark      = Color(0xFF0F1530);
 
+  /// Color primario para el tema Cyan (azul claro) en modo claro.
   static const cyanPrimaryLight       = Color(0xFF00ACC1);
+  /// Superficie de fondo para el tema Cyan en modo claro.
   static const cyanSurfaceLight       = Color(0xFFE0F7FA);
+  /// Color primario para el tema Cyan en modo oscuro.
   static const cyanPrimaryDark        = Color(0xFF4DD0E1);
+  /// Superficie de fondo para el tema Cyan en modo oscuro.
   static const cyanSurfaceDark        = Color(0xFF001F24);
 
+  /// Color primario para el tema Magenta (rosa) en modo claro.
   static const magentaPrimaryLight    = Color(0xFFC2185B);
+  /// Superficie de fondo para el tema Magenta en modo claro.
   static const magentaSurfaceLight    = Color(0xFFFCE4EC);
+  /// Color primario para el tema Magenta en modo oscuro.
   static const magentaPrimaryDark     = Color(0xFFF48FB1);
+  /// Superficie de fondo para el tema Magenta en modo oscuro.
   static const magentaSurfaceDark     = Color(0xFF300516);
 }

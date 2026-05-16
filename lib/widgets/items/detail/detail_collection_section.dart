@@ -10,7 +10,13 @@ import '../../../screens/items/item_collection_screen.dart';
 import '../../../screens/items/item_detail_screen.dart';
 import '../../shared/universal_image.dart';
 
+/// Muestra la colección de subelementos de un elemento padre en la pantalla de detalles.
+///
+/// Renderiza una franja horizontal de tarjetas de elementos secundarios y botones de acción para ver
+/// todos los elementos en una cuadrícula o añadir uno nuevo. Solo visible cuando el elemento actual
+/// tiene [ItemModel.collection] establecido en verdadero.
 class DetailCollectionSection extends StatelessWidget {
+  /// La biblioteca propietaria del elemento, utilizada para configurar la creación de subelementos.
   final ListModel? library;
 
   const DetailCollectionSection({super.key, this.library});
@@ -50,9 +56,16 @@ class DetailCollectionSection extends StatelessWidget {
   }
 }
 
+/// Fila de encabezado para la sección de colección que muestra el título con el recuento
+/// de subelementos, un botón de cuadrícula de "ver todo" y un botón de "añadir elemento".
 class _CollectionHeader extends StatelessWidget {
+  /// El elemento padre cuya colección se muestra.
   final ItemModel item;
+
+  /// El contexto de la biblioteca utilizado al navegar a las pantallas de subelementos.
   final ListModel? library;
+
+  /// Número de subelementos cargados actualmente, mostrados junto al título.
   final int count;
 
   const _CollectionHeader({
@@ -61,6 +74,7 @@ class _CollectionHeader extends StatelessWidget {
     required this.count,
   });
 
+  /// Navega a la pantalla de colección de cuadrícula completa y recarga los subelementos al regresar.
   Future<void> _openGrid(BuildContext context) async {
     await Navigator.push(
       context,
@@ -73,6 +87,8 @@ class _CollectionHeader extends StatelessWidget {
     }
   }
 
+  /// Abre la pantalla de entrada de elementos precargada con el ID del padre, luego
+  /// recarga los subelementos si se creó un nuevo elemento con éxito.
   Future<void> _addItem(BuildContext context) async {
     final result = await Navigator.pushNamed(
       context,
@@ -117,11 +133,18 @@ class _CollectionHeader extends StatelessWidget {
   }
 }
 
+/// Marcador de posición que se muestra cuando la colección aún no tiene subelementos.
+/// Cuando [ItemModel.totalVolume] está establecido, también ofrece un botón para
+/// generar automáticamente el número esperado de subelementos.
 class _EmptyCollection extends StatelessWidget {
+  /// El elemento padre; utilizado para determinar si la generación automática es posible.
   final ItemModel item;
 
   const _EmptyCollection({required this.item});
 
+  /// Muestra un diálogo de confirmación y, si se acepta, llama al proveedor para
+  /// generar automáticamente subelementos basados en [ItemModel.totalVolume], luego refresca
+  /// la lista de elementos padre y muestra una barra de mensajes (snack-bar) con el recuento de resultados.
   Future<void> _generate(BuildContext context) async {
     final detailsProvider = context.read<ItemDetailsProvider>();
     final itemsProvider = context.read<ItemsProvider>();
@@ -200,8 +223,12 @@ class _EmptyCollection extends StatelessWidget {
   }
 }
 
+/// Una franja de desplazamiento horizontal de 150 px de altura de tarjetas de portada de subelementos.
 class _CollectionStrip extends StatelessWidget {
+  /// La lista de subelementos para renderizar como tarjetas.
   final List<ItemModel> items;
+
+  /// El contexto de la biblioteca reenviado a la navegación de detalles de cada tarjeta.
   final ListModel? library;
 
   const _CollectionStrip({required this.items, required this.library});
@@ -222,12 +249,19 @@ class _CollectionStrip extends StatelessWidget {
   }
 }
 
+/// Una única tarjeta de portada pulsable dentro de la franja de colección horizontal.
+/// Navega a la pantalla de detalles del subelemento cuando se pulsa.
 class _CollectionCard extends StatelessWidget {
+  /// El subelemento a mostrar en esta tarjeta.
   final ItemModel item;
+
+  /// El contexto de la biblioteca utilizado al abrir la pantalla de detalles del subelemento.
   final ListModel? library;
 
   const _CollectionCard({required this.item, required this.library});
 
+  /// Empuja la pantalla de detalles para este subelemento y recarga la lista de
+  /// subelementos del padre cuando el usuario regresa.
   Future<void> _open(BuildContext context) async {
     await Navigator.push(
       context,

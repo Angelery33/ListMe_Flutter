@@ -12,6 +12,11 @@ import '../../widgets/shared/app_shell.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/responsive_centered_content.dart';
 
+/// Pantalla que expone todas las preferencias configurables por el usuario.
+///
+/// Dividida en cuatro secciones: Apariencia (tema, color de acento), Texto y Lectura
+/// (escala de fuente), Regional (idioma, moneda) y Cuenta (cerrar sesión). Todos los
+/// cambios se persisten inmediatamente a través de [SettingsProvider].
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -56,11 +61,13 @@ class SettingsScreen extends StatelessWidget {
 // Sections
 // ============================================================
 
+/// Sección de ajustes para la selección del modo de tema y el color de acento.
 class _AppearanceSection extends StatelessWidget {
   final SettingsProvider settings;
   final ThemeData theme;
   const _AppearanceSection({required this.settings, required this.theme});
 
+  /// Devuelve una etiqueta localizada para [mode] (claro, oscuro o sistema).
   String _themeLabel(BuildContext context, ThemeMode mode) {
     switch (mode) {
       case ThemeMode.light:
@@ -134,11 +141,13 @@ class _AppearanceSection extends StatelessWidget {
   }
 }
 
+/// Sección de ajustes para el ajuste de la escala de fuente (tamaño de texto).
 class _TextSection extends StatelessWidget {
   final SettingsProvider settings;
   final ThemeData theme;
   const _TextSection({required this.settings, required this.theme});
 
+  /// Devuelve una etiqueta localizada legible por el hombre para la escala de fuente [s].
   String _fontScaleLabel(BuildContext context, double s) {
     final l = context.l10n;
     if (s <= 0.85) return l.fontSizeVerySmall;
@@ -172,6 +181,7 @@ class _TextSection extends StatelessWidget {
   }
 }
 
+/// Sección de ajustes para la selección de configuración regional y moneda.
 class _RegionalSection extends StatelessWidget {
   final SettingsProvider settings;
   final ThemeData theme;
@@ -224,6 +234,7 @@ class _RegionalSection extends StatelessWidget {
   }
 }
 
+/// Sección de ajustes que proporciona una acción de cierre de sesión.
 class _AccountSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -257,6 +268,7 @@ class _AccountSection extends StatelessWidget {
   }
 }
 
+/// Widget de pie de página que muestra el nombre de la aplicación y la versión de compilación actual.
 class _VersionFooter extends StatelessWidget {
   final ThemeData theme;
   const _VersionFooter({required this.theme});
@@ -293,6 +305,10 @@ class _VersionFooter extends StatelessWidget {
 // Reusable building blocks
 // ============================================================
 
+/// Una sección de tarjeta con título utilizada en toda la pantalla de ajustes.
+///
+/// Renderiza una etiqueta de [title] en mayúsculas del color primario encima de una tarjeta redondeada
+/// que contiene [children]. El color de la tarjeta se adapta al tema y color de acento actuales.
 class _Section extends StatelessWidget {
   final String title;
   final List<Widget> children;
@@ -353,6 +369,11 @@ class _Section extends StatelessWidget {
   }
 }
 
+/// Una fila adaptable de dos columnas (o apilada) que empareja un bloque de etiquetas [title]/[subtitle]
+/// con un widget de control [trailing].
+///
+/// Cuando el factor de escala de texto supera 1.2, el diseño se apila verticalmente para
+/// evitar el desbordamiento en tamaños de fuente de accesibilidad.
 class _SettingTile extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -403,6 +424,9 @@ class _SettingTile extends StatelessWidget {
   }
 }
 
+/// Asocia una clave de color de acento [accent] con su nombre visible localizado.
+///
+/// Vuelve a devolver [accent] sin cambios para claves no reconocidas.
 String _accentLabel(BuildContext context, String accent) {
   final l = context.l10n;
   switch (accent) {

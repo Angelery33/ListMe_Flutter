@@ -2,8 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/invitations/invitations_provider.dart';
 
+/// Widget de sección para la pantalla de configuración de la lista que permite al propietario
+/// invitar a otros usuarios a colaborar en una biblioteca.
+///
+/// Solo se renderiza cuando el usuario actual es el propietario Y la biblioteca ya
+/// tiene un [libraryId] asignado por el servidor. No renderiza nada en caso contrario.
 class ConfigCollaborationSection extends StatefulWidget {
+  /// El ID del servidor de la biblioteca que se está configurando.
+  /// Cuando es `null`, la sección se oculta porque la biblioteca aún no se ha guardado.
   final int? libraryId;
+
+  /// Indica si el usuario actual es el propietario de esta biblioteca.
+  /// Los no propietarios no pueden invitar a colaboradores, por lo que la sección se oculta para ellos.
   final bool isOwner;
 
   const ConfigCollaborationSection({
@@ -16,10 +26,22 @@ class ConfigCollaborationSection extends StatefulWidget {
   State<ConfigCollaborationSection> createState() => _ConfigCollaborationSectionState();
 }
 
+/// Estado para [ConfigCollaborationSection].
+///
+/// Gestiona el campo de texto del nombre de usuario y el interruptor de permiso de solo lectura,
+/// y envía las solicitudes de invitación a través de [InvitationsProvider].
 class _ConfigCollaborationSectionState extends State<ConfigCollaborationSection> {
+  /// Controlador para el campo de entrada de nombre de usuario donde el propietario escribe el nombre de usuario del invitado.
   final _usernameController = TextEditingController();
+
+  /// Indica si el colaborador invitado debe tener acceso de solo lectura.
+  /// Por defecto es `true` para evitar conceder acceso de escritura accidentalmente.
   bool _isReadOnly = true;
 
+  /// Envía una solicitud de invitación a través de [InvitationsProvider].
+  ///
+  /// Valida que el campo de nombre de usuario no esté vacío y que el ID de la biblioteca esté configurado,
+  /// luego muestra un [SnackBar] de éxito o error según el resultado.
   void _sendInvitation() async {
     if (_usernameController.text.trim().isEmpty) return;
     if (widget.libraryId == null) return;

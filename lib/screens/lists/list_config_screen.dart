@@ -17,7 +17,8 @@ import '../../widgets/shared/app_shell.dart';
 import '../../widgets/lists/config/config_collaboration_section.dart';
 import '../../widgets/lists/config/config_status_order_section.dart';
 
-/// Géneros por defecto por tipo de lista (igual que la versión legacy)
+/// Listas de géneros predeterminadas por tipo de categoría de biblioteca, utilizadas para pre-poblar géneros
+/// cuando el usuario selecciona una categoría para una nueva biblioteca.
 const Map<String, List<String>> kDefaultGenres = {
   'Book': [
     'Fantasía',
@@ -34,9 +35,23 @@ const Map<String, List<String>> kDefaultGenres = {
     'Shoujo',
     'Seinen',
     'Josei',
-    'Isekai',
-    'Mecha',
+    'Action',
+    'Adventure',
+    'Comedy',
+    'Drama',
+    'Fantasy',
+    'Romance',
+    'Horror',
+    'Mystery',
+    'Sci-Fi',
+    'Supernatural',
+    'Psychological',
     'Slice of Life',
+    'Sports',
+    'Mecha',
+    'Isekai',
+    'Historical',
+    'Mahou Shoujo',
     'Otros',
   ],
   'Comic': ['Superhéroes', 'Sci-Fi', 'Horror', 'Fantasía', 'Acción', 'Otros'],
@@ -44,10 +59,25 @@ const Map<String, List<String>> kDefaultGenres = {
     'Shounen',
     'Shoujo',
     'Seinen',
+    'Josei',
+    'Action',
+    'Adventure',
+    'Comedy',
+    'Drama',
+    'Fantasy',
+    'Romance',
+    'Horror',
+    'Mystery',
+    'Sci-Fi',
+    'Supernatural',
+    'Psychological',
+    'Slice of Life',
+    'Sports',
     'Mecha',
     'Isekai',
-    'Slice of Life',
-    'Deportes',
+    'Historical',
+    'Music',
+    'Mahou Shoujo',
     'Otros',
   ],
   'Movie': [
@@ -91,7 +121,10 @@ const Map<String, List<String>> kDefaultGenres = {
   ],
 };
 
-/// Nombre sugerido a mostrar según categoría
+/// Nombre visible predeterminado sugerido para cada categoría de biblioteca.
+///
+/// Se utiliza para rellenar automáticamente el campo de nombre cuando el usuario elige una categoría durante
+/// la creación de la biblioteca, solo cuando el campo de nombre no ha sido editado manualmente.
 const Map<String, String> kCategoryDefaultNames = {
   'Book': 'Libros',
   'Manga': 'Manga',
@@ -103,7 +136,12 @@ const Map<String, String> kCategoryDefaultNames = {
   'Funko': 'Colección Funko',
 };
 
+/// Pantalla para crear una nueva biblioteca o editar los ajustes de una ya existente.
+///
+/// Cuando [library] es `null`, la pantalla está en modo creación; cuando se proporciona,
+/// el formulario se rellena con los valores existentes para su edición.
 class ListConfigScreen extends StatefulWidget {
+  /// La biblioteca a editar, o `null` cuando se crea una nueva.
   final ListModel? library;
 
   const ListConfigScreen({super.key, this.library});
@@ -112,6 +150,11 @@ class ListConfigScreen extends StatefulWidget {
   State<ListConfigScreen> createState() => _ListConfigScreenState();
 }
 
+/// Estado para [ListConfigScreen].
+///
+/// Gestiona todos los campos del formulario y los interruptores de funciones, carga los géneros existentes cuando
+/// se edita una biblioteca temática, y orquestas la llamada de creación/actualización al
+/// guardar.
 class _ListConfigScreenState extends State<ListConfigScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
@@ -125,18 +168,33 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
   bool _supportsWishlist = false;
   bool _tracksDates = false;
   bool _supportsPrice = false;
+
+  /// Índice del modo de diseño de género (0 = lista plana, 1 = agrupado por estado).
   int _genreLayoutMode = 0;
   bool _isCompact = false;
   bool _supportsProgress = false;
+
+  /// Cadena del modo de seguimiento de progreso (ej. `'Libro'`, `'Anime'`, `'Manual'`).
   String? _progressType;
+
+  /// Tipo de categoría seleccionada (ej. `'Book'`, `'Movie'`), utilizada para autoconfigurar las opciones.
   String? _defaultCategory;
+
+  /// Valor máximo de la escala de calificación (ej. 10 o 5 para calificaciones por estrellas).
   int _ratingScale = 10;
 
+  /// Orden de visualización de estado personalizado, o `null` para usar el predeterminado.
   List<String>? _statusOrder;
 
   bool _isLoading = false;
+
+  /// Géneros que se muestran actualmente en la sección de géneros (locales o cargados del servidor).
   List<LibraryGenreModel> _displayedGenres = [];
+
+  /// Clave del color de acento seleccionado.
   late String _selectedColor;
+
+  /// Clave del icono seleccionado.
   late String _selectedIcon;
 
   @override
@@ -176,6 +234,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     }
   }
 
+  /// Obtiene los géneros de la biblioteca del servidor cuando se edita una biblioteca temática existente
+  /// para que la sección de géneros esté pre-poblada.
   Future<void> _loadGenresIfEditing() async {
     if (widget.library == null || widget.library!.id == null) return;
     try {
@@ -200,6 +260,11 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     super.dispose();
   }
 
+  /// Maneja un cambio en la categoría seleccionada [val].
+  ///
+  /// Rellena automáticamente el nombre de la biblioteca desde [kCategoryDefaultNames], pre-puebla los
+  /// géneros desde [kDefaultGenres], y configura las opciones de funciones adecuadas
+  /// para la categoría seleccionada.
   void _onCategoryChanged(String? val) {
     setState(() {
       _defaultCategory = val;
@@ -272,6 +337,10 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     });
   }
 
+  /// Añade un género desde [_genreController] a la biblioteca.
+  ///
+  /// Lo persiste en el servidor inmediatamente cuando se edita una biblioteca existente,
+  /// o lo mantiene localmente cuando se crea una nueva.
   void _addGenre() async {
     if (_genreController.text.trim().isEmpty) return;
     final name = _genreController.text.trim();
@@ -294,6 +363,10 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     _genreController.clear();
   }
 
+  /// Elimina [dbGenre] en [index] de la biblioteca.
+  ///
+  /// Llama al servidor cuando se edita una biblioteca existente, o lo elimina localmente
+  /// cuando se crea una nueva.
   void _deleteGenre(LibraryGenreModel dbGenre, int index) async {
     if (widget.library != null && dbGenre.id != null) {
       final provider = Provider.of<ListsProvider>(context, listen: false);
@@ -310,6 +383,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     }
   }
 
+  /// Valida el formulario, construye un [ListModel] y llama a crear o actualizar en
+  /// [ListsProvider], luego cierra la pantalla si tiene éxito.
   void _saveLibrary() async {
     if (!_formKey.currentState!.validate()) return;
 

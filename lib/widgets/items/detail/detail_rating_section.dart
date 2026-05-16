@@ -3,12 +3,23 @@ import 'package:provider/provider.dart';
 import '../../../../data/lists/list_model.dart';
 import '../../../../providers/items/item_details_provider.dart';
 
+/// Renderiza la valoración personal y/o externa de un elemento en la pantalla de detalle.
+///
+/// Soporta escalas de valoración de 5 estrellas, 10 puntos y 100 puntos configuradas a través de
+/// [ListModel.ratingScale]. Cuando [canEdit] es verdadero, el usuario puede actualizar la
+/// puntuación personal pulsando una estrella. El bloque de valoración externa (de una fuente
+/// de API) es siempre de solo lectura.
 class DetailRatingSection extends StatelessWidget {
+  /// La biblioteca propietaria; proporciona la escala de valoración y el indicador de si es calificable.
   final ListModel? library;
+
+  /// Indica si las estrellas de puntuación personal son interactivas. Se establece en falso en
+  /// vistas de solo lectura.
   final bool canEdit;
 
   const DetailRatingSection({super.key, this.library, this.canEdit = true});
 
+  /// La escala de valoración utilizada por esta biblioteca (5, 10 o 100). Por defecto es 10.
   int get _ratingScale => library?.ratingScale ?? 10;
 
   @override
@@ -48,6 +59,9 @@ class DetailRatingSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza la valoración personal del usuario como una visualización numérica y una fila de cinco
+  /// estrellas pulsables. Cada pulsación de estrella llama a [ItemDetailsProvider.updateScore]
+  /// con un valor calculado a partir de la [_ratingScale] activa.
   Widget _buildPersonalRating(
     BuildContext context,
     ItemDetailsProvider provider,
@@ -123,6 +137,8 @@ class DetailRatingSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza la valoración externa (API) [extRating] como una fila de estrellas de solo lectura
+  /// junto al valor numérico y una insignia opcional de [ratingSource].
   Widget _buildExternalRating(BuildContext context, double extRating, String? ratingSource) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -191,6 +207,7 @@ class DetailRatingSection extends StatelessWidget {
     );
   }
 
+  /// Formatea [score] como una cadena "valor / máximo" apropiada para [_ratingScale].
   String _formatScore(double score) {
     if (_ratingScale == 5) {
       return '${score.toStringAsFixed(1)} / 5';

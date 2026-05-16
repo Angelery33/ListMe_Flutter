@@ -2,18 +2,51 @@ import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import 'package:intl/intl.dart';
 
+/// Una sección de formulario que maneja la selección de fechas, el interruptor de lista de deseos y el
+/// interruptor de colección durante la entrada/edición de elementos.
+///
+/// Renderiza condicionalmente solo los controles que son relevantes: los selectores de fechas
+/// se muestran cuando [tracksDates] es verdadero; el interruptor de lista de deseos y la fecha de adquisición
+/// solo cuando [supportsWishlist] es verdadero; el interruptor de colección siempre se
+/// muestra. Devuelve un widget vacío cuando no se necesitan ni las fechas ni la lista de deseos.
 class EntryDatesSection extends StatelessWidget {
+  /// Fecha de adquisición actual en milisegundos desde la época, o nulo si no está establecida.
   final int? acquisitionDate;
+
+  /// Fecha de inicio actual en milisegundos desde la época, o nulo si no está establecida.
   final int? startDate;
+
+  /// Fecha de finalización actual en milisegundos desde la época, o nulo si no está establecida.
   final int? completionDate;
+
+  /// Se llama con la nueva marca de tiempo (o nulo para borrar) cuando el selector de fecha de
+  /// adquisición confirma una selección.
   final Function(int?) onAcquisitionDateChanged;
+
+  /// Se llama con la nueva marca de tiempo (o nulo para borrar) cuando el selector de fecha de
+  /// inicio confirma una selección.
   final Function(int?) onStartDateChanged;
+
+  /// Se llama con la nueva marca de tiempo (o nulo para borrar) cuando el selector de fecha de
+  /// finalización confirma una selección.
   final Function(int?) onCompletionDateChanged;
+
+  /// Indica si se deben renderizar los selectores de fecha de inicio y finalización.
   final bool tracksDates;
+
+  /// Indica si se deben renderizar el interruptor de lista de deseos y el selector de fecha de adquisición.
   final bool supportsWishlist;
+
+  /// Valor actual del interruptor de lista de deseos, vinculado al estado del formulario padre.
   final bool isWishlist;
+
+  /// Valor actual del interruptor de colección, vinculado al estado del formulario padre.
   final bool isCollection;
+
+  /// Se llama cuando el usuario cambia el valor del interruptor de lista de deseos.
   final Function(bool) onWishlistChanged;
+
+  /// Se llama cuando el usuario cambia el valor del interruptor de colección.
   final Function(bool) onCollectionChanged;
 
   const EntryDatesSection({
@@ -32,6 +65,8 @@ class EntryDatesSection extends StatelessWidget {
     required this.onCollectionChanged,
   });
 
+  /// Abre el selector de fechas de la plataforma preestablecido en [currentTimestamp] (o hoy),
+  /// luego llama a [onChanged] con la fecha elegida en milisegundos desde la época.
   Future<void> _selectDate(
     BuildContext context,
     int? currentTimestamp,
@@ -139,6 +174,9 @@ class EntryDatesSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza un [InputDecorator] pulsable que parece un campo de texto que muestra
+  /// el [timestamp] formateado como dd/MM/yyyy, o una sugerencia cuando no hay fecha establecida.
+  /// Llama a [onTap] cuando se pulsa el campo para activar el selector de fechas.
   Widget _buildDatePicker({
     required BuildContext context,
     required String label,
@@ -172,6 +210,7 @@ class EntryDatesSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza la etiqueta del encabezado de la sección con estilo en color primario en mayúsculas.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),

@@ -4,7 +4,13 @@ import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/items/item_model.dart';
 import '../../../core/providers/responsive_provider.dart';
 
+/// Renderiza una fila horizontal de chips de etiquetas de colores compactos en el encabezado de
+/// la pantalla de detalles, mostrando el estado del elemento, el estado de la lista de deseos, la marca de colección y el género.
+///
+/// Los tamaños de las etiquetas son impulsados por [ResponsiveProvider] para que se escalen correctamente en
+/// diferentes densidades de pantalla y puntos de interrupción.
 class DetailHeaderTags extends StatelessWidget {
+  /// El elemento cuyos metadatos se utilizan para construir los chips de etiquetas.
   final ItemModel item;
 
   const DetailHeaderTags({super.key, required this.item});
@@ -53,6 +59,8 @@ class DetailHeaderTags extends StatelessWidget {
     );
   }
 
+  /// Construye un único chip de etiqueta en forma de píldora con [icon], [label] y [color].
+  /// La opacidad del fondo se adapta al brillo actual para mayor legibilidad.
   Widget _buildCompactTag(
     BuildContext context,
     String label,
@@ -90,6 +98,7 @@ class DetailHeaderTags extends StatelessWidget {
     );
   }
 
+  /// Devuelve la etiqueta de visualización localizada para la clave de [status] dada.
   String _getStatusLabel(BuildContext context, String status) {
     final l = context.l10n;
     switch (status) {
@@ -108,6 +117,8 @@ class DetailHeaderTags extends StatelessWidget {
     }
   }
 
+  /// Devuelve el color de acento asociado con la clave de [status] dada para que cada
+  /// estado sea visualmente distinguible de un vistazo.
   Color _getStatusColor(String? status) {
     switch (status) {
       case 'PENDING':
@@ -125,6 +136,7 @@ class DetailHeaderTags extends StatelessWidget {
     }
   }
 
+  /// Devuelve el icono que representa la clave de [status] dada dentro del chip de etiqueta.
   IconData _getStatusIcon(String? status) {
     switch (status) {
       case 'PENDING':

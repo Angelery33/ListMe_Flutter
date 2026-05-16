@@ -2,10 +2,21 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 /// Tarjeta de menú con efecto Glassmorphism diseñada específicamente para la Home.
+///
+/// Utiliza [BackdropFilter] con un desenfoque gaussiano sutil para crear una apariencia
+/// de vidrio esmerilado sobre el fondo degradado de la pantalla de inicio. Cada tarjeta representa una sola
+/// sección navegable de la aplicación.
 class MenuCard extends StatelessWidget {
+  /// El encabezado principal que se muestra dentro de la tarjeta (ej. "Mis Listas").
   final String title;
+
+  /// Una breve línea descriptiva debajo de [title] que explica lo que contiene la sección.
   final String subtitle;
+
+  /// El icono mostrado en el cuadrado de color en el lado izquierdo de la tarjeta.
   final IconData icon;
+
+  /// Se llama cuando el usuario toca la tarjeta para navegar a la pantalla correspondiente.
   final VoidCallback onTap;
 
   const MenuCard({

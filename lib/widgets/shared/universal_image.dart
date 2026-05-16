@@ -3,13 +3,41 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+/// Widget de imagen multiplataforma que resuelve la mejor URL disponible de
+/// múltiples fuentes y la renderiza correctamente en web y nativo.
+///
+/// Prioridad de fuente (de mayor a menor):
+/// 1. Punto de conexión de imagen de la API cuando se proporcionan tanto [itemId] como [imageId] —
+///    evita problemas de CORS al enrutar a través del backend.
+/// 2. [remoteImageUrl] — una URL remota directa, funciona en todos los dispositivos y plataformas.
+/// 3. Prefijo `blob:` en [imagePath] — un blob del selector de imágenes web antes de la subida.
+/// 4. Ruta de archivo local en [imagePath] — solo válida en el dispositivo nativo de origen.
+///
+/// En la web, las URL de Firebase Storage se obtienen a través del SDK para omitir las
+/// restricciones de CORS, con un caché en memoria por sesión para evitar extracciones repetidas.
 class UniversalImage extends StatelessWidget {
+  /// Ruta de archivo local, URL de blob (web) o cualquier URL restante no cubierta por los
+  /// otros campos. Se evalúa en último lugar en la cadena de prioridad de resolución.
   final String imagePath;
+
+  /// URL remota directa opcional (CDN, MAL, etc.). Se prefiere sobre [imagePath]
+  /// cuando está presente.
   final String? remoteImageUrl;
+
+  /// Cómo debe inscribirse la imagen en el cuadro asignado.
   final BoxFit fit;
+
+  /// Ancho explícito opcional en píxeles lógicos.
   final double? width;
+
+  /// Altura explícita opcional en píxeles lógicos.
   final double? height;
+
+  /// El ID del elemento al que pertenece la imagen. Cuando se combina con [imageId],
+  /// el widget construye una URL de la API del backend que evita problemas de CORS.
   final int? itemId;
+
+  /// El ID del registro de imagen en el backend. Se utiliza junto con [itemId].
   final int? imageId;
 
   const UniversalImage(
@@ -41,9 +69,7 @@ class UniversalImage extends StatelessWidget {
     }
 
     if (url.startsWith('http') || url.startsWith('blob:')) {
-      final displayUrl = _shouldProxy(url)
-          ? 'https://images.weserv.nl/?url=${Uri.encodeComponent(url)}'
-          : url;
+      final displayUrl = _proxyUrl(url);
       return Image.network(
         displayUrl,
         fit: fit,
@@ -63,6 +89,7 @@ class UniversalImage extends StatelessWidget {
     return _placeholder(context);
   }
 
+  /// Selecciona la URL disponible de mayor prioridad según las reglas de resolución.
   String _getBestUrl() {
     // If we have itemId and imageId, use the API endpoint (avoids CORS issues)
     if (itemId != null && imageId != null) {
@@ -78,25 +105,40 @@ class UniversalImage extends StatelessWidget {
     // Local paths are only valid on the same device they were picked
     if (kIsWeb) return '';
 
-    // Use local path as fallback if it exists
-    if (imagePath.isNotEmpty && !imagePath.startsWith('http')) return imagePath;
+    // Local path or any remaining URL (e.g. MAL image passed directly as imagePath)
+    if (imagePath.isNotEmpty) return imagePath;
 
     return '';
   }
 
+  /// Devuelve `true` cuando [url] apunta a un bucket de Firebase Storage.
   bool _isFirebaseStorageUrl(String url) =>
       url.contains('firebasestorage.googleapis.com');
 
-  bool _shouldProxy(String url) {
-    if (!url.startsWith('http')) return false;
-    if (_isFirebaseStorageUrl(url)) return false;
-    if (url.contains('images.weserv.nl')) return false;
-    // MAL blocks hotlinking on all platforms (both cdn. and direct domain)
-    if (url.contains('myanimelist.net')) return true;
-    // On web, proxy everything else too (CORS)
-    return kIsWeb;
+  static const _backendProxyBase =
+      'https://api.angelcantero.store/api/v1/proxy/image?url=';
+  static const _weservBase = 'https://images.weserv.nl/?url=';
+
+  /// En la web, envuelve [url] en un proxy para solucionar las restricciones de CORS.
+  ///
+  /// - Las URL de Firebase Storage se devuelven tal cual (manejadas por la ruta del SDK anterior).
+  /// - Las imágenes de la CDN de MyAnimeList se envían a través del propio backend de la aplicación porque
+  ///   weserv.nl no puede acceder a ellas.
+  /// - Todas las demás URL remotas se envían a través de weserv.nl.
+  /// - En nativo, la URL original se devuelve sin cambios.
+  String _proxyUrl(String url) {
+    if (!kIsWeb) return url;
+    if (_isFirebaseStorageUrl(url)) return url;
+    if (url.contains('images.weserv.nl') || url.contains('angelcantero.store')) return url;
+    // MAL images: proxy through our own backend (weserv.nl can't access MAL CDN)
+    if (url.contains('myanimelist.net')) {
+      return '$_backendProxyBase${Uri.encodeComponent(url)}';
+    }
+    // Everything else on web: weserv.nl for CORS
+    return '$_weservBase${Uri.encodeComponent(url)}';
   }
 
+  /// Construye el marcador de posición de respaldo que se muestra cuando no se puede cargar ninguna imagen.
   Widget _placeholder(BuildContext context) {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
@@ -111,14 +153,28 @@ class UniversalImage extends StatelessWidget {
   }
 }
 
-// In-memory cache so each URL is only fetched once per session
+/// Caché en memoria para que cada URL de Firebase Storage solo se obtenga una vez por sesión.
 final Map<String, Uint8List> _firebaseImageCache = {};
 
+/// Obtiene una imagen de Firebase Storage a través del SDK (necesario en la web para omitir CORS)
+/// y la renderiza a partir de bytes en memoria una vez cargada.
+///
+/// Muestra un indicador de carga mientras la descarga está en curso, y recurre a
+/// [placeholder] si la descarga falla o no devuelve datos.
 class _WebFirebaseImage extends StatefulWidget {
+  /// La URL de descarga de Firebase Storage.
   final String url;
+
+  /// Cómo la imagen decodificada debe llenar el cuadro asignado.
   final BoxFit fit;
+
+  /// Ancho explícito opcional.
   final double? width;
+
+  /// Altura explícita opcional.
   final double? height;
+
+  /// Widget que se muestra cuando la imagen no se carga o los datos no están disponibles.
   final Widget placeholder;
 
   const _WebFirebaseImage({
@@ -133,8 +189,14 @@ class _WebFirebaseImage extends StatefulWidget {
   State<_WebFirebaseImage> createState() => _WebFirebaseImageState();
 }
 
+/// Estado para [_WebFirebaseImage].
+///
+/// Gestiona el ciclo de vida de la descarga asíncrona y el almacenamiento en caché de los bytes de imagen sin procesar.
 class _WebFirebaseImageState extends State<_WebFirebaseImage> {
+  /// Los bytes de la imagen descargada, o `null` mientras se carga o en caso de fallo.
   Uint8List? _bytes;
+
+  /// Indica si la descarga todavía está en curso.
   bool _loading = true;
 
   @override
@@ -143,6 +205,8 @@ class _WebFirebaseImageState extends State<_WebFirebaseImage> {
     _load();
   }
 
+  /// Descarga la imagen de Firebase Storage y almacena los bytes en el
+  /// [_firebaseImageCache] en memoria para renderizados posteriores.
   Future<void> _load() async {
     // Serve from cache if available
     if (_firebaseImageCache.containsKey(widget.url)) {

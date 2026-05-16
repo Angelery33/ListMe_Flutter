@@ -6,12 +6,24 @@ import '../../../data/items/item_model.dart';
 import '../../../providers/items/item_details_provider.dart';
 import '../../shared/expandable_text.dart';
 
+/// Renderiza la descripción de un elemento en la pantalla de detalles, proporcionando
+/// opcionalmente un botón de edición en línea para que el usuario pueda actualizar el texto.
+///
+/// Cuando [canEdit] es verdadero, aparece un botón de icono para editar/añadir en la fila del encabezado.
+/// Al pulsarlo se abre un diálogo multilínea respaldado por [ItemDetailsProvider.updateDescription].
 class DetailDescriptionSection extends StatelessWidget {
+  /// El elemento cuya descripción se muestra.
   final ItemModel item;
+
+  /// Indica si se debe mostrar el botón de edición que permite al usuario actualizar la
+  /// descripción. Se establece en falso en contextos de solo lectura.
   final bool canEdit;
 
   const DetailDescriptionSection({super.key, required this.item, this.canEdit = true});
 
+  /// Abre un diálogo con un campo de texto multilínea precargado con la descripción
+  /// actual. Al guardar, llama a [ItemDetailsProvider.updateDescription] con
+  /// el resultado recortado.
   Future<void> _editDescription(BuildContext context) async {
     final controller = TextEditingController(text: item.description ?? '');
     final result = await showDialog<String>(

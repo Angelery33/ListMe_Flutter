@@ -2,14 +2,38 @@ import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../../core/utils/item_grouping_helper.dart';
 
+/// Barra de herramientas que se muestra debajo de la barra de aplicaciones en la pantalla de detalles de la biblioteca.
+///
+/// Combina un menú emergente de ordenación, un interruptor opcional de estadísticas de precios y una
+/// fila desplazable horizontalmente de [FilterChip]s de género para que el usuario pueda
+/// filtrar rápidamente los elementos por género.
 class ListSortFilterBar extends StatelessWidget {
+  /// El orden de clasificación actualmente activo, mostrado como el elemento seleccionado en el menú emergente.
   final SortOption currentSort;
+
+  /// Se llama cuando el usuario elige una opción de ordenación diferente del menú emergente.
   final Function(SortOption) onSortChanged;
+
+  /// El filtro de género actualmente activo, o `null` cuando se selecciona "Todo".
   final String? currentGenre;
+
+  /// La lista de nombres de género para renderizar como chips de filtro.
   final List<String> availableGenres;
+
+  /// Se llama cuando el usuario toca un chip de género o el chip "Todo".
+  /// Pasa el nombre del género seleccionado, o `null` cuando se toca "Todo".
   final Function(String?) onGenreChanged;
+
+  /// Indica si esta biblioteca rastrea los precios de los elementos.
+  /// Cuando es `true`, se muestra un botón de icono para alternar las estadísticas antes del botón de ordenación.
   final bool supportsPrice;
+
+  /// Indica si el panel de estadísticas de precios está actualmente visible.
+  /// Controla el icono relleno frente al contorneado en el botón de alternancia de estadísticas.
   final bool isStatsVisible;
+
+  /// Se llama cuando el usuario toca el botón de icono para alternar las estadísticas.
+  /// Solo relevante cuando [supportsPrice] es `true`.
   final VoidCallback? onStatsToggle;
 
   const ListSortFilterBar({

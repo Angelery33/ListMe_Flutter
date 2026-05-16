@@ -8,12 +8,30 @@ import 'package:permission_handler/permission_handler.dart';
 import '../i18n/l10n_extension.dart';
 import 'logger_service.dart';
 
+/// Servicio singleton que maneja la selección de imágenes de la cámara o galería,
+/// incluyendo solicitudes de permisos en tiempo de ejecución y recorte cuadrado opcional.
+///
+/// En la web se omite el paso de recorte. En plataformas de escritorio (Windows, Linux,
+/// macOS) la opción de cámara está oculta en la hoja de selección de fuente.
 class ImagePickerService {
   static final ImagePickerService _instance = ImagePickerService._internal();
   final LoggerService _logger = LoggerService.instance;
+
+  /// Devuelve la instancia singleton de [ImagePickerService].
   factory ImagePickerService() => _instance;
   ImagePickerService._internal();
 
+  /// Abre el selector de imágenes para la [source] dada y devuelve el [XFile] seleccionado,
+  /// o `null` si el usuario cancela o se deniega un permiso.
+  ///
+  /// En plataformas que no son web, el método solicita el permiso necesario en tiempo de ejecución
+  /// antes de abrir el selector. Cuando [cropToSquare] es `true` (por defecto),
+  /// la imagen seleccionada se pasa a través de [ImageCropper] con una relación de aspecto bloqueada 1:1.
+  ///
+  /// [source] De dónde debe provenir la imagen ([ImageSource.camera] o
+  /// [ImageSource.gallery]).
+  /// [cropToSquare] Si se debe presentar la IU de recorte después de la selección. Por defecto es
+  /// `true`. No tiene efecto en la web.
   Future<XFile?> pickImage({
     required ImageSource source,
     bool cropToSquare = true,
@@ -94,6 +112,15 @@ class ImagePickerService {
     }
   }
 
+  /// Muestra una hoja inferior que permite al usuario elegir entre la galería y
+  /// la cámara, luego llama a [onImagePicked] con el [XFile] resultante.
+  ///
+  /// La opción de cámara está oculta en la web y en las plataformas de escritorio. Si la cámara
+  /// devuelve `null` (por ejemplo, permiso denegado), se muestra un error de snack-bar.
+  ///
+  /// [context] El [BuildContext] utilizado para mostrar la hoja modal.
+  /// [onImagePicked] Callback invocado con el archivo seleccionado, o `null` si el
+  /// usuario canceló o ocurrió un error.
   Future<void> showImageSourceDialog(
     BuildContext context, {
     required Function(XFile?) onImagePicked,

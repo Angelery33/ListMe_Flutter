@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/items/item_model.dart';
 
+/// Muestra las fechas de inicio, finalización y adquisición de un elemento en la pantalla de
+/// detalles.
+///
+/// Devuelve un widget vacío cuando ninguna de las tres fechas está establecida, para no
+/// añadir desorden visual para los elementos sin seguimiento de fecha.
 class DetailDatesSection extends StatelessWidget {
+  /// El elemento cuyos campos de fecha se renderizan.
   final ItemModel item;
 
   const DetailDatesSection({super.key, required this.item});
@@ -63,6 +69,8 @@ class DetailDatesSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza una única fila de fecha con [icon], una leyenda [label] y el
+  /// [timestamp] (milisegundos desde la época) formateado como dd/MM/yyyy.
   Widget _buildDateItem(
     BuildContext context,
     String label,

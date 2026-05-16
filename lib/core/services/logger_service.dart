@@ -1,13 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
+/// Niveles de severidad para los mensajes de registro, ordenados de menor a mayor criticidad.
 enum LogLevel { debug, info, warning, error }
 
+/// Registro inmutable de un único mensaje de registro junto con sus metadatos.
 class LogEntry {
+  /// La severidad de esta entrada de registro.
   final LogLevel level;
+
+  /// Descripción del evento legible por humanos.
   final String message;
+
+  /// Objeto de error opcional asociado con esta entrada.
   final Object? error;
+
+  /// Traza de pila opcional capturada en el momento del registro.
   final StackTrace? stackTrace;
+
+  /// Cuándo se creó la entrada; por defecto es [DateTime.now].
   final DateTime timestamp;
 
   LogEntry({
@@ -19,15 +30,22 @@ class LogEntry {
   }) : timestamp = timestamp ?? DateTime.now();
 }
 
+/// Contrato para objetos que pueden recibir y filtrar registros [LogEntry].
 abstract class LogSink {
+  /// Escribe [entry] en el medio de salida subyacente.
   void write(LogEntry entry);
+
+  /// Devuelve `true` cuando este sink debe procesar entradas en el [level] dado.
   bool shouldLog(LogLevel level);
 }
 
+/// Implementación de [LogSink] que formatea las entradas de registro con códigos de color ANSI
+/// y las imprime a través de [debugPrint].
 class ConsoleSink implements LogSink {
+  /// Las entradas por debajo de este nivel se omiten silenciosamente.
   final LogLevel minimumLevel;
 
-  ConsoleSink({this.minimumLevel = LogLevel.debug});
+  const ConsoleSink({this.minimumLevel = LogLevel.debug});
 
   @override
   bool shouldLog(LogLevel level) => level.index >= minimumLevel.index;
@@ -67,9 +85,15 @@ class ConsoleSink implements LogSink {
   }
 }
 
+/// Configuración inmutable para [LoggerService].
 class LoggerConfig {
+  /// Nivel mínimo que procesará el servicio.
   final LogLevel minimumLevel;
+
+  /// Indica si se deben emitir mensajes de depuración detallados.
   final bool showDebugLogs;
+
+  /// La lista de sinks que recibirán las entradas de registro.
   final List<LogSink> sinks;
 
   const LoggerConfig({
@@ -78,6 +102,7 @@ class LoggerConfig {
     List<LogSink>? sinks,
   }) : sinks = sinks ?? const [];
 
+  /// Devuelve una copia de esta configuración con los campos dados sobrescritos.
   LoggerConfig copyWith({
     LogLevel? minimumLevel,
     bool? showDebugLogs,
@@ -91,8 +116,22 @@ class LoggerConfig {
   }
 }
 
+/// Singleton de registro para toda la aplicación.
+///
+/// Despacha las entradas de registro a un conjunto configurable de objetos [LogSink]. En compilaciones
+/// de depuración, se añade automáticamente un [ConsoleSink] en [LogLevel.debug]; en compilaciones
+/// de producción, el nivel mínimo se eleva a [LogLevel.info] para reducir el ruido.
+///
+/// Usage:
+/// ```dart
+/// final log = LoggerService.instance;
+/// log.info('App started');
+/// log.error('Something broke', e, stackTrace);
+/// ```
 class LoggerService {
   static LoggerService? _instance;
+
+  /// Devuelve el singleton [LoggerService], creándolo en el primer acceso.
   static LoggerService get instance => _instance ??= LoggerService._();
 
   LoggerConfig _config;
@@ -110,12 +149,18 @@ class LoggerService {
     _config = _config.copyWith(sinks: _sinks);
   }
 
+  /// Reemplaza la configuración actual y la lista de sinks con [config].
+  ///
+  /// [config] La nueva [LoggerConfig] a aplicar.
   void configure(LoggerConfig config) {
     _config = config;
     _sinks.clear();
     _sinks.addAll(config.sinks);
   }
 
+  /// Añade [sink] a la lista de sinks activos y actualiza la configuración.
+  ///
+  /// [sink] El [LogSink] a registrar.
   void addSink(LogSink sink) {
     _sinks.add(sink);
     _config = _config.copyWith(sinks: _sinks);
@@ -143,15 +188,24 @@ class LoggerService {
     }
   }
 
+  /// Registra [message] con severidad [LogLevel.debug].
   void debug(String message) => _log(LogLevel.debug, message);
 
+  /// Registra [message] con severidad [LogLevel.info].
   void info(String message) => _log(LogLevel.info, message);
 
+  /// Registra [message] con severidad [LogLevel.warning].
   void warning(String message) => _log(LogLevel.warning, message);
 
+  /// Registra [message] con severidad [LogLevel.error], opcionalmente con un objeto
+  /// [error] y [stackTrace].
   void error(String message, [Object? error, StackTrace? stackTrace]) =>
       _log(LogLevel.error, message, error, stackTrace);
 
+  /// Registra [e] como un error, opcionalmente prefijado con una etiqueta de [context].
+  ///
+  /// [e] The exception to log.
+  /// [context] Optional description of the operation that threw [e].
   void logException(Exception e, {String? context}) {
     final message = context != null
         ? '$context: ${e.toString()}'
@@ -160,10 +214,19 @@ class LoggerService {
   }
 }
 
+/// Extensión de conveniencia que añade métodos de registro abreviados a cualquier [Object].
 extension LoggerExtensions on Object {
+  /// Registra el [toString] de este objeto en [LogLevel.debug] a través de [logger].
   void logDebug(LoggerService logger) => logger.debug(toString());
+
+  /// Registra el [toString] de este objeto en [LogLevel.info] a través de [logger].
   void logInfo(LoggerService logger) => logger.info(toString());
+
+  /// Registra el [toString] de este objeto en [LogLevel.warning] a través de [logger].
   void logWarning(LoggerService logger) => logger.warning(toString());
+
+  /// Registra el [toString] de este objeto en [LogLevel.error] a través de [logger], con un
+  /// objeto [error] opcional y [stackTrace].
   void logError(
     LoggerService logger, [
     Object? error,

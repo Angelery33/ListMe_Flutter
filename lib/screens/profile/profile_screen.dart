@@ -10,6 +10,12 @@ import 'package:list_me/core/config/routes.dart';
 import 'package:list_me/providers/invitations/invitations_provider.dart';
 import 'package:list_me/screens/social/invitations_screen.dart';
 
+/// Pantalla que muestra el perfil del usuario autenticado, estadísticas de uso y
+/// acciones de gestión de cuenta.
+///
+/// Muestra un avatar circular con la inicial del nombre de usuario, una sección de cuenta
+/// (editar nombre de usuario, cambiar contraseña, invitaciones), una sección de estadísticas y botones de
+/// cierre de sesión / eliminación de cuenta.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -186,6 +192,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Construye una sección de tarjeta con título que contiene los widgets [children].
+  ///
+  /// El [title] se muestra como una pequeña etiqueta en mayúsculas encima de la tarjeta para
+  /// agrupar visualmente las filas de ajustes relacionados.
   Widget _buildSection(
     BuildContext context, {
     required String title,
@@ -218,6 +228,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Construye un [ListTile] que se puede tocar con [icon], [title] y [subtitle].
+  ///
+  /// Cuando [badgeCount] es mayor que cero, se muestra una placa roja tipo píldora junto a
+  /// [title] para indicar elementos pendientes (por ejemplo, invitaciones pendientes).
   Widget _buildListTile(
     BuildContext context, {
     required IconData icon,
@@ -258,6 +272,8 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Construye un [ListTile] de solo lectura que muestra un [value] estadístico junto con un
+  /// [title] descriptivo y un [icon] principal.
   Widget _buildStatTile(
     BuildContext context, {
     required IconData icon,
@@ -278,6 +294,8 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Muestra un [AlertDialog] con un campo de texto rellenado previamente con el nombre de usuario
+  /// actual, y llama a [ProfileProvider.updateUsername] al guardar.
   void _showEditUsernameDialog(BuildContext context) {
     final profile = context.read<ProfileProvider>();
     final controller = TextEditingController(
@@ -319,6 +337,8 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Muestra un [AlertDialog] con tres campos de contraseña (actual, nueva, confirmar)
+  /// y llama a [ProfileProvider.changePassword] al guardar después de una validación básica.
   void _showChangePasswordDialog(BuildContext context) {
     final currentPasswordController = TextEditingController();
     final newPasswordController = TextEditingController();
@@ -404,6 +424,8 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Muestra un diálogo de confirmación antes de llamar a [AuthProvider.logout] y
+  /// navegar a la pantalla de inicio de sesión.
   void _confirmLogout(BuildContext context, AuthProvider auth) {
     showDialog(
       context: context,
@@ -435,6 +457,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Muestra un diálogo de confirmación antes de llamar a [ProfileProvider.deleteAccount].
+  ///
+  /// Si tiene éxito, cierra la sesión a través de [AuthProvider] y navega a la pantalla de inicio de sesión.
   void _confirmDeleteAccount(BuildContext context, ProfileProvider profile) {
     showDialog(
       context: context,

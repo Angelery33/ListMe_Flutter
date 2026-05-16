@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
+/// Sección de configuración para los metadatos esenciales de la biblioteca: nombre y descripción.
+///
+/// Proporciona un campo de nombre obligatorio (con validación) y un campo de descripción
+/// multilínea opcional. Ambos controladores pertenecen a la pantalla principal
+/// para que pueda leer sus valores al guardar.
 class ConfigMainInfoSection extends StatelessWidget {
+  /// Controlador para el campo de texto del nombre de la biblioteca.
+  /// El campo es obligatorio; se muestra un error de validación cuando está vacío.
   final TextEditingController nameController;
+
+  /// Controlador para el campo de texto de descripción opcional de la biblioteca.
+  /// Permite hasta tres líneas visibles de texto libre.
   final TextEditingController descController;
 
   const ConfigMainInfoSection({

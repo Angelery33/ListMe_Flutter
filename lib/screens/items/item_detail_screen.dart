@@ -20,8 +20,18 @@ import '../../widgets/items/detail/detail_collection_section.dart';
 import '../../widgets/items/detail/detail_gallery_section.dart';
 import '../../widgets/items/detail/detail_attributes_section.dart';
 
+/// Pantalla que muestra los detalles completos de un solo [ItemModel].
+///
+/// Carga datos frescos desde [ItemDetailsProvider] al montarse, luego mantiene al
+/// [ItemsProvider] padre sincronizado a través de un listener para que la pantalla de la lista refleje
+/// los cambios de miniatura/título sin una recarga completa.
 class ItemDetailScreen extends StatefulWidget {
+  /// El elemento a mostrar. Se utiliza como un marcador de posición inmediato mientras el proveedor
+  /// obtiene datos frescos.
   final ItemModel item;
+
+  /// La biblioteca a la que pertenece [item], utilizada para determinar los permisos de edición y
+  /// qué secciones de detalle mostrar.
   final ListModel? list;
 
   const ItemDetailScreen({super.key, required this.item, this.list});
@@ -30,18 +40,42 @@ class ItemDetailScreen extends StatefulWidget {
   State<ItemDetailScreen> createState() => _ItemDetailScreenState();
 }
 
+/// Estado para [ItemDetailScreen].
+///
+/// Registra un listener en [ItemDetailsProvider] para propagar los cambios de imagen/URL
+/// de vuelta a [ItemsProvider] para que la miniatura de la tarjeta de la lista se mantenga actualizada.
 class _ItemDetailScreenState extends State<ItemDetailScreen> {
+  ItemDetailsProvider? _detailsProvider;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final provider = context.read<ItemDetailsProvider>();
-        provider.loadItemDetails(widget.item.id!, initialItem: widget.item);
-      }
+      if (!mounted) return;
+      _detailsProvider = context.read<ItemDetailsProvider>();
+      _detailsProvider!.addListener(_syncToItemsProvider);
+      _detailsProvider!.loadItemDetails(widget.item.id!, initialItem: widget.item);
     });
   }
 
+  @override
+  void dispose() {
+    _detailsProvider?.removeListener(_syncToItemsProvider);
+    super.dispose();
+  }
+
+  /// Propaga el último [ItemDetailsProvider.item] de vuelta a [ItemsProvider]
+  /// para que la miniatura de la portada de la pantalla de la lista se actualice sin una recarga completa.
+  void _syncToItemsProvider() {
+    if (!mounted) return;
+    final updated = _detailsProvider?.item;
+    if (updated != null) {
+      context.read<ItemsProvider>().updateLocalItem(updated);
+    }
+  }
+
+  /// Navega a la pantalla de entrada de elementos para editar [currentItem] y
+  /// recarga los datos de detalle y de lista al volver.
   void _onEditTapped(BuildContext context, ItemModel currentItem) async {
     await Navigator.pushNamed(
       context,
@@ -57,6 +91,8 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     }
   }
 
+  /// Muestra un diálogo de confirmación y, al confirmar, elimina el elemento a través de
+  /// [ItemsProvider] y cierra la pantalla con `true`.
   void _onDeleteTapped(BuildContext context) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -97,6 +133,12 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     }
   }
 
+  /// Devuelve la lista ordenada de widgets de sección de detalle para [item] dentro de
+  /// [library].
+  ///
+  /// Las secciones que siempre están presentes (información, calificación, descripción, fechas,
+  /// atributos, galería) se mezclan con secciones condicionales (progreso,
+  /// colección) que dependen de las opciones de la biblioteca.
   List<Widget> _detailSections(ItemModel item, ListModel? library) {
     final canEdit = library?.canEdit ?? true;
     return [
