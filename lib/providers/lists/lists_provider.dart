@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../data/lists/collaborator_model.dart';
 import '../../data/lists/lists_repository.dart';
 import '../../data/lists/list_model.dart';
 import '../../data/lists/library_genre_model.dart';
@@ -281,5 +282,47 @@ class ListsProvider extends ChangeNotifier {
   Future<LibraryGenreModel> addLibraryGenre(int libraryId, String name) async {
     final genre = LibraryGenreModel(libraryId: libraryId, name: name);
     return await _listsRepository.addLibraryGenre(genre);
+  }
+
+  // ── Collaborator management ──────────────────────────────────────────────────
+
+  /// Devuelve la lista de colaboradores de la biblioteca [libraryId].
+  ///
+  /// Lanza excepción si el servidor responde con error.
+  Future<List<CollaboratorModel>> getCollaborators(int libraryId) async {
+    return _listsRepository.getCollaborators(libraryId);
+  }
+
+  /// Elimina al colaborador con [userId] de la biblioteca [libraryId].
+  ///
+  /// Solo el propietario puede invocar esto. Devuelve `true` si tiene éxito,
+  /// `false` y establece [errorMessage] en caso de fallo.
+  Future<bool> removeCollaborator(int libraryId, int userId) async {
+    try {
+      await _listsRepository.removeCollaborator(libraryId, userId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Abandona la biblioteca compartida [libraryId].
+  ///
+  /// Elimina la lista de [lists] y de la caché local al completar con éxito.
+  /// Devuelve `true` si tiene éxito, `false` y establece [errorMessage] en caso de fallo.
+  Future<bool> leaveLibrary(int libraryId) async {
+    try {
+      await _listsRepository.leaveLibrary(libraryId);
+      _lists.removeWhere((l) => l.id == libraryId);
+      _localStorage.deleteLibrary(libraryId);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
 }

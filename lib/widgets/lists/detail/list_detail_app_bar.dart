@@ -191,6 +191,15 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
+            // Visible solo para colaboradores (no propietarios) en listas compartidas
+            if (!widget.list.owner && widget.list.shared)
+              const PopupMenuItem(
+                value: 'leave',
+                child: Text(
+                  'Abandonar lista',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
           ],
         ),
       ],

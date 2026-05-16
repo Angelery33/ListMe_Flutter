@@ -669,7 +669,47 @@ class _ListScreenState extends State<ListScreen> {
       case 'delete':
         _confirmDeleteList();
         break;
+      case 'leave':
+        _confirmLeaveList();
+        break;
     }
+  }
+
+  /// Muestra un diálogo de confirmación y abandona [_currentList] al confirmar,
+  /// eliminándola de la vista del usuario y cerrando la pantalla.
+  void _confirmLeaveList() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Abandonar lista'),
+        content: Text(
+          '¿Seguro que quieres dejar de seguir "${_currentList.name}"?\n\nDejarás de tener acceso a esta biblioteca.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(dialogContext.l10n.commonCancel.toUpperCase()),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              if (_currentList.id != null) {
+                final success = await context
+                    .read<ListsProvider>()
+                    .leaveLibrary(_currentList.id!);
+                if (success && mounted) {
+                  Navigator.pop(context);
+                }
+              }
+            },
+            child: const Text(
+              'ABANDONAR',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Muestra un diálogo que permite al propietario publicar la lista en la nube

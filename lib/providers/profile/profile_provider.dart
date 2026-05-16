@@ -5,55 +5,55 @@ import 'package:list_me/data/system/system_repository.dart';
 import 'package:list_me/data/system/user_stats_model.dart';
 import 'package:list_me/core/services/logger_service.dart';
 
-/// Provider that manages the current user's profile data and system information.
+/// Proveedor que gestiona los datos del perfil del usuario actual y la información del sistema.
 ///
-/// Loads the user account, usage statistics and API version on construction
-/// and exposes mutation helpers for changing the username or password and for
-/// deleting the account.
+/// Carga la cuenta de usuario, las estadísticas de uso y la versión de la API en la construcción,
+/// y expone helpers de mutación para cambiar el nombre de usuario o la contraseña
+/// y para eliminar la cuenta.
 class ProfileProvider extends ChangeNotifier {
   final ProfileRepository _profileRepository;
   final SystemRepository _systemRepository;
   final LoggerService _logger = LoggerService.instance;
 
-  /// The currently authenticated user, or `null` while loading.
+  /// El usuario autenticado actualmente, o `null` mientras se carga.
   UserModel? _user;
 
-  /// Aggregated usage stats (total lists, total items, etc.), or `null`.
+  /// Estadísticas de uso agregadas (listas totales, elementos totales, etc.), o `null`.
   UserStatsModel? _stats;
 
-  /// Backend API version string, e.g. `"1.4.2"`, or `null` if unavailable.
+  /// Cadena de versión de la API del backend, p.ej. `"1.4.2"`, o `null` si no está disponible.
   String? _apiVersion;
 
-  /// Whether an async operation is currently in progress.
+  /// Indica si una operación asíncrona está en curso.
   bool _isLoading = false;
 
-  /// Error description from the most recent failed operation, or `null`.
+  /// Descripción del error de la operación fallida más reciente, o `null`.
   String? _errorMessage;
 
-  /// Creates a [ProfileProvider] backed by [_profileRepository] and
-  /// [_systemRepository] and immediately triggers [loadProfile].
+  /// Crea un [ProfileProvider] respaldado por [_profileRepository] y
+  /// [_systemRepository] y dispara inmediatamente [loadProfile].
   ProfileProvider(this._profileRepository, this._systemRepository) {
     loadProfile();
   }
 
-  /// The authenticated user's data, or `null` while the profile is loading.
+  /// Los datos del usuario autenticado, o `null` mientras se carga el perfil.
   UserModel? get user => _user;
 
-  /// Aggregated statistics for the current user, or `null` before first load.
+  /// Estadísticas agregadas del usuario actual, o `null` antes de la primera carga.
   UserStatsModel? get stats => _stats;
 
-  /// The server's API version, useful for diagnostics and the profile screen.
+  /// La versión de la API del servidor, útil para diagnósticos y la pantalla de perfil.
   String? get apiVersion => _apiVersion;
 
-  /// Whether a remote operation is currently running.
+  /// Indica si una operación remota está en ejecución actualmente.
   bool get isLoading => _isLoading;
 
-  /// Error from the last failed call, or `null` when everything is fine.
+  /// Error de la última llamada fallida, o `null` cuando todo está correcto.
   String? get errorMessage => _errorMessage;
 
-  /// Fetches the user profile, usage stats and API version from the server.
+  /// Obtiene el perfil de usuario, las estadísticas de uso y la versión de la API del servidor.
   ///
-  /// Sets [isLoading] while in flight and populates [errorMessage] on failure.
+  /// Establece [isLoading] mientras está en curso y rellena [errorMessage] en caso de fallo.
   Future<void> loadProfile() async {
     _isLoading = true;
     _errorMessage = null;
@@ -73,10 +73,10 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-  /// Sends a request to change the username to [newUsername].
+  /// Envía una solicitud para cambiar el nombre de usuario a [newUsername].
   ///
-  /// Updates [user] locally on success. Returns `true` on success, `false`
-  /// and sets [errorMessage] on failure.
+  /// Actualiza [user] localmente en caso de éxito. Devuelve `true` en caso de éxito, `false`
+  /// y establece [errorMessage] en caso de fallo.
   Future<bool> updateUsername(String newUsername) async {
     if (_user == null) return false;
 
@@ -98,10 +98,10 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-  /// Changes the account password from [currentPassword] to [newPassword].
+  /// Cambia la contraseña de la cuenta de [currentPassword] a [newPassword].
   ///
-  /// Returns `true` on success, `false` and sets [errorMessage] (with a
-  /// user-friendly Spanish message) on failure.
+  /// Devuelve `true` en caso de éxito, `false` y establece [errorMessage] (con un
+  /// mensaje en español para el usuario) en caso de fallo.
   Future<bool> changePassword(
     String currentPassword,
     String newPassword,
@@ -126,11 +126,11 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-  /// Permanently deletes the authenticated user's account.
+  /// Elimina permanentemente la cuenta del usuario autenticado.
   ///
-  /// The caller is responsible for signing the user out and navigating away
-  /// after a successful deletion. Returns `true` on success, `false` and
-  /// sets [errorMessage] on failure.
+  /// El caller es responsable de cerrar la sesión del usuario y navegar fuera
+  /// tras una eliminación exitosa. Devuelve `true` en caso de éxito, `false` y
+  /// establece [errorMessage] en caso de fallo.
   Future<bool> deleteAccount() async {
     _isLoading = true;
     _errorMessage = null;
@@ -149,7 +149,7 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-  /// Clears [errorMessage] and notifies listeners so error banners are hidden.
+  /// Limpia [errorMessage] y notifica a los listeners para que los banners de error se oculten.
   void clearError() {
     _errorMessage = null;
     notifyListeners();

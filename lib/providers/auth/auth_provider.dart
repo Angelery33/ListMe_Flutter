@@ -1,44 +1,63 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../core/services/api_client.dart';
 import '../../data/auth/auth_repository.dart';
 import '../../data/auth/auth_models.dart';
 import '../../core/services/logger_service.dart';
 
-/// Represents the possible states of the authentication flow.
+/// Representa los posibles estados del flujo de autenticación.
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
-/// Provider that manages authentication state for the entire app.
+/// Proveedor que gestiona el estado de autenticación de toda la aplicación.
 ///
-/// Wraps [AuthRepository] and exposes login, register and logout operations.
-/// Automatically checks the stored session on construction so the UI can
-/// react to an already-authenticated user without showing the login screen.
+/// Envuelve [AuthRepository] y expone las operaciones de login, registro y logout.
+/// Comprueba automáticamente la sesión almacenada en la construcción para que la UI
+/// pueda reaccionar a un usuario ya autenticado sin mostrar la pantalla de login.
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository;
   final LoggerService _logger = LoggerService.instance;
 
-  /// Current authentication status, drives routing decisions.
+  /// Estado de autenticación actual, determina las decisiones de enrutamiento.
   AuthStatus _status = AuthStatus.initial;
 
-  /// Human-readable error message set when an operation fails.
+  /// Mensaje de error legible por el usuario, establecido cuando una operación falla.
   String? _errorMessage;
 
-  /// Creates an [AuthProvider] with the given [_authRepository] and
-  /// immediately checks whether the user already has a valid session.
+  /// Suscripción al stream de logout forzado de [ApiClient].
+  late final StreamSubscription<void> _logoutSubscription;
+
+  /// Crea un [AuthProvider] con el [_authRepository] proporcionado y
+  /// comprueba de inmediato si el usuario ya tiene una sesión válida.
+  ///
+  /// También escucha [ApiClient.authLogoutStream] para redirigir al login
+  /// automáticamente cuando el refresh token falla o expira.
   AuthProvider(this._authRepository) {
+    _logoutSubscription = ApiClient.authLogoutStream.listen((_) {
+      _logger.warning('AuthProvider: sesión expirada, redirigiendo al login');
+      _status = AuthStatus.unauthenticated;
+      notifyListeners();
+    });
     checkAuthStatus();
   }
 
-  /// The current [AuthStatus] of the session.
+  @override
+  void dispose() {
+    _logoutSubscription.cancel();
+    super.dispose();
+  }
+
+  /// El [AuthStatus] actual de la sesión.
   AuthStatus get status => _status;
 
-  /// A user-friendly error message, or `null` when there is no error.
+  /// Mensaje de error para el usuario, o `null` cuando no hay ningún error.
   String? get errorMessage => _errorMessage;
 
-  /// Returns `true` while an async auth operation is in progress.
+  /// Devuelve `true` mientras una operación de autenticación asíncrona está en curso.
   bool get isLoading => _status == AuthStatus.loading;
 
-  /// Queries the repository to determine if a session token already exists
-  /// and updates [status] to [AuthStatus.authenticated] or
-  /// [AuthStatus.unauthenticated] accordingly.
+  /// Consulta el repositorio para determinar si ya existe un token de sesión
+  /// y actualiza [status] a [AuthStatus.authenticated] o
+  /// [AuthStatus.unauthenticated] según corresponda.
   Future<void> checkAuthStatus() async {
     final isLoggedIn = await _authRepository.isLoggedIn();
     _status = isLoggedIn
@@ -47,17 +66,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Clears any outstanding [errorMessage] and notifies listeners so the UI
-  /// can hide error banners without performing a new auth operation.
+  /// Limpia cualquier [errorMessage] pendiente y notifica a los listeners para que la UI
+  /// pueda ocultar los banners de error sin realizar una nueva operación de autenticación.
   void clearError() {
     _errorMessage = null;
     notifyListeners();
   }
 
-  /// Converts a raw [error] object into a Spanish user-facing message.
+  /// Convierte un objeto [error] en bruto en un mensaje en español para el usuario.
   ///
-  /// Matches known substrings such as 'connection', '401', 'timeout', and
-  /// 'username' to return contextually appropriate feedback.
+  /// Coincide con subcadenas conocidas como 'connection', '401', 'timeout' y
+  /// 'username' para devolver un mensaje contextualmente apropiado.
   String _extractUserFriendlyError(dynamic error) {
     final errorStr = error.toString().toLowerCase();
     if (errorStr.contains('connection') || errorStr.contains('socket')) {
@@ -75,11 +94,11 @@ class AuthProvider extends ChangeNotifier {
     return 'Error al iniciar sesión. Intenta de nuevo.';
   }
 
-  /// Attempts to log in with the given [username] and [password].
+  /// Intenta iniciar sesión con el [username] y [password] proporcionados.
   ///
-  /// Sets [status] to [AuthStatus.loading] while the request is in flight.
-  /// Returns `true` and transitions to [AuthStatus.authenticated] on success,
-  /// or `false` and sets [errorMessage] on failure.
+  /// Establece [status] a [AuthStatus.loading] mientras la solicitud está en curso.
+  /// Devuelve `true` y transiciona a [AuthStatus.authenticated] en caso de éxito,
+  /// o `false` y establece [errorMessage] en caso de fallo.
   Future<bool> login(String username, String password) async {
     _status = AuthStatus.loading;
     _errorMessage = null;
@@ -102,11 +121,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Registers a new account with the given [username], [password] and [email].
+  /// Registra una nueva cuenta con el [username], [password] y [email] proporcionados.
   ///
-  /// On success transitions to [AuthStatus.unauthenticated] so the user is
-  /// redirected to the login screen. Returns `true` on success, `false` and
-  /// populates [errorMessage] on failure.
+  /// En caso de éxito transiciona a [AuthStatus.unauthenticated] para que el usuario
+  /// sea redirigido a la pantalla de login. Devuelve `true` en caso de éxito, `false`
+  /// y rellena [errorMessage] en caso de fallo.
   Future<bool> register(String username, String password, String email) async {
     _status = AuthStatus.loading;
     _errorMessage = null;
@@ -129,8 +148,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Clears the stored session token and transitions to
-  /// [AuthStatus.unauthenticated], forcing the user back to the login screen.
+  /// Elimina el token de sesión almacenado y transiciona a
+  /// [AuthStatus.unauthenticated], forzando al usuario de vuelta a la pantalla de login.
   Future<void> logout() async {
     await _authRepository.logout();
     _status = AuthStatus.unauthenticated;

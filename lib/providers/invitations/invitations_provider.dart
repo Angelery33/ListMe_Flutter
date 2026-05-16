@@ -2,54 +2,54 @@ import 'package:flutter/material.dart';
 import '../../data/invitations/invitation_model.dart';
 import '../../data/invitations/invitations_repository.dart';
 
-/// Provider that manages collaboration invitations for the current user.
+/// Proveedor que gestiona las invitaciones de colaboración del usuario actual.
 ///
-/// Loads pending invitations from the server with a short-lived cache
-/// ([_staleDuration]) to avoid redundant network calls on every rebuild.
-/// Exposes accept/reject/send operations that optimistically update local state.
+/// Carga las invitaciones pendientes del servidor con una caché de corta duración
+/// ([_staleDuration]) para evitar llamadas de red redundantes en cada reconstrucción.
+/// Expone operaciones de aceptar/rechazar/enviar que actualizan el estado local de forma optimista.
 class InvitationsProvider extends ChangeNotifier {
   final InvitationsRepository _repository;
 
-  /// Currently loaded pending invitations.
+  /// Invitaciones pendientes cargadas actualmente.
   List<InvitationModel> _pendingInvitations = [];
 
-  /// Whether an async operation is currently in progress.
+  /// Indica si una operación asíncrona está en curso.
   bool _isLoading = false;
 
-  /// Timestamp of the most recent successful load, used to decide staleness.
+  /// Marca de tiempo de la carga exitosa más reciente, usada para determinar la obsolescencia.
   DateTime? _lastLoaded;
 
-  /// Last error message, or `null` when the last operation succeeded.
+  /// Último mensaje de error, o `null` cuando la última operación fue exitosa.
   String? _error;
 
-  /// How long cached invitations remain valid before a reload is required.
+  /// Tiempo durante el cual las invitaciones en caché permanecen válidas antes de requerir una recarga.
   static const _staleDuration = Duration(minutes: 2);
 
-  /// Creates an [InvitationsProvider] backed by [_repository].
+  /// Crea un [InvitationsProvider] respaldado por [_repository].
   InvitationsProvider(this._repository);
 
-  /// The list of invitations that are still awaiting a response.
+  /// La lista de invitaciones que aún están esperando respuesta.
   List<InvitationModel> get pendingInvitations => _pendingInvitations;
 
-  /// The number of pending invitations, useful for badge display.
+  /// El número de invitaciones pendientes, útil para mostrar insignias.
   int get pendingCount => _pendingInvitations.length;
 
-  /// Whether an async operation is currently running.
+  /// Indica si una operación asíncrona está en ejecución actualmente.
   bool get isLoading => _isLoading;
 
-  /// The most recent error description, or `null` if no error occurred.
+  /// La descripción del error más reciente, o `null` si no ocurrió ningún error.
   String? get error => _error;
 
-  /// Returns `true` when cached data is older than [_staleDuration] or
-  /// has never been loaded, indicating a fresh fetch is needed.
+  /// Devuelve `true` cuando los datos en caché son más antiguos que [_staleDuration] o
+  /// nunca se han cargado, indicando que se necesita una nueva solicitud.
   bool get isStale =>
       _lastLoaded == null ||
       DateTime.now().difference(_lastLoaded!) > _staleDuration;
 
-  /// Fetches pending invitations from the server and replaces the local cache.
+  /// Obtiene las invitaciones pendientes del servidor y reemplaza la caché local.
   ///
-  /// Sets [isLoading] while the request is in flight and updates [error]
-  /// if the request fails.
+  /// Establece [isLoading] mientras la solicitud está en curso y actualiza [error]
+  /// si la solicitud falla.
   Future<void> loadPendingInvitations() async {
     _isLoading = true;
     _error = null;
@@ -66,10 +66,10 @@ class InvitationsProvider extends ChangeNotifier {
     }
   }
 
-  /// Sends an invitation for [libraryId] to the user identified by [username].
+  /// Envía una invitación para [libraryId] al usuario identificado por [username].
   ///
-  /// If [readOnly] is `true` the invitee will only be able to view the list.
-  /// Returns `true` on success or `false` and sets [error] on failure.
+  /// Si [readOnly] es `true`, el invitado solo podrá ver la lista.
+  /// Devuelve `true` en caso de éxito o `false` y establece [error] en caso de fallo.
   Future<bool> sendInvitation(int libraryId, String username, bool readOnly) async {
     try {
       await _repository.sendInvitation(libraryId, username, readOnly);
@@ -81,10 +81,10 @@ class InvitationsProvider extends ChangeNotifier {
     }
   }
 
-  /// Accepts the invitation with the given [id] and removes it from the
-  /// pending list so the UI updates immediately.
+  /// Acepta la invitación con el [id] dado y la elimina de la lista
+  /// pendiente para que la UI se actualice de inmediato.
   ///
-  /// Returns `true` on success or `false` and sets [error] on failure.
+  /// Devuelve `true` en caso de éxito o `false` y establece [error] en caso de fallo.
   Future<bool> acceptInvitation(int id) async {
     try {
       await _repository.acceptInvitation(id);
@@ -98,10 +98,10 @@ class InvitationsProvider extends ChangeNotifier {
     }
   }
 
-  /// Rejects the invitation with the given [id] and removes it from the
-  /// pending list so the UI updates immediately.
+  /// Rechaza la invitación con el [id] dado y la elimina de la lista
+  /// pendiente para que la UI se actualice de inmediato.
   ///
-  /// Returns `true` on success or `false` and sets [error] on failure.
+  /// Devuelve `true` en caso de éxito o `false` y establece [error] en caso de fallo.
   Future<bool> rejectInvitation(int id) async {
     try {
       await _repository.rejectInvitation(id);

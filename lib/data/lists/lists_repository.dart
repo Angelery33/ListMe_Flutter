@@ -1,5 +1,6 @@
 import 'package:list_me/core/services/api_client.dart';
 import 'package:list_me/core/services/logger_service.dart';
+import 'package:list_me/data/lists/collaborator_model.dart';
 import 'package:list_me/data/lists/list_model.dart';
 import 'package:list_me/data/lists/library_genre_model.dart';
 import 'package:list_me/data/lists/share_request_model.dart';
@@ -169,6 +170,48 @@ class ListsRepository {
       _logger.info('ListsRepository: Género $genreId eliminado');
     } catch (e) {
       _logger.error('ListsRepository: Error al eliminar género $genreId', e);
+      rethrow;
+    }
+  }
+
+  /// Obtiene la lista de colaboradores (editores y viewers) de la biblioteca [libraryId].
+  Future<List<CollaboratorModel>> getCollaborators(int libraryId) async {
+    try {
+      _logger.debug('ListsRepository: Obteniendo colaboradores de lista $libraryId');
+      final response = await _apiClient.dio.get('/libraries/$libraryId/collaborators');
+      return (response.data as List)
+          .map((json) => CollaboratorModel.fromJson(json))
+          .toList();
+    } catch (e) {
+      _logger.error('ListsRepository: Error al obtener colaboradores de lista $libraryId', e);
+      rethrow;
+    }
+  }
+
+  /// Elimina al colaborador con [userId] de la biblioteca [libraryId].
+  ///
+  /// Solo el propietario puede invocar este método.
+  Future<void> removeCollaborator(int libraryId, int userId) async {
+    try {
+      _logger.debug('ListsRepository: Eliminando colaborador $userId de lista $libraryId');
+      await _apiClient.dio.delete('/libraries/$libraryId/collaborators/$userId');
+      _logger.info('ListsRepository: Colaborador $userId eliminado de lista $libraryId');
+    } catch (e) {
+      _logger.error('ListsRepository: Error al eliminar colaborador $userId', e);
+      rethrow;
+    }
+  }
+
+  /// Permite al usuario actual abandonar la biblioteca [libraryId].
+  ///
+  /// Lanza excepción si el usuario es el propietario.
+  Future<void> leaveLibrary(int libraryId) async {
+    try {
+      _logger.debug('ListsRepository: Abandonando lista $libraryId');
+      await _apiClient.dio.delete('/libraries/$libraryId/leave');
+      _logger.info('ListsRepository: Lista $libraryId abandonada');
+    } catch (e) {
+      _logger.error('ListsRepository: Error al abandonar lista $libraryId', e);
       rethrow;
     }
   }

@@ -5,6 +5,11 @@ import 'package:list_me/core/config/constants.dart';
 import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/core/services/token_storage.dart';
 
+// Controlador global que emite un evento cuando la sesión expira sin poder
+// renovarse, para que AuthProvider pueda redirigir al login sin depender
+// de la jerarquía de widgets.
+final _logoutController = StreamController<void>.broadcast();
+
 /// Cliente HTTP singleton basado en [Dio] que maneja la autenticación JWT,
 /// el refresco transparente de tokens y el encolado de solicitudes.
 ///
@@ -22,6 +27,10 @@ class ApiClient {
   final AuthService _authService = AuthService.instance;
   bool _isRefreshing = false;
   final List<Completer<bool>> _queuedRequests = [];
+
+  /// Stream que emite cuando el refresh falla y los tokens son borrados.
+  /// [AuthProvider] escucha este stream para redirigir al login automáticamente.
+  static Stream<void> get authLogoutStream => _logoutController.stream;
 
   ApiClient._() {
     _dio = Dio(
@@ -70,8 +79,10 @@ class ApiClient {
               }
 
               _isRefreshing = true;
+              bool refreshSuccess = false;
               try {
                 final refreshed = await _authService.refreshToken();
+                refreshSuccess = refreshed;
 
                 if (refreshed) {
                   _logger.info('Token refrescado exitosamente, reintentando solicitud...');
@@ -85,10 +96,14 @@ class ApiClient {
                 } else {
                   _logger.warning('No se pudo refrescar el token, redirigiendo a login');
                   await TokenStorage.clearTokens();
+                  // Notifica a AuthProvider para que redirija al login
+                  _logoutController.add(null);
                 }
               } finally {
                 _isRefreshing = false;
-                _processQueuedRequests();
+                // Pasa el resultado real para que las peticiones encoladas
+                // sepan si deben reintentar o propagar el error
+                _processQueuedRequests(success: refreshSuccess);
               }
             }
           }
@@ -112,10 +127,14 @@ class ApiClient {
   /// tipadas mientras siguen beneficiándose de los interceptores de autenticación.
   Dio get dio => _dio;
 
-  void _processQueuedRequests() {
+  /// Resuelve todas las peticiones encoladas con [success].
+  ///
+  /// Cuando [success] es `false` las peticiones encoladas propagan el error
+  /// original en lugar de reintentar con un token inexistente.
+  void _processQueuedRequests({bool success = false}) {
     for (final completer in _queuedRequests) {
       if (!completer.isCompleted) {
-        completer.complete(true);
+        completer.complete(success);
       }
     }
     _queuedRequests.clear();

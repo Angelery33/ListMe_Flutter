@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/i18n/l10n_extension.dart';
+import '../../../data/lists/collaborator_model.dart';
 import '../../../providers/invitations/invitations_provider.dart';
+import '../../../providers/lists/lists_provider.dart';
 
-/// Widget de sección para la pantalla de configuración de la lista que permite al propietario
-/// invitar a otros usuarios a colaborar en una biblioteca.
+/// Sección de la pantalla de configuración que permite al propietario invitar
+/// colaboradores y ver/eliminar los ya existentes.
 ///
-/// Solo se renderiza cuando el usuario actual es el propietario Y la biblioteca ya
-/// tiene un [libraryId] asignado por el servidor. No renderiza nada en caso contrario.
+/// Solo se renderiza cuando el usuario es propietario y la biblioteca ya tiene [libraryId].
 class ConfigCollaborationSection extends StatefulWidget {
-  /// El ID del servidor de la biblioteca que se está configurando.
-  /// Cuando es `null`, la sección se oculta porque la biblioteca aún no se ha guardado.
+  /// ID del servidor de la biblioteca. `null` oculta la sección (lista no guardada aún).
   final int? libraryId;
 
-  /// Indica si el usuario actual es el propietario de esta biblioteca.
-  /// Los no propietarios no pueden invitar a colaboradores, por lo que la sección se oculta para ellos.
+  /// `true` cuando el usuario actual es el propietario de la biblioteca.
   final bool isOwner;
 
   const ConfigCollaborationSection({
@@ -23,26 +23,52 @@ class ConfigCollaborationSection extends StatefulWidget {
   });
 
   @override
-  State<ConfigCollaborationSection> createState() => _ConfigCollaborationSectionState();
+  State<ConfigCollaborationSection> createState() =>
+      _ConfigCollaborationSectionState();
 }
 
 /// Estado para [ConfigCollaborationSection].
 ///
-/// Gestiona el campo de texto del nombre de usuario y el interruptor de permiso de solo lectura,
-/// y envía las solicitudes de invitación a través de [InvitationsProvider].
-class _ConfigCollaborationSectionState extends State<ConfigCollaborationSection> {
-  /// Controlador para el campo de entrada de nombre de usuario donde el propietario escribe el nombre de usuario del invitado.
+/// Carga la lista de colaboradores al iniciar y permite enviar invitaciones
+/// y eliminar colaboradores existentes.
+class _ConfigCollaborationSectionState
+    extends State<ConfigCollaborationSection> {
+  /// Controlador del campo donde el propietario escribe el nombre de usuario del invitado.
   final _usernameController = TextEditingController();
 
-  /// Indica si el colaborador invitado debe tener acceso de solo lectura.
-  /// Por defecto es `true` para evitar conceder acceso de escritura accidentalmente.
+  /// Si el colaborador invitado tendrá solo lectura. Valor por defecto seguro.
   bool _isReadOnly = true;
 
-  /// Envía una solicitud de invitación a través de [InvitationsProvider].
-  ///
-  /// Valida que el campo de nombre de usuario no esté vacío y que el ID de la biblioteca esté configurado,
-  /// luego muestra un [SnackBar] de éxito o error según el resultado.
-  void _sendInvitation() async {
+  /// Lista de colaboradores activos cargada desde el servidor.
+  List<CollaboratorModel> _collaborators = [];
+
+  /// Indica si la lista de colaboradores se está cargando.
+  bool _loadingCollaborators = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isOwner && widget.libraryId != null) {
+      _loadCollaborators();
+    }
+  }
+
+  /// Obtiene los colaboradores actuales de la biblioteca desde el servidor.
+  Future<void> _loadCollaborators() async {
+    setState(() => _loadingCollaborators = true);
+    try {
+      final list = await context
+          .read<ListsProvider>()
+          .getCollaborators(widget.libraryId!);
+      if (mounted) setState(() => _collaborators = list);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _loadingCollaborators = false);
+    }
+  }
+
+  /// Envía la invitación al usuario introducido en [_usernameController].
+  Future<void> _sendInvitation() async {
     if (_usernameController.text.trim().isEmpty) return;
     if (widget.libraryId == null) return;
 
@@ -57,11 +83,59 @@ class _ConfigCollaborationSectionState extends State<ConfigCollaborationSection>
       if (success) {
         _usernameController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Invitación enviada correctamente")),
+          SnackBar(content: Text(context.l10n.listsInviteSent)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${provider.error ?? 'No se pudo enviar'}")),
+          SnackBar(
+              content: Text("Error: ${provider.error ?? 'No se pudo enviar'}")),
+        );
+      }
+    }
+  }
+
+  /// Muestra un diálogo de confirmación y elimina al [collaborator] de la biblioteca.
+  Future<void> _confirmRemove(CollaboratorModel collaborator) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Eliminar colaborador"),
+        content:
+            Text('¿Eliminar a "${collaborator.username}" de esta biblioteca?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(ctx.l10n.commonCancel.toUpperCase()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              ctx.l10n.commonDelete.toUpperCase(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final ok = await context
+        .read<ListsProvider>()
+        .removeCollaborator(widget.libraryId!, collaborator.userId);
+
+    if (mounted) {
+      if (ok) {
+        setState(
+            () => _collaborators.removeWhere((c) => c.userId == collaborator.userId));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  '"${collaborator.username}" eliminado de la biblioteca')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error al eliminar colaborador")),
         );
       }
     }
@@ -69,7 +143,9 @@ class _ConfigCollaborationSectionState extends State<ConfigCollaborationSection>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isOwner || widget.libraryId == null) return const SizedBox.shrink();
+    if (!widget.isOwner || widget.libraryId == null) {
+      return const SizedBox.shrink();
+    }
 
     final theme = Theme.of(context);
 
@@ -96,7 +172,58 @@ class _ConfigCollaborationSectionState extends State<ConfigCollaborationSection>
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Current collaborators ──────────────────────────────────
+                if (_loadingCollaborators)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_collaborators.isNotEmpty) ...[
+                  Text(
+                    "Colaboradores actuales",
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ..._collaborators.map(
+                    (c) => ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor:
+                            theme.colorScheme.primaryContainer,
+                        child: Text(
+                          c.username[0].toUpperCase(),
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: theme.colorScheme.onPrimaryContainer),
+                        ),
+                      ),
+                      title: Text(c.username,
+                          style: theme.textTheme.bodyMedium),
+                      subtitle: Text(
+                        c.isEditor ? "Editor" : "Solo lectura",
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.person_remove_outlined,
+                            color: Colors.red, size: 20),
+                        tooltip: "Eliminar colaborador",
+                        onPressed: () => _confirmRemove(c),
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 24),
+                ],
+
+                // ── Invite new collaborator ────────────────────────────────
                 TextField(
                   controller: _usernameController,
                   decoration: const InputDecoration(
