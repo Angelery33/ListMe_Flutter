@@ -175,13 +175,16 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     String omdbApiKey,
   ) async {
     final source = _selectedSource;
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final booksApiKey = settings.googleBooksApiKey.trim().isNotEmpty
+        ? settings.googleBooksApiKey.trim()
+        : null;
 
     switch (widget.category) {
       case 'Book':
-        return await _apiService.searchBooks(query: query, page: page);
+        return await _apiService.searchBooks(query: query, page: page, apiKey: booksApiKey);
       case 'Anime':
         if (source == 'TMDb') {
-          final settings = Provider.of<SettingsProvider>(context, listen: false);
           return await _apiService.searchTMDb(
             query: query,
             page: page,
@@ -196,13 +199,16 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
           return (await _apiService.searchBooks(
             query: query,
             page: page,
+            apiKey: booksApiKey,
+            mangaMode: true,
           )).map((b) => {...b, 'source': 'Manga (Tomos)'}).toList();
         } else if (source == 'MangaDex') {
           return await _apiService.searchMangaDex(query: query, page: page);
-        } else if (source == 'MAL') {
-          return await _apiService.searchMangaMAL(query: query, page: page);
+        } else if (source == 'Auto') {
+          return await _apiService.searchManga(query: query, page: page, googleBooksApiKey: booksApiKey);
         }
-        return await _apiService.searchManga(query: query, page: page);
+        // MAL por defecto (source == null || source == 'MAL')
+        return await _apiService.searchMangaMAL(query: query, page: page);
       case 'Movie':
       case 'Series':
         String? type;
@@ -210,10 +216,6 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
         if (source == 'Series') type = 'series';
 
         if (source == 'TMDb' || source == null) {
-          final settings = Provider.of<SettingsProvider>(
-            context,
-            listen: false,
-          );
           return await _apiService.searchTMDb(
             query: query,
             page: page,
@@ -230,7 +232,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
         );
       default:
         if (source == 'Books') {
-          return await _apiService.searchBooks(query: query, page: page);
+          return await _apiService.searchBooks(query: query, page: page, apiKey: booksApiKey);
         } else if (source == 'MAL') {
           return await _apiService.searchAnime(query: query, page: page);
         } else if (source == 'MangaDex') {
@@ -262,7 +264,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
   Widget _buildSourceSelector() {
     List<String> sources = [];
     if (widget.category == 'Manga' || widget.category == 'Comic') {
-      sources = ['Auto', 'MAL', 'Tomos', 'MangaDex'];
+      sources = ['MAL', 'MangaDex', 'Tomos', 'Auto'];
     } else if (widget.category == 'Book') {
       sources = ['Auto (Books)'];
     } else if (widget.category == 'Anime') {
@@ -280,7 +282,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
       child: Wrap(
         spacing: 8.0,
         children: sources.map((s) {
-          final defaultSource = widget.category == 'Anime' ? 'MAL' : 'Auto';
+          final defaultSource = (widget.category == 'Anime' || widget.category == 'Manga' || widget.category == 'Comic') ? 'MAL' : 'Auto';
           final isSelected =
               (_selectedSource == null && s == defaultSource) ||
               (_selectedSource == s);

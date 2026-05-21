@@ -44,6 +44,8 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _RegionalSection(settings: settings, theme: theme),
                 const SizedBox(height: 24),
+                _ApiKeysSection(settings: settings),
+                const SizedBox(height: 24),
                 _AccountSection(),
                 const SizedBox(height: 40),
                 _VersionFooter(theme: theme),
@@ -228,6 +230,69 @@ class _RegionalSection extends StatelessWidget {
               if (val != null) settings.setCurrency(val);
             },
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Sección de ajustes para configurar claves de API de servicios externos.
+class _ApiKeysSection extends StatefulWidget {
+  final SettingsProvider settings;
+  const _ApiKeysSection({required this.settings});
+
+  @override
+  State<_ApiKeysSection> createState() => _ApiKeysSectionState();
+}
+
+class _ApiKeysSectionState extends State<_ApiKeysSection> {
+  late final TextEditingController _booksController;
+
+  @override
+  void initState() {
+    super.initState();
+    _booksController = TextEditingController(text: widget.settings.googleBooksApiKey);
+  }
+
+  @override
+  void dispose() {
+    _booksController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _Section(
+      title: 'APIs externas',
+      children: [
+        Text(
+          'Google Books',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        Text(
+          'Clave para búsqueda de libros y manga (tomos). Sin clave el límite de peticiones es muy bajo.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _booksController,
+                decoration: const InputDecoration(
+                  hintText: 'AIza...',
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (val) => widget.settings.setGoogleBooksApiKey(val.trim()),
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: () => widget.settings.setGoogleBooksApiKey(_booksController.text.trim()),
+              child: const Text('Guardar'),
+            ),
+          ],
         ),
       ],
     );

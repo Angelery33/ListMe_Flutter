@@ -51,66 +51,98 @@ class ExternalApiService {
   Future<List<Map<String, dynamic>>> searchBooks({
     int page = 1,
     required String query,
+    String? apiKey,
+    bool mangaMode = false,
   }) async {
     final int startIndex = (page - 1) * 10;
+    final keyParam = (apiKey != null && apiKey.isNotEmpty) ? '&key=$apiKey' : '';
+
+    // fields reduce el tamaño de respuesta y acelera la petición
+    const fields = 'items(id,volumeInfo(title,description,imageLinks,categories,'
+        'authors,publisher,publishedDate,pageCount,industryIdentifiers,language,'
+        'averageRating,ratingsCount)),totalItems';
+
     final url = Uri.parse(
-      'https://www.googleapis.com/books/v1/volumes?q=${Uri.encodeComponent(query)}&startIndex=$startIndex&maxResults=10&langRestrict=es',
+      'https://www.googleapis.com/books/v1/volumes'
+      '?q=${Uri.encodeComponent(query)}'
+      '&startIndex=$startIndex'
+      '&maxResults=15'
+      '&printType=books'
+      '&fields=${Uri.encodeComponent(fields)}'
+      '$keyParam',
     );
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final items = data['items'] as List? ?? [];
-        final results = items.map((item) {
-          final info = item['volumeInfo'];
-          final industryIdentifiers =
-              info['industryIdentifiers'] as List? ?? [];
-          String? isbn;
-          if (industryIdentifiers.isNotEmpty) {
-            isbn = industryIdentifiers.first['identifier'];
-          }
+        final results = items
+            .where((item) {
+              // Descartar resultados sin título
+              final info = item['volumeInfo'];
+              return info['title'] != null;
+            })
+            .map((item) {
+              final info = item['volumeInfo'];
+              final industryIdentifiers =
+                  info['industryIdentifiers'] as List? ?? [];
+              String? isbn;
+              for (final id in industryIdentifiers) {
+                if (id['type'] == 'ISBN_13') {
+                  isbn = id['identifier'];
+                  break;
+                }
+              }
+              isbn ??= industryIdentifiers.isNotEmpty
+                  ? industryIdentifiers.first['identifier']
+                  : null;
 
-          // Extraer idioma
-          String? language = info['language'];
-          if (language == 'es')
-            language = 'Español';
-          else if (language == 'en')
-            language = 'Inglés';
-          else if (language == 'ja')
-            language = 'Japonés';
+              // Normalizar idioma
+              String? language = info['language'];
+              if (language == 'es') language = 'Español';
+              else if (language == 'en') language = 'Inglés';
+              else if (language == 'ja') language = 'Japonés';
+              else if (language == 'fr') language = 'Francés';
+              else if (language == 'de') language = 'Alemán';
+              else if (language == 'it') language = 'Italiano';
+              else if (language == 'pt') language = 'Portugués';
 
-          // Extraer fecha de publicación
-          String? publishedDate = info['publishedDate'];
-          String? year;
-          if (publishedDate != null && publishedDate.length >= 4) {
-            year = publishedDate.substring(0, 4);
-          }
+              // Extraer año
+              String? publishedDate = info['publishedDate'];
+              String? year;
+              if (publishedDate != null && publishedDate.length >= 4) {
+                year = publishedDate.substring(0, 4);
+              }
 
-          return {
-            'source': 'Google Books',
-            'remoteId': item['id'],
-            'name': info['title'] ?? 'Sin título',
-            'description': info['description'] ?? '',
-            'imagePath': info['imageLinks']?['thumbnail']?.replaceFirst(
-              'http:',
-              'https:',
-            ),
-            'imagePathLarge': info['imageLinks']?['large']?.replaceFirst(
-              'http:',
-              'https:',
-            ),
-            'genre': (info['categories'] as List?)?.first ?? '',
-            'author': (info['authors'] as List?)?.join(', ') ?? '',
-            'publisher': info['publisher'] ?? '',
-            'publishedDate': publishedDate ?? '',
-            'year': year ?? '',
-            'pageCount': info['pageCount'],
-            'isbn': isbn,
-            'language': language,
-            'externalRating': (info['averageRating'] as num?)?.toDouble(),
-            'ratingsCount': info['ratingsCount'],
-          };
-        }).toList();
+              // Preferir smallThumbnail como fallback si no hay thumbnail
+              final imageLinks = info['imageLinks'] as Map?;
+              String? thumbnail = imageLinks?['thumbnail']
+                  ?? imageLinks?['smallThumbnail'];
+              String? large = imageLinks?['large']
+                  ?? imageLinks?['extraLarge']
+                  ?? imageLinks?['medium']
+                  ?? thumbnail;
+
+              return {
+                'source': 'Google Books',
+                'remoteId': item['id'],
+                'name': info['title'] ?? 'Sin título',
+                'description': info['description'] ?? '',
+                'imagePath': thumbnail?.replaceFirst('http:', 'https:'),
+                'imagePathLarge': large?.replaceFirst('http:', 'https:'),
+                'genre': (info['categories'] as List?)?.first ?? '',
+                'author': (info['authors'] as List?)?.join(', ') ?? '',
+                'publisher': info['publisher'] ?? '',
+                'publishedDate': publishedDate ?? '',
+                'year': year ?? '',
+                'pageCount': info['pageCount'],
+                'isbn': isbn,
+                'language': language,
+                'externalRating': (info['averageRating'] as num?)?.toDouble(),
+                'ratingsCount': info['ratingsCount'],
+              };
+            })
+            .toList();
 
         _sortResults(results, query);
         return results;
@@ -158,22 +190,25 @@ class ExternalApiService {
   Future<List<Map<String, dynamic>>> searchManga({
     required String query,
     int page = 1,
+    String? googleBooksApiKey,
   }) async {
     final hasVolumeIndicator = RegExp(r'\d+').hasMatch(query);
 
     if (hasVolumeIndicator) {
-      final booksResults = await searchBooks(query: query, page: page);
-      if (booksResults.isNotEmpty) {
-        return booksResults
-            .map((b) => {...b, 'source': 'Manga (Tomos)'})
-            .toList();
-      }
+      try {
+        final booksResults = await searchBooks(query: query, page: page, apiKey: googleBooksApiKey);
+        if (booksResults.isNotEmpty) {
+          return booksResults
+              .map((b) => {...b, 'source': 'Manga (Tomos)'})
+              .toList();
+        }
+      } catch (_) {}
     }
 
     final results = await Future.wait([
-      searchBooks(query: query, page: page).then(
-        (list) => list.map((b) => {...b, 'source': 'Manga (Tomos)'}).toList(),
-      ),
+      searchBooks(query: query, page: page, apiKey: googleBooksApiKey, mangaMode: true)
+          .then((list) => list.map((b) => {...b, 'source': 'Manga (Tomos)'}).toList())
+          .catchError((_) => <Map<String, dynamic>>[]),
       searchMangaMAL(query: query, page: page),
     ]);
 
@@ -191,11 +226,21 @@ class ExternalApiService {
       'https://api.jikan.moe/v4/$type?q=${Uri.encodeComponent(query)}&page=$page&limit=10',
     );
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final items = data['data'] as List? ?? [];
-        return items.map((item) {
+      var response = await http.get(url).timeout(const Duration(seconds: 10));
+
+      // Jikan limita a 3 req/seg — si devuelve 429 esperamos y reintentamos una vez
+      if (response.statusCode == 429) {
+        await Future.delayed(const Duration(seconds: 2));
+        response = await http.get(url).timeout(const Duration(seconds: 10));
+      }
+
+      if (response.statusCode != 200) {
+        _logger.error('Jikan $type error ${response.statusCode}: ${response.body}');
+        return [];
+      }
+      final data = json.decode(response.body);
+      final items = data['data'] as List? ?? [];
+      return items.map((item) {
           final isAnime = type == 'anime';
 
           // Extraer año
@@ -268,7 +313,6 @@ class ExternalApiService {
             'favorites': item['favorites'],
           };
         }).toList();
-      }
     } catch (e) {
       _logger.error('Error searching Jikan $type: $e');
     }

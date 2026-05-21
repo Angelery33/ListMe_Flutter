@@ -46,10 +46,13 @@ class ImagePickerService {
           return null;
         }
       } else if (source == ImageSource.gallery) {
-        final photosStatus = await Permission.photos.request();
+        var photosStatus = await Permission.photos.status;
         if (!photosStatus.isGranted && !photosStatus.isLimited) {
-          _logger.warning('Photos permission denied');
-          return null;
+          photosStatus = await Permission.photos.request();
+          if (!photosStatus.isGranted && !photosStatus.isLimited) {
+            _logger.warning('Photos permission denied');
+            return null;
+          }
         }
       }
     }

@@ -1,3 +1,6 @@
+# Workaround: Firebase C++ SDK uses cmake_minimum_required < 3.5, which CMake 4.x removed.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
 project(list_me LANGUAGES CXX)

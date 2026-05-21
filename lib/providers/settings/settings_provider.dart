@@ -21,6 +21,9 @@ class SettingsProvider extends ChangeNotifier {
   /// User-supplied TMDb API key for movie/series search import.
   String _tmdbApiKey = '';
 
+  /// User-supplied Google Books API key for book/manga search import.
+  String _googleBooksApiKey = '';
+
   /// BCP-47 language code for the app locale (e.g. `'es'`, `'en'`).
   String _locale = 'es';
 
@@ -41,6 +44,9 @@ class SettingsProvider extends ChangeNotifier {
 
   /// The TMDb API key stored by the user.
   String get tmdbApiKey => _tmdbApiKey;
+
+  /// The Google Books API key stored by the user.
+  String get googleBooksApiKey => _googleBooksApiKey;
 
   /// The BCP-47 locale code currently in use.
   String get locale => _locale;
@@ -66,6 +72,7 @@ class SettingsProvider extends ChangeNotifier {
     _omdbApiKey = prefs.getString('omdbApiKey') ?? '';
     _tmdbApiKey =
         prefs.getString('tmdbApiKey') ?? 'a4294c7b69c82d96850476e2439c2da6';
+    _googleBooksApiKey = prefs.getString('googleBooksApiKey') ?? 'AIzaSyByNQL_OhzQX3wB7eKKlOKXLvh0Ri3826Q';
 
     // Locale & Currency
     _locale = prefs.getString('locale') ?? 'es';
@@ -150,5 +157,15 @@ class SettingsProvider extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('tmdbApiKey', key);
+  }
+
+  /// Stores the user's Google Books API [key] for book/manga search import and
+  /// persists it to shared preferences.
+  Future<void> setGoogleBooksApiKey(String key) async {
+    _googleBooksApiKey = key;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('googleBooksApiKey', key);
   }
 }
