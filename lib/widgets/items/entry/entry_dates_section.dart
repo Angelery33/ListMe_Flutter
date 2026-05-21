@@ -65,20 +65,37 @@ class EntryDatesSection extends StatelessWidget {
     required this.onCollectionChanged,
   });
 
-  /// Abre el selector de fechas de la plataforma preestablecido en [currentTimestamp] (o hoy),
-  /// luego llama a [onChanged] con la fecha elegida en milisegundos desde la época.
+  /// Abre el selector de fechas limitado por [minTimestamp] y [maxTimestamp] opcionales.
   Future<void> _selectDate(
     BuildContext context,
     int? currentTimestamp,
-    Function(int?) onChanged,
-  ) async {
+    Function(int?) onChanged, {
+    int? minTimestamp,
+    int? maxTimestamp,
+  }) async {
+    final firstDate = minTimestamp != null
+        ? DateTime.fromMillisecondsSinceEpoch(minTimestamp)
+        : DateTime(1900);
+    final lastDate = maxTimestamp != null
+        ? DateTime.fromMillisecondsSinceEpoch(maxTimestamp)
+        : DateTime(2100);
+
+    final initial = currentTimestamp != null
+        ? DateTime.fromMillisecondsSinceEpoch(currentTimestamp)
+        : DateTime.now();
+
+    // Si la fecha actual está fuera del rango permitido, ajustamos el initial
+    final safeInitial = initial.isBefore(firstDate)
+        ? firstDate
+        : initial.isAfter(lastDate)
+            ? lastDate
+            : initial;
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: currentTimestamp != null
-          ? DateTime.fromMillisecondsSinceEpoch(currentTimestamp)
-          : DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
+      initialDate: safeInitial,
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
     if (picked != null) {
       onChanged(picked.millisecondsSinceEpoch);
@@ -110,8 +127,12 @@ class EntryDatesSection extends StatelessWidget {
                       context: context,
                       label: context.l10n.datesStart,
                       timestamp: startDate,
-                      onTap: () =>
-                          _selectDate(context, startDate, onStartDateChanged),
+                      onTap: () => _selectDate(
+                        context,
+                        startDate,
+                        onStartDateChanged,
+                        maxTimestamp: completionDate,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -124,6 +145,7 @@ class EntryDatesSection extends StatelessWidget {
                         context,
                         completionDate,
                         onCompletionDateChanged,
+                        minTimestamp: startDate,
                       ),
                     ),
                   ),

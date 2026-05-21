@@ -44,8 +44,6 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _RegionalSection(settings: settings, theme: theme),
                 const SizedBox(height: 24),
-                _ApiKeysSection(settings: settings),
-                const SizedBox(height: 24),
                 _AccountSection(),
                 const SizedBox(height: 40),
                 _VersionFooter(theme: theme),

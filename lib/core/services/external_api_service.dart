@@ -57,18 +57,12 @@ class ExternalApiService {
     final int startIndex = (page - 1) * 10;
     final keyParam = (apiKey != null && apiKey.isNotEmpty) ? '&key=$apiKey' : '';
 
-    // fields reduce el tamaño de respuesta y acelera la petición
-    const fields = 'items(id,volumeInfo(title,description,imageLinks,categories,'
-        'authors,publisher,publishedDate,pageCount,industryIdentifiers,language,'
-        'averageRating,ratingsCount)),totalItems';
-
     final url = Uri.parse(
       'https://www.googleapis.com/books/v1/volumes'
       '?q=${Uri.encodeComponent(query)}'
       '&startIndex=$startIndex'
       '&maxResults=15'
       '&printType=books'
-      '&fields=${Uri.encodeComponent(fields)}'
       '$keyParam',
     );
     try {

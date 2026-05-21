@@ -231,28 +231,25 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
           type: type,
         );
       default:
-        if (source == 'Books') {
+        if (source == 'Libros') {
           return await _apiService.searchBooks(query: query, page: page, apiKey: booksApiKey);
-        } else if (source == 'MAL') {
+        } else if (source == 'Anime') {
           return await _apiService.searchAnime(query: query, page: page);
-        } else if (source == 'MangaDex') {
-          return await _apiService.searchMangaDex(query: query, page: page);
-        } else if (source == 'OMDb') {
-          return await _apiService.searchMovies(
-            query: query,
-            page: page,
-            apiKey: omdbApiKey,
-          );
-        } else if (source == 'TMDb') {
-          final settings = Provider.of<SettingsProvider>(
-            context,
-            listen: false,
-          );
+        } else if (source == 'Manga') {
+          return await _apiService.searchMangaMAL(query: query, page: page);
+        } else if (source == 'Películas') {
           return await _apiService.searchTMDb(
             query: query,
             page: page,
             apiKey: settings.tmdbApiKey,
             type: 'movie',
+          );
+        } else if (source == 'Series') {
+          return await _apiService.searchTMDb(
+            query: query,
+            page: page,
+            apiKey: settings.tmdbApiKey,
+            type: 'tv',
           );
         }
         return [];
@@ -272,7 +269,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     } else if (widget.category == 'Movie' || widget.category == 'Series') {
       sources = ['Auto'];
     } else {
-      sources = ['Books', 'MAL', 'MangaDex', 'OMDb', 'TMDb'];
+      sources = ['Libros', 'Anime', 'Manga', 'Películas', 'Series'];
     }
 
     if (sources.isEmpty) return const SizedBox.shrink();
