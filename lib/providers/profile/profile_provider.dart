@@ -116,13 +116,14 @@ class ProfileProvider extends ChangeNotifier {
         newPassword: newPassword,
       );
       _logger.info('ProfileProvider: Contraseña cambiada');
-      notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = 'Contraseña actual incorrecta';
       _logger.error('ProfileProvider: Error al cambiar contraseña', e);
-      notifyListeners();
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

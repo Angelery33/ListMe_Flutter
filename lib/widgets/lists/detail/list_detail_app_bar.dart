@@ -160,15 +160,29 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
       ),
       actions: [
         if (widget.showTableToggle)
-          IconButton(
-            icon: Icon(
-              widget.isTableView ? Icons.view_list_rounded : Icons.table_chart_rounded,
-              color: widget.isTableView
-                  ? Theme.of(context).colorScheme.primary
-                  : textColor,
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: TextButton.icon(
+              icon: Icon(
+                widget.isTableView ? Icons.view_list_rounded : Icons.table_chart_rounded,
+                size: 20,
+              ),
+              label: Text(
+                widget.isTableView ? 'Vista normal' : 'Vista tabla',
+                style: const TextStyle(fontSize: 13),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: widget.isTableView
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : textColor,
+                backgroundColor: widget.isTableView
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.transparent,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+              onPressed: widget.onTableToggle,
             ),
-            tooltip: widget.isTableView ? 'Vista lista' : 'Vista tabla',
-            onPressed: widget.onTableToggle,
           ),
         PopupMenuButton<String>(
           icon: Icon(Icons.more_vert, color: textColor),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/i18n/l10n_extension.dart';
+import '../../providers/invitations/invitations_provider.dart';
 
 /// Barra de navegación inferior compartida por todas las pantallas principales.
 ///
@@ -28,6 +30,7 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final pendingCount = context.watch<InvitationsProvider>().pendingCount;
 
     return Container(
       decoration: BoxDecoration(
@@ -70,8 +73,16 @@ class AppBottomNavBar extends StatelessWidget {
               label: context.l10n.navLists,
             ),
             NavigationDestination(
-              icon: const Icon(Icons.person_outline),
-              selectedIcon: const Icon(Icons.person),
+              icon: Badge(
+                isLabelVisible: pendingCount > 0,
+                label: Text(pendingCount > 9 ? '9+' : '$pendingCount'),
+                child: const Icon(Icons.person_outline),
+              ),
+              selectedIcon: Badge(
+                isLabelVisible: pendingCount > 0,
+                label: Text(pendingCount > 9 ? '9+' : '$pendingCount'),
+                child: const Icon(Icons.person),
+              ),
               label: context.l10n.navProfile,
             ),
             NavigationDestination(

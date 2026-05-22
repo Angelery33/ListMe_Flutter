@@ -70,9 +70,10 @@ class SettingsProvider extends ChangeNotifier {
 
     // API Keys - Keys por defecto de proyectos anteriores
     _omdbApiKey = prefs.getString('omdbApiKey') ?? '';
-    _tmdbApiKey =
-        prefs.getString('tmdbApiKey') ?? 'a4294c7b69c82d96850476e2439c2da6';
-    _googleBooksApiKey = prefs.getString('googleBooksApiKey') ?? 'AIzaSyByNQL_OhzQX3wB7eKKlOKXLvh0Ri3826Q';
+    final storedTmdbKey = prefs.getString('tmdbApiKey') ?? '';
+    _tmdbApiKey = storedTmdbKey.isNotEmpty ? storedTmdbKey : 'a4294c7b69c82d96850476e2439c2da6';
+    final storedBooksKey = prefs.getString('googleBooksApiKey') ?? '';
+    _googleBooksApiKey = storedBooksKey.isNotEmpty ? storedBooksKey : 'AIzaSyByNQL_OhzQX3wB7eKKlOKXLvh0Ri3826Q';
 
     // Locale & Currency
     _locale = prefs.getString('locale') ?? 'es';

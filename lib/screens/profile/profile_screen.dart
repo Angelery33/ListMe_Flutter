@@ -402,15 +402,26 @@ class ProfileScreen extends StatelessWidget {
                 return;
               }
               final profile = context.read<ProfileProvider>();
+              final auth = context.read<AuthProvider>();
               final success = await profile.changePassword(
                 currentPasswordController.text,
                 newPasswordController.text,
               );
               if (success && ctx.mounted) {
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(ctx.l10n.profilePasswordChanged)),
-                );
+                // El backend invalida el refresh token al cambiar contraseña,
+                // así que hacemos logout inmediato para evitar errores posteriores.
+                await auth.logout();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(ctx.l10n.profilePasswordChanged)),
+                  );
+                }
               } else if (ctx.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(profile.errorMessage ?? 'Error')),
