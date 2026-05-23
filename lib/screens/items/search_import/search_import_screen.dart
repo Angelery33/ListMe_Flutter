@@ -193,8 +193,13 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
           );
         }
         return await _apiService.searchAnime(query: query, page: page);
-      case 'Manga':
       case 'Comic':
+        return (await _apiService.searchBooks(
+          query: query,
+          page: page,
+          apiKey: booksApiKey,
+        )).map((b) => {...b, 'source': 'Google Books'}).toList();
+      case 'Manga':
         if (source == 'Tomos') {
           return (await _apiService.searchBooks(
             query: query,
@@ -204,11 +209,11 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
           )).map((b) => {...b, 'source': 'Manga (Tomos)'}).toList();
         } else if (source == 'MangaDex') {
           return await _apiService.searchMangaDex(query: query, page: page);
-        } else if (source == 'Auto') {
-          return await _apiService.searchManga(query: query, page: page, googleBooksApiKey: booksApiKey);
+        } else if (source == 'MAL') {
+          return await _apiService.searchMangaMAL(query: query, page: page);
         }
-        // MAL por defecto (source == null || source == 'MAL')
-        return await _apiService.searchMangaMAL(query: query, page: page);
+        // Auto por defecto (source == null || source == 'Auto'): MAL + Tomos + MangaDex
+        return await _apiService.searchManga(query: query, page: page, googleBooksApiKey: booksApiKey);
       case 'Movie':
       case 'Series':
         String? type;
@@ -260,8 +265,10 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
   /// por defecto para la [widget.category] actual.
   Widget _buildSourceSelector() {
     List<String> sources = [];
-    if (widget.category == 'Manga' || widget.category == 'Comic') {
-      sources = ['MAL', 'MangaDex', 'Tomos', 'Auto'];
+    if (widget.category == 'Manga') {
+      sources = ['Auto', 'MAL', 'MangaDex', 'Tomos'];
+    } else if (widget.category == 'Comic') {
+      sources = [];
     } else if (widget.category == 'Book') {
       sources = ['Auto (Books)'];
     } else if (widget.category == 'Anime') {
@@ -279,7 +286,9 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
       child: Wrap(
         spacing: 8.0,
         children: sources.map((s) {
-          final defaultSource = (widget.category == 'Anime' || widget.category == 'Manga' || widget.category == 'Comic') ? 'MAL' : 'Auto';
+          final defaultSource = (widget.category == 'Anime') ? 'MAL'
+              : (widget.category == 'Manga') ? 'Auto'
+              : 'Auto';
           final isSelected =
               (_selectedSource == null && s == defaultSource) ||
               (_selectedSource == s);
@@ -289,7 +298,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
             onSelected: (selected) {
               if (selected) {
                 setState(() {
-                  _selectedSource = (s == 'Auto' ? null : s);
+                  _selectedSource = (s == 'Auto') ? null : s;
                   _search();
                 });
               }

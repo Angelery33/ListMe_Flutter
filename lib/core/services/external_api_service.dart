@@ -172,12 +172,12 @@ class ExternalApiService {
     return _searchJikan('manga', query, page: page);
   }
 
-  /// Busca manga combinando Google Books (volúmenes físicos) y el
-  /// catálogo de manga de MyAnimeList.
+  /// Busca manga combinando MAL, Google Books (Tomos) y MangaDex en paralelo.
   ///
-  /// Cuando [query] contiene un número (indicador de volumen), el método intenta primero con Google
-  /// Books y devuelve los resultados pronto si los encuentra. De lo contrario, se consultan ambas fuentes
-  /// en paralelo y se fusionan.
+  /// Cuando [query] contiene un número (indicador de volumen), intenta primero con Google
+  /// Books y devuelve esos resultados si los encuentra, ya que suelen ser más precisos
+  /// para búsquedas de volúmenes concretos. De lo contrario, consulta las tres fuentes
+  /// en paralelo, fusiona y ordena los resultados.
   ///
   /// [query] El título del manga/volumen a buscar.
   /// [page] Número de página basado en 1 reenviado a cada subfuente.
@@ -190,7 +190,12 @@ class ExternalApiService {
 
     if (hasVolumeIndicator) {
       try {
-        final booksResults = await searchBooks(query: query, page: page, apiKey: googleBooksApiKey);
+        final booksResults = await searchBooks(
+          query: query,
+          page: page,
+          apiKey: googleBooksApiKey,
+          mangaMode: true,
+        );
         if (booksResults.isNotEmpty) {
           return booksResults
               .map((b) => {...b, 'source': 'Manga (Tomos)'})
@@ -203,7 +208,10 @@ class ExternalApiService {
       searchBooks(query: query, page: page, apiKey: googleBooksApiKey, mangaMode: true)
           .then((list) => list.map((b) => {...b, 'source': 'Manga (Tomos)'}).toList())
           .catchError((_) => <Map<String, dynamic>>[]),
-      searchMangaMAL(query: query, page: page),
+      searchMangaMAL(query: query, page: page)
+          .catchError((_) => <Map<String, dynamic>>[]),
+      searchMangaDex(query: query, page: page)
+          .catchError((_) => <Map<String, dynamic>>[]),
     ]);
 
     final combined = results.expand((x) => x).toList();

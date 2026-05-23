@@ -10,47 +10,59 @@ Future<({List<LibraryGenreModel> genres, String genre})?> showAddGenreDialog(
   BuildContext context,
   int listId,
   ListsProvider listsProvider,
-) async {
+) {
   final controller = TextEditingController();
-  ({List<LibraryGenreModel> genres, String genre})? result;
-
-  Future<void> submit(BuildContext ctx) async {
-    final name = controller.text.trim();
-    if (name.isNotEmpty) {
-      await listsProvider.addLibraryGenre(listId, name);
-      final genres = await listsProvider.getLibraryGenres(listId);
-      result = (genres: genres, genre: name);
-      if (ctx.mounted) Navigator.pop(ctx);
-    }
-  }
-
-  await showDialog<void>(
+  return showDialog<({List<LibraryGenreModel> genres, String genre})>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(ctx.l10n.genreAddTitle),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        textInputAction: TextInputAction.done,
-        textCapitalization: TextCapitalization.sentences,
-        onSubmitted: (_) => submit(ctx),
-        decoration: InputDecoration(labelText: ctx.l10n.genreName),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: Text(ctx.l10n.commonCancel.toUpperCase()),
-        ),
-        TextButton(
-          onPressed: () => submit(ctx),
-          child: Text(ctx.l10n.commonAdd.toUpperCase()),
-        ),
-      ],
-    ),
-  );
+    builder: (ctx) {
+      var isLoading = false;
+      return StatefulBuilder(
+        builder: (ctx, setStateDialog) {
+          Future<void> submit() async {
+            final name = controller.text.trim();
+            if (name.isEmpty) return;
+            setStateDialog(() => isLoading = true);
+            try {
+              await listsProvider.addLibraryGenre(listId, name);
+              final genres = await listsProvider.getLibraryGenres(listId);
+              if (ctx.mounted) {
+                Navigator.pop(ctx, (genres: genres, genre: name));
+              }
+            } catch (_) {
+              if (ctx.mounted) setStateDialog(() => isLoading = false);
+            }
+          }
 
-  controller.dispose();
-  return result;
+          return AlertDialog(
+            title: Text(ctx.l10n.genreAddTitle),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              textCapitalization: TextCapitalization.sentences,
+              onSubmitted: (_) => submit(),
+              decoration: InputDecoration(labelText: ctx.l10n.genreName),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                child: Text(ctx.l10n.commonCancel.toUpperCase()),
+              ),
+              isLoading
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  : TextButton(
+                      onPressed: submit,
+                      child: Text(ctx.l10n.commonAdd.toUpperCase()),
+                    ),
+            ],
+          );
+        },
+      );
+    },
+  ).whenComplete(() => controller.dispose());
 }
 
 /// Muestra un [AlertDialog] con un campo de texto para introducir el nombre de un
