@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/i18n/l10n_extension.dart';
+import '../../core/navigation/route_observer.dart';
 import '../../core/providers/responsive_provider.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
@@ -44,7 +45,7 @@ class ItemDetailScreen extends StatefulWidget {
 ///
 /// Registra un listener en [ItemDetailsProvider] para propagar los cambios de imagen/URL
 /// de vuelta a [ItemsProvider] para que la miniatura de la tarjeta de la lista se mantenga actualizada.
-class _ItemDetailScreenState extends State<ItemDetailScreen> {
+class _ItemDetailScreenState extends State<ItemDetailScreen> with RouteAware {
   ItemDetailsProvider? _detailsProvider;
 
   @override
@@ -59,9 +60,28 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route != null) appRouteObserver.subscribe(this, route);
+  }
+
+  @override
   void dispose() {
+    appRouteObserver.unsubscribe(this);
     _detailsProvider?.removeListener(_syncToItemsProvider);
     super.dispose();
+  }
+
+  /// Recarga los datos propios al recuperar el foco tras un pop de una pantalla superior
+  /// (p.ej. al volver desde el detalle de un sub-ítem).
+  @override
+  void didPopNext() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && widget.item.id != null) {
+        _detailsProvider?.loadItemDetails(widget.item.id!, initialItem: widget.item);
+      }
+    });
   }
 
   /// Propaga el último [ItemDetailsProvider.item] de vuelta a [ItemsProvider]
@@ -69,9 +89,10 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   void _syncToItemsProvider() {
     if (!mounted) return;
     final updated = _detailsProvider?.item;
-    if (updated != null) {
-      context.read<ItemsProvider>().updateLocalItem(updated);
-    }
+    if (updated == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<ItemsProvider>().updateLocalItem(updated);
+    });
   }
 
   /// Navega a la pantalla de entrada de elementos para editar [currentItem] y

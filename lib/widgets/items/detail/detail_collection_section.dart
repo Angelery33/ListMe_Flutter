@@ -260,8 +260,8 @@ class _CollectionCard extends StatelessWidget {
 
   const _CollectionCard({required this.item, required this.library});
 
-  /// Empuja la pantalla de detalles para este subelemento y recarga la lista de
-  /// subelementos del padre cuando el usuario regresa.
+  /// Empuja la pantalla de detalles para este subelemento y recarga el ítem padre
+  /// cuando el usuario regresa, restaurando el estado correcto del provider.
   Future<void> _open(BuildContext context) async {
     await Navigator.push(
       context,
@@ -269,9 +269,8 @@ class _CollectionCard extends StatelessWidget {
         builder: (_) => ItemDetailScreen(item: item, list: library),
       ),
     );
-    if (context.mounted) {
-      await context.read<ItemDetailsProvider>().loadSubItems();
-    }
+    // La recarga del padre la gestiona ItemDetailScreen.didPopNext()
+    // para evitar llamadas concurrentes al provider.
   }
 
   @override

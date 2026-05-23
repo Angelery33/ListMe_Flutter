@@ -18,8 +18,10 @@ import '../../widgets/items/entry/entry_properties_section.dart';
 import '../../widgets/items/entry/entry_dates_section.dart';
 import '../../widgets/items/entry/entry_attributes_section.dart';
 import '../../core/providers/responsive_provider.dart';
+import '../../core/utils/item_import_mapper.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/app_shell.dart';
+import '../../widgets/items/entry/entry_dialogs.dart';
 import 'search_import/search_import_screen.dart';
 
 /// Pantalla para crear un nuevo elemento o editar uno existente dentro de una biblioteca.
@@ -207,6 +209,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     _acquisitionDate = item?.acquisitionDate;
     _startDate = item?.startDate;
     _completionDate = item?.completionDate;
+    _importedExternalRating = item?.externalRating;
 
     if (item?.imagePath != null || item?.remoteImageUrl != null) {
       _existingImages.add(
@@ -374,102 +377,19 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         setState(() => _genre = result['genre']);
       }
 
-      _applyImportedProgressFields(result);
-      _collectImportedAttributes(result);
+      ItemImportMapper.applyProgressFields(
+        result,
+        totalPage: _totalPageController,
+        totalChapter: _totalChapterController,
+        totalVolume: _totalVolumeController,
+        totalSeason: _totalSeasonController,
+      );
+      _pendingAttributes.addAll(ItemImportMapper.collectAttributes(result));
 
       if (mounted) setState(() {});
     }
   }
 
-  /// Rellena los controladores relacionados con el progreso (páginas, capítulos, volúmenes, temporadas)
-  /// desde el mapa [result] devuelto por [SearchImportScreen], solo cuando esos
-  /// controladores están todavía vacíos para evitar sobrescribir la entrada manual.
-  void _applyImportedProgressFields(Map<String, dynamic> result) {
-    int? toInt(dynamic v) {
-      if (v == null) return null;
-      if (v is int) return v;
-      if (v is num) return v.toInt();
-      return int.tryParse(v.toString());
-    }
-
-    final totalPage = toInt(result['totalPage']);
-    if (totalPage != null && totalPage > 0 && _totalPageController.text.isEmpty) {
-      _totalPageController.text = totalPage.toString();
-    }
-
-    final totalChapter = toInt(result['totalChapter']) ??
-        toInt(result['totalChapters']) ??
-        toInt(result['lastChapter']) ??
-        toInt(result['chapters']) ??
-        toInt(result['episodes']) ??
-        toInt(result['totalEpisodes']);
-    if (totalChapter != null && totalChapter > 0 && _totalChapterController.text.isEmpty) {
-      _totalChapterController.text = totalChapter.toString();
-    }
-
-    final totalVolume = toInt(result['totalVolume']) ??
-        toInt(result['totalVolumes']) ??
-        toInt(result['volumes']);
-    if (totalVolume != null && totalVolume > 0 && _totalVolumeController.text.isEmpty) {
-      _totalVolumeController.text = totalVolume.toString();
-    }
-
-    final totalSeason = toInt(result['totalSeason']) ?? toInt(result['seasons']);
-    if (totalSeason != null && totalSeason > 0 && _totalSeasonController.text.isEmpty) {
-      _totalSeasonController.text = totalSeason.toString();
-    }
-  }
-
-  /// Recopila campos de metadatos conocidos de [result] en [_pendingAttributes]
-  /// para que puedan guardarse como atributos de elemento personalizados después de que el elemento sea persistido.
-  ///
-  /// Los valores que son `null`, vacíos, `'N/A'` o `'0'` se omiten silenciosamente.
-  void _collectImportedAttributes(Map<String, dynamic> result) {
-    void addAttr(String name, dynamic value) {
-      if (value == null) return;
-      final str = value.toString().trim();
-      if (str.isEmpty || str == 'N/A' || str == '0') return;
-      _pendingAttributes[name] = str;
-    }
-
-    addAttr('Autor', result['author']);
-    addAttr('Director', result['director']);
-    addAttr('Reparto', result['actors']);
-    addAttr('Guionista', result['writer']);
-    addAttr('Estudio', result['studio']);
-    addAttr('Editorial', result['publisher']);
-    addAttr('Año', result['year']);
-    addAttr('Idioma', result['language']);
-    addAttr('País', result['country']);
-    addAttr('ISBN', result['isbn']);
-    addAttr('IMDb ID', result['imdbId']);
-    addAttr('Eslogan', result['tagline']);
-
-    final runtime = result['runtime'];
-    if (runtime != null) {
-      final r = runtime is int ? runtime : int.tryParse(runtime.toString());
-      if (r != null && r > 0) {
-        _pendingAttributes['Duración'] = '$r min';
-      }
-    }
-
-    final duration = result['durationMinutes'];
-    if (duration != null) {
-      final d = duration is int ? duration : int.tryParse(duration.toString());
-      if (d != null && d > 0) {
-        _pendingAttributes['Duración/Episodio'] = '$d min';
-      }
-    }
-
-    final nameJa = result['nameJapanese'];
-    if (nameJa != null && nameJa.toString().trim().isNotEmpty) {
-      _pendingAttributes['Título Japonés'] = nameJa.toString();
-    }
-    final nameEn = result['nameEnglish'];
-    if (nameEn != null && nameEn.toString().trim().isNotEmpty) {
-      _pendingAttributes['Título Inglés'] = nameEn.toString();
-    }
-  }
 
   /// Guarda [_pendingAttributes] como registros de atributos vinculados a [itemId].
   ///
@@ -524,92 +444,23 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     _pendingAttributes.clear();
   }
 
-  /// Muestra un [AlertDialog] con un campo de texto para que el usuario escriba un nuevo nombre
-  /// de género. Lo guarda en el backend si se edita una lista existente, o lo mantiene
-  /// localmente si se crea una lista nueva.
-  void _showAddGenreDialog() {
-    final controller = TextEditingController();
-
-    Future<void> submit(BuildContext ctx) async {
-      final name = controller.text.trim();
-      if (name.isNotEmpty && _list.id != null) {
-        final listsProvider = ctx.read<ListsProvider>();
-        await listsProvider.addLibraryGenre(_list.id!, name);
-        if (mounted) {
-          final genres = await listsProvider.getLibraryGenres(_list.id!);
-          setState(() { _libraryGenres = genres; _genre = name; });
-          Navigator.pop(ctx);
-        }
-      }
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.genreAddTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textInputAction: TextInputAction.done,
-          textCapitalization: TextCapitalization.sentences,
-          onSubmitted: (_) => submit(ctx),
-          decoration: InputDecoration(labelText: ctx.l10n.genreName),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(ctx.l10n.commonCancel.toUpperCase()),
-          ),
-          TextButton(
-            onPressed: () => submit(ctx),
-            child: Text(ctx.l10n.commonAdd.toUpperCase()),
-          ),
-        ],
-      ),
-    ).then((_) => controller.dispose());
-  }
-
-  /// Muestra un [AlertDialog] con un campo de texto para introducir un nuevo nombre de tipo
-  /// de atributo y devuelve el nombre introducido, o `null` si se cancela.
-  Future<String?> _showCreateAttributeTypeDialog() async {
-    final controller = TextEditingController();
-    try {
-      return await showDialog<String>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(ctx.l10n.attributeNewType),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            textCapitalization: TextCapitalization.sentences,
-            onSubmitted: (_) {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) Navigator.pop(ctx, name);
-            },
-            decoration: InputDecoration(
-              labelText: ctx.l10n.attributesNewTypeName,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(ctx.l10n.commonCancel),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = controller.text.trim();
-                if (name.isNotEmpty) Navigator.pop(ctx, name);
-              },
-              child: Text(ctx.l10n.commonCreate),
-            ),
-          ],
-        ),
-      );
-    } finally {
-      controller.dispose();
+  void _showAddGenreDialog() async {
+    if (_list.id == null) return;
+    final result = await showAddGenreDialog(
+      context,
+      _list.id!,
+      context.read<ListsProvider>(),
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _libraryGenres = result.genres;
+        _genre = result.genre;
+      });
     }
   }
+
+  Future<String?> _showCreateAttributeTypeDialog() =>
+      showCreateAttributeTypeDialog(context);
 
   /// Determina la unidad de progreso y los valores actual/total según [_list.progressType].
   ({String unit, int? current, int? total}) _resolveProgress() {
@@ -805,6 +656,21 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
 
       final savedItemId = await _createOrUpdate(itemsProvider, newItem);
 
+      // Persistir atributos añadidos manualmente (idItem == 0 → todavía sin guardar).
+      for (final attr in _attributes) {
+        if (attr.id == null) {
+          try {
+            await itemsProvider.addAttributeToItem(
+              AttributeItemModel(
+                value: attr.value,
+                idItem: savedItemId,
+                attributeTypeId: attr.attributeTypeId,
+              ),
+            );
+          } catch (_) {}
+        }
+      }
+
       await _persistPendingAttributes(savedItemId);
 
       final updatedRemoteUrl = await _persistImages(
@@ -984,14 +850,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 onAdd: (attr) => setState(() => _attributes.add(attr)),
                 onRemove: (idx) => setState(() => _attributes.removeAt(idx)),
                 onCreateAttributeType: () async {
-                  final result = await _showCreateAttributeTypeDialog();
-                  if (result != null) {
-                    final itemsProvider = context.read<ItemsProvider>();
-                    final newType = await itemsProvider.createAttributeType(
-                      result,
-                    );
+                  final name = await _showCreateAttributeTypeDialog();
+                  if (name != null) {
+                    final newType = await context
+                        .read<ItemsProvider>()
+                        .createAttributeType(name);
                     setState(() => _attributeTypes.add(newType));
-                    return result;
+                    return newType;
                   }
                   return null;
                 },
