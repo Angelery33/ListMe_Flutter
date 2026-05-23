@@ -965,4 +965,193 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get configStatusOrderDesc =>
       'Activa y reordena las secciones visibles en la lista';
+
+  @override
+  String get socialFriendsTab => 'Amigos';
+
+  @override
+  String get socialRequestsTab => 'Solicitudes';
+
+  @override
+  String get socialInvitationsTab => 'Invitaciones';
+
+  @override
+  String get socialAddFriend => 'Añadir amigo';
+
+  @override
+  String get socialAddShort => 'Añadir';
+
+  @override
+  String get socialNoFriendsTitle => 'Aún no tienes amigos';
+
+  @override
+  String get socialNoPendingRequests => 'Sin solicitudes pendientes';
+
+  @override
+  String get socialNoPendingInvitations => 'Sin invitaciones pendientes';
+
+  @override
+  String get socialWantsToBeYourFriend => 'Quiere ser tu amigo';
+
+  @override
+  String get socialReject => 'Rechazar';
+
+  @override
+  String get socialInvitesYouToCollaborate => 'Te invita a colaborar';
+
+  @override
+  String get socialRoleReader => 'Lector';
+
+  @override
+  String get socialRoleEditor => 'Editor';
+
+  @override
+  String get socialInvitationAccepted => 'Invitación aceptada';
+
+  @override
+  String get socialUsernameLabel => 'Nombre de usuario';
+
+  @override
+  String get socialUsernameHint => 'Username exacto';
+
+  @override
+  String socialRequestSentTo(String username) {
+    return 'Solicitud enviada a $username';
+  }
+
+  @override
+  String get socialRequestError => 'Error al enviar';
+
+  @override
+  String get socialRemoveFriendTitle => 'Eliminar amigo';
+
+  @override
+  String socialRemoveFriendConfirm(String username) {
+    return '¿Eliminar a $username de tu lista de amigos?';
+  }
+
+  @override
+  String get shareInviteFriendTitle => 'Invitar amigo';
+
+  @override
+  String get shareNoFriendsHint =>
+      'Añade amigos desde la pestaña Social para invitarlos.';
+
+  @override
+  String get shareAllFriendsCollaborating =>
+      'Todos tus amigos ya colaboran en esta lista.';
+
+  @override
+  String get shareSelectFriend => 'Selecciona un amigo';
+
+  @override
+  String get shareReadOnlyLabel => 'Solo lectura';
+
+  @override
+  String shareInviteAction(String username) {
+    return 'Invitar a $username';
+  }
+
+  @override
+  String get shareSelectOne => 'Selecciona uno';
+
+  @override
+  String shareInviteSentTo(String username) {
+    return 'Invitación enviada a $username';
+  }
+
+  @override
+  String get shareInviteError => 'Error al enviar invitación';
+
+  @override
+  String get collaborationTitle => 'COLABORACIÓN';
+
+  @override
+  String get collaborationCurrentCollaborators => 'Colaboradores actuales';
+
+  @override
+  String get collaborationInviteFriend => 'Invitar amigo';
+
+  @override
+  String get collaborationRemoveTooltip => 'Eliminar colaborador';
+
+  @override
+  String get collaborationInfoNote =>
+      'El usuario recibirá una notificación para aceptar la colaboración.';
+
+  @override
+  String get collaborationReadOnlyPermission => 'Permiso de solo lectura';
+
+  @override
+  String get collaborationNoFriendsHint =>
+      'Añade amigos desde la pestaña Social para poder invitarlos.';
+
+  @override
+  String get collaborationAllAdded =>
+      'Todos tus amigos ya colaboran en esta lista.';
+
+  @override
+  String collaborationRemoveSuccess(String username) {
+    return '\"$username\" eliminado de la biblioteca';
+  }
+
+  @override
+  String get collaborationRemoveError => 'Error al eliminar colaborador';
+
+  @override
+  String get collaborationRemoveTitle => 'Eliminar colaborador';
+
+  @override
+  String collaborationRemoveConfirm(String username) {
+    return '¿Eliminar a \"$username\" de esta biblioteca?';
+  }
+
+  @override
+  String get collaborationRoleEditor => 'Editor';
+
+  @override
+  String get collaborationRoleReadOnly => 'Solo lectura';
+
+  @override
+  String get collaborationSendErrorGeneric => 'No se pudo enviar';
+
+  @override
+  String get listLeaveTitle => 'Abandonar lista';
+
+  @override
+  String listLeaveConfirm(String name) {
+    return '¿Seguro que quieres dejar de seguir \"$name\"?\n\nDejarás de tener acceso a esta biblioteca.';
+  }
+
+  @override
+  String get listLeaveAction => 'ABANDONAR';
+
+  @override
+  String get profileTotalItems => 'Elementos totales';
+
+  @override
+  String get profilePhotoSaveError => 'Error al guardar foto de perfil';
+
+  @override
+  String get profilePhotoUploadError => 'Error al subir la imagen';
+
+  @override
+  String get profilePickerGallery => 'Galería';
+
+  @override
+  String get profilePickerCamera => 'Cámara';
+
+  @override
+  String get genresSectionTitle => 'Personalizar Géneros / Categorías';
+
+  @override
+  String get genresEmpty => 'Sin géneros definidos.';
+
+  @override
+  String progressSetTitle(String label) {
+    return 'Establecer $label';
+  }
+
+  @override
+  String get socialFeedComingSoon => 'Próximamente\nfeed de amigos';
 }

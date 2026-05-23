@@ -119,7 +119,7 @@ class ProfileScreen extends StatelessWidget {
                       _buildStatTile(
                         context,
                         icon: Icons.check_circle_outline,
-                        title: "Elementos totales",
+                        title: context.l10n.profileTotalItems,
                         value: profile.stats?.totalItems.toString() ?? '0',
                       ),
                     ],
@@ -578,12 +578,12 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
       final success = await profile.updateProfilePhoto(url);
       if (mounted && !success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al guardar foto de perfil')),
+          SnackBar(content: Text(context.l10n.profilePhotoSaveError)),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al subir la imagen')),
+        SnackBar(content: Text(context.l10n.profilePhotoUploadError)),
       );
     }
 
@@ -605,12 +605,12 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Galería'),
+              title: Text(context.l10n.profilePickerGallery),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Cámara'),
+              title: Text(context.l10n.profilePickerCamera),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             const SizedBox(height: 8),

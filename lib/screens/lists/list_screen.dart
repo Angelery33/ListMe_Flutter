@@ -711,10 +711,8 @@ class _ListScreenState extends State<ListScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Abandonar lista'),
-        content: Text(
-          '¿Seguro que quieres dejar de seguir "${_currentList.name}"?\n\nDejarás de tener acceso a esta biblioteca.',
-        ),
+        title: Text(dialogContext.l10n.listLeaveTitle),
+        content: Text(dialogContext.l10n.listLeaveConfirm(_currentList.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -732,9 +730,9 @@ class _ListScreenState extends State<ListScreen> {
                 }
               }
             },
-            child: const Text(
-              'ABANDONAR',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              dialogContext.l10n.listLeaveAction,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],

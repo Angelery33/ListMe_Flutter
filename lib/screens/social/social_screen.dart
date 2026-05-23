@@ -56,12 +56,10 @@ class _SocialScreenState extends State<SocialScreen> {
 // LAYOUT WEB / EXPANDED (≥ 840 dp)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Layout web con amigos centrados (ancho limitado) y panel derecho flotante.
-///
-/// - **Centro**: lista de amigos con `maxWidth` de 700 dp, centrada en el espacio
-///   que queda entre el NavigationRail y el panel lateral.
-/// - **Derecha**: columna de 300 dp con dos cards independientes (solicitudes de
-///   amistad e invitaciones a listas), cada una con scroll propio.
+/// Layout web de tres columnas:
+/// - **Izquierda** (260 dp): lista de amigos.
+/// - **Centro** (flexible): feed de actividad (próximamente).
+/// - **Derecha** (280 dp): solicitudes de amistad e invitaciones a listas.
 class _ExpandedLayout extends StatelessWidget {
   final FriendsProvider friends;
   final InvitationsProvider invitations;
@@ -76,18 +74,30 @@ class _ExpandedLayout extends StatelessWidget {
         title: context.l10n.socialTitle,
         showBackButton: false,
       ),
-      body: Stack(
-        children: [
-          // ── Lista de amigos (ocupa todo el espacio) ────────────────────────
-          _FriendsPanel(friends: friends),
-          // ── Cards flotantes ancladas arriba-derecha ────────────────────────
-          Positioned(
-            top: 16,
-            right: 16,
-            width: 300,
-            child: _RightSidePanel(friends: friends, invitations: invitations),
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Columna izquierda: amigos ──────────────────────────────────
+            SizedBox(
+              width: 260,
+              child: _FriendsPanel(friends: friends),
+            ),
+            const SizedBox(width: 16),
+            // ── Columna central: feed ──────────────────────────────────────
+            const Expanded(child: _FeedPanel()),
+            const SizedBox(width: 16),
+            // ── Columna derecha: solicitudes e invitaciones ────────────────
+            SizedBox(
+              width: 280,
+              child: _RightSidePanel(
+                friends: friends,
+                invitations: invitations,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -112,15 +122,15 @@ class _RightSidePanel extends StatelessWidget {
           _FloatingCard(
             header: _SectionHeader(
               icon: Icons.person_add_outlined,
-              title: 'Solicitudes',
+              title: context.l10n.socialRequestsTab,
               badge: friends.pendingCount,
             ),
             child: friends.isLoading
                 ? const _SectionLoading()
                 : friends.pendingRequests.isEmpty
-                    ? const _SectionEmpty(
+                    ? _SectionEmpty(
                         icon: Icons.people_outline,
-                        message: 'Sin solicitudes pendientes',
+                        message: context.l10n.socialNoPendingRequests,
                       )
                     : Column(
                         children: friends.pendingRequests
@@ -139,15 +149,15 @@ class _RightSidePanel extends StatelessWidget {
           _FloatingCard(
             header: _SectionHeader(
               icon: Icons.mail_outline_rounded,
-              title: 'Invitaciones',
+              title: context.l10n.socialInvitationsTab,
               badge: invitations.pendingCount,
             ),
             child: invitations.isLoading
                 ? const _SectionLoading()
                 : invitations.pendingInvitations.isEmpty
-                    ? const _SectionEmpty(
+                    ? _SectionEmpty(
                         icon: Icons.inbox_outlined,
-                        message: 'Sin invitaciones pendientes',
+                        message: context.l10n.socialNoPendingInvitations,
                       )
                     : Column(
                         children: invitations.pendingInvitations
@@ -212,7 +222,7 @@ class _FriendsPanel extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'AMIGOS (${friends.friends.length})',
+                '${context.l10n.socialFriendsTab.toUpperCase()} (${friends.friends.length})',
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.primary,
                   fontWeight: FontWeight.bold,
@@ -223,7 +233,7 @@ class _FriendsPanel extends StatelessWidget {
               FilledButton.tonalIcon(
                 onPressed: () => _showAddFriendDialog(context, friends),
                 icon: const Icon(Icons.person_add_outlined, size: 18),
-                label: const Text('Añadir amigo'),
+                label: Text(context.l10n.socialAddFriend),
               ),
             ],
           ),
@@ -267,19 +277,58 @@ class _FriendsPanel extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Aún no tienes amigos',
+            context.l10n.socialNoFriendsTitle,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Añade amigos para ver sus estadísticas',
+            context.l10n.shareNoFriendsHint,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Panel central del layout web: placeholder del feed de actividad de amigos.
+class _FeedPanel extends StatelessWidget {
+  const _FeedPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.dynamic_feed_outlined,
+              size: 64,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.25),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              context.l10n.socialFeedComingSoon,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -316,19 +365,19 @@ class _CompactLayout extends StatelessWidget {
                 theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
             indicatorColor: theme.colorScheme.onPrimaryContainer,
             tabs: [
-              const Tab(
-                text: 'Amigos',
-                icon: Icon(Icons.people_outline),
+              Tab(
+                text: context.l10n.socialFriendsTab,
+                icon: const Icon(Icons.people_outline),
               ),
               Tab(
-                text: 'Solicitudes',
+                text: context.l10n.socialRequestsTab,
                 icon: _TabIconWithBadge(
                   icon: Icons.person_add_outlined,
                   count: friends.pendingCount,
                 ),
               ),
               Tab(
-                text: 'Invitaciones',
+                text: context.l10n.socialInvitationsTab,
                 icon: _TabIconWithBadge(
                   icon: Icons.mail_outline_rounded,
                   count: invitations.pendingCount,
@@ -384,7 +433,7 @@ class _MobileFriendsTab extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Aún no tienes amigos',
+                              context.l10n.socialNoFriendsTitle,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -394,7 +443,7 @@ class _MobileFriendsTab extends StatelessWidget {
                               onPressed: () =>
                                   _showAddFriendDialog(context, friends),
                               icon: const Icon(Icons.person_add_outlined),
-                              label: const Text('Añadir amigo'),
+                              label: Text(context.l10n.socialAddFriend),
                             ),
                           ],
                         ),
@@ -423,7 +472,7 @@ class _MobileFriendsTab extends StatelessWidget {
                       child: FloatingActionButton.extended(
                         onPressed: () => _showAddFriendDialog(context, friends),
                         icon: const Icon(Icons.person_add_outlined),
-                        label: const Text('Añadir'),
+                        label: Text(context.l10n.socialAddShort),
                       ),
                     ),
                   ],
@@ -442,9 +491,9 @@ class _MobileFriendRequestsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     if (friends.isLoading) return const Center(child: CircularProgressIndicator());
     if (friends.pendingRequests.isEmpty) {
-      return const _SectionEmpty(
+      return _SectionEmpty(
         icon: Icons.people_outline,
-        message: 'Sin solicitudes pendientes',
+        message: context.l10n.socialNoPendingRequests,
         large: true,
       );
     }
@@ -479,9 +528,9 @@ class _MobileInvitationsTab extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if (invitations.pendingInvitations.isEmpty) {
-      return const _SectionEmpty(
+      return _SectionEmpty(
         icon: Icons.inbox_outlined,
-        message: 'Sin invitaciones pendientes',
+        message: context.l10n.socialNoPendingInvitations,
         large: true,
       );
     }
@@ -704,7 +753,7 @@ class _FriendRequestTileState extends State<_FriendRequestTile> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    'Quiere ser tu amigo',
+                    context.l10n.socialWantsToBeYourFriend,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
@@ -721,7 +770,7 @@ class _FriendRequestTileState extends State<_FriendRequestTile> {
                 : IconButton(
                     icon: const Icon(Icons.check_circle_outline),
                     color: Colors.green,
-                    tooltip: 'Aceptar',
+                    tooltip: context.l10n.commonAccept,
                     onPressed: _rejecting ? null : _handleAccept,
                   ),
             _rejecting
@@ -733,7 +782,7 @@ class _FriendRequestTileState extends State<_FriendRequestTile> {
                 : IconButton(
                     icon: const Icon(Icons.cancel_outlined),
                     color: scheme.error,
-                    tooltip: 'Rechazar',
+                    tooltip: context.l10n.socialReject,
                     onPressed: _accepting ? null : _handleReject,
                   ),
           ],
@@ -835,7 +884,7 @@ class _InvitationTileState extends State<_InvitationTile> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        'Te invita a colaborar',
+                        context.l10n.socialInvitesYouToCollaborate,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: scheme.onSurfaceVariant,
                         ),
@@ -875,7 +924,7 @@ class _InvitationTileState extends State<_InvitationTile> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      inv.readOnly ? 'Lector' : 'Editor',
+                      inv.readOnly ? context.l10n.socialRoleReader : context.l10n.socialRoleEditor,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: inv.readOnly
                             ? scheme.onTertiaryContainer
@@ -904,7 +953,7 @@ class _InvitationTileState extends State<_InvitationTile> {
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                           ),
-                          child: const Text('Rechazar'),
+                          child: Text(context.l10n.socialReject),
                         ),
                 ),
                 const SizedBox(width: 10),
@@ -922,7 +971,7 @@ class _InvitationTileState extends State<_InvitationTile> {
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                           ),
-                          child: const Text('Aceptar'),
+                          child: Text(context.l10n.commonAccept),
                         ),
                 ),
               ],
@@ -940,7 +989,7 @@ class _InvitationTileState extends State<_InvitationTile> {
     if (success && context.mounted) {
       context.read<ListsProvider>().fetchLists();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invitación aceptada')),
+        SnackBar(content: Text(context.l10n.socialInvitationAccepted)),
       );
     }
     if (mounted) setState(() => _accepting = false);
@@ -968,22 +1017,22 @@ void _showAddFriendDialog(BuildContext context, FriendsProvider friends) {
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) {
         return AlertDialog(
-          title: const Text('Añadir amigo'),
+          title: Text(context.l10n.socialAddFriend),
           content: TextField(
             controller: controller,
             autofocus: true,
             textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(
-              labelText: 'Nombre de usuario',
-              hintText: 'Username exacto',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.person_outline),
+            decoration: InputDecoration(
+              labelText: context.l10n.socialUsernameLabel,
+              hintText: context.l10n.socialUsernameHint,
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.person_outline),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: sending
@@ -999,8 +1048,8 @@ void _showAddFriendDialog(BuildContext context, FriendsProvider friends) {
                         SnackBar(
                           content: Text(
                             success
-                                ? 'Solicitud enviada a $username'
-                                : (friends.errorMessage ?? 'Error al enviar'),
+                                ? context.l10n.socialRequestSentTo(username)
+                                : (friends.errorMessage ?? context.l10n.socialRequestError),
                           ),
                         ),
                       );
@@ -1012,7 +1061,7 @@ void _showAddFriendDialog(BuildContext context, FriendsProvider friends) {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Enviar'),
+                  : Text(context.l10n.commonSend),
             ),
           ],
         );
@@ -1030,12 +1079,12 @@ void _confirmRemove(
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Eliminar amigo'),
-      content: Text('¿Eliminar a $username de tu lista de amigos?'),
+      title: Text(context.l10n.socialRemoveFriendTitle),
+      content: Text(context.l10n.socialRemoveFriendConfirm(username)),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -1043,7 +1092,7 @@ void _confirmRemove(
             Navigator.pop(ctx);
             await friends.removeFriend(username);
           },
-          child: const Text('Eliminar'),
+          child: Text(context.l10n.commonDelete),
         ),
       ],
     ),

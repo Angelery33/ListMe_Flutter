@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/i18n/l10n_extension.dart';
 import '../../data/friends/friend_model.dart';
 import '../../providers/invitations/invitations_provider.dart';
 import '../../providers/lists/lists_provider.dart';
@@ -86,7 +87,7 @@ class _ShareFriendDialogState extends State<ShareFriendDialog> {
         .toList();
 
     return AlertDialog(
-      title: const Text('Invitar amigo'),
+      title: Text(context.l10n.shareInviteFriendTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
@@ -108,16 +109,16 @@ class _ShareFriendDialogState extends State<ShareFriendDialog> {
             else if (widget.friends.isEmpty)
               _HintRow(
                 icon: Icons.people_outline,
-                text: 'Añade amigos desde la pestaña Social para invitarlos.',
+                text: context.l10n.shareNoFriendsHint,
               )
             else if (invitable.isEmpty)
               _HintRow(
                 icon: Icons.check_circle_outline,
-                text: 'Todos tus amigos ya colaboran en esta lista.',
+                text: context.l10n.shareAllFriendsCollaborating,
               )
             else ...[
               Text(
-                'Selecciona un amigo',
+                context.l10n.shareSelectFriend,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: scheme.onSurfaceVariant,
                   fontWeight: FontWeight.bold,
@@ -178,7 +179,7 @@ class _ShareFriendDialogState extends State<ShareFriendDialog> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Solo lectura',
+                      context.l10n.shareReadOnlyLabel,
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),
@@ -195,7 +196,7 @@ class _ShareFriendDialogState extends State<ShareFriendDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.commonCancel),
         ),
         if (!_loadingCollaborators && invitable.isNotEmpty)
           FilledButton(
@@ -208,8 +209,8 @@ class _ShareFriendDialogState extends State<ShareFriendDialog> {
                   )
                 : Text(
                     _selected != null
-                        ? 'Invitar a ${_selected!.username}'
-                        : 'Selecciona uno',
+                        ? context.l10n.shareInviteAction(_selected!.username)
+                        : context.l10n.shareSelectOne,
                   ),
           ),
       ],
@@ -230,8 +231,8 @@ class _ShareFriendDialogState extends State<ShareFriendDialog> {
       SnackBar(
         content: Text(
           success
-              ? 'Invitación enviada a ${_selected!.username}'
-              : 'Error al enviar invitación',
+              ? context.l10n.shareInviteSentTo(_selected!.username)
+              : context.l10n.shareInviteError,
         ),
       ),
     );

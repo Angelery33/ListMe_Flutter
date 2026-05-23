@@ -1997,6 +1997,342 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Activa y reordena las secciones visibles en la lista'**
   String get configStatusOrderDesc;
+
+  /// No description provided for @socialFriendsTab.
+  ///
+  /// In es, this message translates to:
+  /// **'Amigos'**
+  String get socialFriendsTab;
+
+  /// No description provided for @socialRequestsTab.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitudes'**
+  String get socialRequestsTab;
+
+  /// No description provided for @socialInvitationsTab.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitaciones'**
+  String get socialInvitationsTab;
+
+  /// No description provided for @socialAddFriend.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir amigo'**
+  String get socialAddFriend;
+
+  /// No description provided for @socialAddShort.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir'**
+  String get socialAddShort;
+
+  /// No description provided for @socialNoFriendsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes amigos'**
+  String get socialNoFriendsTitle;
+
+  /// No description provided for @socialNoPendingRequests.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin solicitudes pendientes'**
+  String get socialNoPendingRequests;
+
+  /// No description provided for @socialNoPendingInvitations.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin invitaciones pendientes'**
+  String get socialNoPendingInvitations;
+
+  /// No description provided for @socialWantsToBeYourFriend.
+  ///
+  /// In es, this message translates to:
+  /// **'Quiere ser tu amigo'**
+  String get socialWantsToBeYourFriend;
+
+  /// No description provided for @socialReject.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazar'**
+  String get socialReject;
+
+  /// No description provided for @socialInvitesYouToCollaborate.
+  ///
+  /// In es, this message translates to:
+  /// **'Te invita a colaborar'**
+  String get socialInvitesYouToCollaborate;
+
+  /// No description provided for @socialRoleReader.
+  ///
+  /// In es, this message translates to:
+  /// **'Lector'**
+  String get socialRoleReader;
+
+  /// No description provided for @socialRoleEditor.
+  ///
+  /// In es, this message translates to:
+  /// **'Editor'**
+  String get socialRoleEditor;
+
+  /// No description provided for @socialInvitationAccepted.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitación aceptada'**
+  String get socialInvitationAccepted;
+
+  /// No description provided for @socialUsernameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de usuario'**
+  String get socialUsernameLabel;
+
+  /// No description provided for @socialUsernameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Username exacto'**
+  String get socialUsernameHint;
+
+  /// No description provided for @socialRequestSentTo.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud enviada a {username}'**
+  String socialRequestSentTo(String username);
+
+  /// No description provided for @socialRequestError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al enviar'**
+  String get socialRequestError;
+
+  /// No description provided for @socialRemoveFriendTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar amigo'**
+  String get socialRemoveFriendTitle;
+
+  /// No description provided for @socialRemoveFriendConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar a {username} de tu lista de amigos?'**
+  String socialRemoveFriendConfirm(String username);
+
+  /// No description provided for @shareInviteFriendTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitar amigo'**
+  String get shareInviteFriendTitle;
+
+  /// No description provided for @shareNoFriendsHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Añade amigos desde la pestaña Social para invitarlos.'**
+  String get shareNoFriendsHint;
+
+  /// No description provided for @shareAllFriendsCollaborating.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos tus amigos ya colaboran en esta lista.'**
+  String get shareAllFriendsCollaborating;
+
+  /// No description provided for @shareSelectFriend.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona un amigo'**
+  String get shareSelectFriend;
+
+  /// No description provided for @shareReadOnlyLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo lectura'**
+  String get shareReadOnlyLabel;
+
+  /// No description provided for @shareInviteAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitar a {username}'**
+  String shareInviteAction(String username);
+
+  /// No description provided for @shareSelectOne.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona uno'**
+  String get shareSelectOne;
+
+  /// No description provided for @shareInviteSentTo.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitación enviada a {username}'**
+  String shareInviteSentTo(String username);
+
+  /// No description provided for @shareInviteError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al enviar invitación'**
+  String get shareInviteError;
+
+  /// No description provided for @collaborationTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'COLABORACIÓN'**
+  String get collaborationTitle;
+
+  /// No description provided for @collaborationCurrentCollaborators.
+  ///
+  /// In es, this message translates to:
+  /// **'Colaboradores actuales'**
+  String get collaborationCurrentCollaborators;
+
+  /// No description provided for @collaborationInviteFriend.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitar amigo'**
+  String get collaborationInviteFriend;
+
+  /// No description provided for @collaborationRemoveTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar colaborador'**
+  String get collaborationRemoveTooltip;
+
+  /// No description provided for @collaborationInfoNote.
+  ///
+  /// In es, this message translates to:
+  /// **'El usuario recibirá una notificación para aceptar la colaboración.'**
+  String get collaborationInfoNote;
+
+  /// No description provided for @collaborationReadOnlyPermission.
+  ///
+  /// In es, this message translates to:
+  /// **'Permiso de solo lectura'**
+  String get collaborationReadOnlyPermission;
+
+  /// No description provided for @collaborationNoFriendsHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Añade amigos desde la pestaña Social para poder invitarlos.'**
+  String get collaborationNoFriendsHint;
+
+  /// No description provided for @collaborationAllAdded.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos tus amigos ya colaboran en esta lista.'**
+  String get collaborationAllAdded;
+
+  /// No description provided for @collaborationRemoveSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'\"{username}\" eliminado de la biblioteca'**
+  String collaborationRemoveSuccess(String username);
+
+  /// No description provided for @collaborationRemoveError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al eliminar colaborador'**
+  String get collaborationRemoveError;
+
+  /// No description provided for @collaborationRemoveTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar colaborador'**
+  String get collaborationRemoveTitle;
+
+  /// No description provided for @collaborationRemoveConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar a \"{username}\" de esta biblioteca?'**
+  String collaborationRemoveConfirm(String username);
+
+  /// No description provided for @collaborationRoleEditor.
+  ///
+  /// In es, this message translates to:
+  /// **'Editor'**
+  String get collaborationRoleEditor;
+
+  /// No description provided for @collaborationRoleReadOnly.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo lectura'**
+  String get collaborationRoleReadOnly;
+
+  /// No description provided for @collaborationSendErrorGeneric.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar'**
+  String get collaborationSendErrorGeneric;
+
+  /// No description provided for @listLeaveTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Abandonar lista'**
+  String get listLeaveTitle;
+
+  /// No description provided for @listLeaveConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Seguro que quieres dejar de seguir \"{name}\"?\n\nDejarás de tener acceso a esta biblioteca.'**
+  String listLeaveConfirm(String name);
+
+  /// No description provided for @listLeaveAction.
+  ///
+  /// In es, this message translates to:
+  /// **'ABANDONAR'**
+  String get listLeaveAction;
+
+  /// No description provided for @profileTotalItems.
+  ///
+  /// In es, this message translates to:
+  /// **'Elementos totales'**
+  String get profileTotalItems;
+
+  /// No description provided for @profilePhotoSaveError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al guardar foto de perfil'**
+  String get profilePhotoSaveError;
+
+  /// No description provided for @profilePhotoUploadError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al subir la imagen'**
+  String get profilePhotoUploadError;
+
+  /// No description provided for @profilePickerGallery.
+  ///
+  /// In es, this message translates to:
+  /// **'Galería'**
+  String get profilePickerGallery;
+
+  /// No description provided for @profilePickerCamera.
+  ///
+  /// In es, this message translates to:
+  /// **'Cámara'**
+  String get profilePickerCamera;
+
+  /// No description provided for @genresSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Personalizar Géneros / Categorías'**
+  String get genresSectionTitle;
+
+  /// No description provided for @genresEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin géneros definidos.'**
+  String get genresEmpty;
+
+  /// No description provided for @progressSetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Establecer {label}'**
+  String progressSetTitle(String label);
+
+  /// No description provided for @socialFeedComingSoon.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente\nfeed de amigos'**
+  String get socialFeedComingSoon;
 }
 
 class _AppLocalizationsDelegate

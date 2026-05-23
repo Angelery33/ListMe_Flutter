@@ -46,10 +46,10 @@ class _ConfigMainInfoSectionState extends State<ConfigMainInfoSection> {
               controller: widget.nameController,
               textInputAction: TextInputAction.next,
               onFieldSubmitted: (_) => _descFocus.requestFocus(),
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
-                prefixIcon: Icon(Icons.list_alt),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: context.l10n.listConfigNameLabel,
+                prefixIcon: const Icon(Icons.list_alt),
+                border: const OutlineInputBorder(),
               ),
               validator: (v) => v!.isEmpty ? context.l10n.commonRequired : null,
               textCapitalization: TextCapitalization.sentences,

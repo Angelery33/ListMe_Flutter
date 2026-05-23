@@ -87,7 +87,7 @@ class _ConfigCollaborationSectionState
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${provider.error ?? 'No se pudo enviar'}'),
+            content: Text('${context.l10n.commonError}: ${provider.error ?? context.l10n.collaborationSendErrorGeneric}'),
           ),
         );
       }
@@ -99,9 +99,8 @@ class _ConfigCollaborationSectionState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar colaborador'),
-        content:
-            Text('¿Eliminar a "${collaborator.username}" de esta biblioteca?'),
+        title: Text(ctx.l10n.collaborationRemoveTitle),
+        content: Text(ctx.l10n.collaborationRemoveConfirm(collaborator.username)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -130,12 +129,12 @@ class _ConfigCollaborationSectionState
             _collaborators.removeWhere((c) => c.userId == collaborator.userId));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('"${collaborator.username}" eliminado de la biblioteca'),
+            content: Text(context.l10n.collaborationRemoveSuccess(collaborator.username)),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al eliminar colaborador')),
+          SnackBar(content: Text(context.l10n.collaborationRemoveError)),
         );
       }
     }
@@ -163,7 +162,7 @@ class _ConfigCollaborationSectionState
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            'COLABORACIÓN',
+            context.l10n.collaborationTitle,
             style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -190,7 +189,7 @@ class _ConfigCollaborationSectionState
                   )
                 else if (_collaborators.isNotEmpty) ...[
                   Text(
-                    'Colaboradores actuales',
+                    context.l10n.collaborationCurrentCollaborators,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.bold,
@@ -209,7 +208,7 @@ class _ConfigCollaborationSectionState
                       title: Text(c.username,
                           style: theme.textTheme.bodyMedium),
                       subtitle: Text(
-                        c.isEditor ? 'Editor' : 'Solo lectura',
+                        c.isEditor ? context.l10n.collaborationRoleEditor : context.l10n.collaborationRoleReadOnly,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -217,7 +216,7 @@ class _ConfigCollaborationSectionState
                       trailing: IconButton(
                         icon: const Icon(Icons.person_remove_outlined,
                             color: Colors.red, size: 20),
-                        tooltip: 'Eliminar colaborador',
+                        tooltip: context.l10n.collaborationRemoveTooltip,
                         onPressed: () => _confirmRemove(c),
                       ),
                     ),
@@ -227,7 +226,7 @@ class _ConfigCollaborationSectionState
 
                 // ── Selector de amigos para invitar ───────────────────────
                 Text(
-                  'Invitar amigo',
+                  context.l10n.collaborationInviteFriend,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.bold,
@@ -257,7 +256,7 @@ class _ConfigCollaborationSectionState
                     children: [
                       Expanded(
                         child: Text(
-                          'Permiso de solo lectura',
+                          context.l10n.collaborationReadOnlyPermission,
                           style: theme.textTheme.bodyMedium,
                         ),
                       ),
@@ -278,8 +277,8 @@ class _ConfigCollaborationSectionState
                       icon: const Icon(Icons.send_rounded),
                       label: Text(
                         _selectedFriend != null
-                            ? 'Invitar a ${_selectedFriend!.username}'
-                            : 'Selecciona un amigo',
+                            ? context.l10n.shareInviteAction(_selectedFriend!.username)
+                            : context.l10n.shareSelectFriend,
                       ),
                     ),
                   ),
@@ -287,7 +286,7 @@ class _ConfigCollaborationSectionState
 
                 const SizedBox(height: 8),
                 Text(
-                  'El usuario recibirá una notificación para aceptar la colaboración.',
+                  context.l10n.collaborationInfoNote,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -431,7 +430,7 @@ class _EmptyFriendsHint extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Añade amigos desde la pestaña Social para poder invitarlos.',
+              context.l10n.collaborationNoFriendsHint,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -457,7 +456,7 @@ class _AllFriendsAdded extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Todos tus amigos ya colaboran en esta lista.',
+              context.l10n.collaborationAllAdded,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

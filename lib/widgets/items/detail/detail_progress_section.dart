@@ -327,7 +327,7 @@ class DetailProgressSection extends StatelessWidget {
                           final newVal = await showDialog<int>(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: Text('Establecer $label'),
+                              title: Text(context.l10n.progressSetTitle(label)),
                               content: TextField(
                                 controller: controller,
                                 keyboardType: TextInputType.number,
@@ -343,14 +343,14 @@ class DetailProgressSection extends StatelessWidget {
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('CANCELAR'),
+                                  child: Text(ctx.l10n.commonCancel.toUpperCase()),
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.pop(
                                     ctx,
                                     int.tryParse(controller.text),
                                   ),
-                                  child: const Text('GUARDAR'),
+                                  child: Text(ctx.l10n.commonSave.toUpperCase()),
                                 ),
                               ],
                             ),

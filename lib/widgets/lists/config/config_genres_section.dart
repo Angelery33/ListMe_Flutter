@@ -47,7 +47,7 @@ class ConfigGenresSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Personalizar Géneros / Categorías",
+              context.l10n.genresSectionTitle,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -78,12 +78,12 @@ class ConfigGenresSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             if (displayedGenres.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "Sin géneros definidos.",
-                    style: TextStyle(color: Colors.grey),
+                    context.l10n.genresEmpty,
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
               ),

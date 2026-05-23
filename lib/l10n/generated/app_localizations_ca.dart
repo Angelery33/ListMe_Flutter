@@ -964,4 +964,193 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get configStatusOrderDesc =>
       'Activa i reordena les seccions visibles a la llista';
+
+  @override
+  String get socialFriendsTab => 'Amics';
+
+  @override
+  String get socialRequestsTab => 'Sol·licituds';
+
+  @override
+  String get socialInvitationsTab => 'Invitacions';
+
+  @override
+  String get socialAddFriend => 'Afegir amic';
+
+  @override
+  String get socialAddShort => 'Afegir';
+
+  @override
+  String get socialNoFriendsTitle => 'Encara no tens amics';
+
+  @override
+  String get socialNoPendingRequests => 'Sense sol·licituds pendents';
+
+  @override
+  String get socialNoPendingInvitations => 'Sense invitacions pendents';
+
+  @override
+  String get socialWantsToBeYourFriend => 'Vol ser el teu amic';
+
+  @override
+  String get socialReject => 'Rebutjar';
+
+  @override
+  String get socialInvitesYouToCollaborate => 'T\'invita a col·laborar';
+
+  @override
+  String get socialRoleReader => 'Lector';
+
+  @override
+  String get socialRoleEditor => 'Editor';
+
+  @override
+  String get socialInvitationAccepted => 'Invitació acceptada';
+
+  @override
+  String get socialUsernameLabel => 'Nom d\'usuari';
+
+  @override
+  String get socialUsernameHint => 'Nom d\'usuari exacte';
+
+  @override
+  String socialRequestSentTo(String username) {
+    return 'Sol·licitud enviada a $username';
+  }
+
+  @override
+  String get socialRequestError => 'Error en enviar';
+
+  @override
+  String get socialRemoveFriendTitle => 'Eliminar amic';
+
+  @override
+  String socialRemoveFriendConfirm(String username) {
+    return 'Eliminar $username de la teva llista d\'amics?';
+  }
+
+  @override
+  String get shareInviteFriendTitle => 'Convidar amic';
+
+  @override
+  String get shareNoFriendsHint =>
+      'Afegeix amics des de la pestanya Social per convidar-los.';
+
+  @override
+  String get shareAllFriendsCollaborating =>
+      'Tots els teus amics ja col·laboren en aquesta llista.';
+
+  @override
+  String get shareSelectFriend => 'Selecciona un amic';
+
+  @override
+  String get shareReadOnlyLabel => 'Només lectura';
+
+  @override
+  String shareInviteAction(String username) {
+    return 'Convidar $username';
+  }
+
+  @override
+  String get shareSelectOne => 'Selecciona un';
+
+  @override
+  String shareInviteSentTo(String username) {
+    return 'Invitació enviada a $username';
+  }
+
+  @override
+  String get shareInviteError => 'Error en enviar la invitació';
+
+  @override
+  String get collaborationTitle => 'COL·LABORACIÓ';
+
+  @override
+  String get collaborationCurrentCollaborators => 'Col·laboradors actuals';
+
+  @override
+  String get collaborationInviteFriend => 'Convidar amic';
+
+  @override
+  String get collaborationRemoveTooltip => 'Eliminar col·laborador';
+
+  @override
+  String get collaborationInfoNote =>
+      'L\'usuari rebrà una notificació per acceptar la col·laboració.';
+
+  @override
+  String get collaborationReadOnlyPermission => 'Permís de només lectura';
+
+  @override
+  String get collaborationNoFriendsHint =>
+      'Afegeix amics des de la pestanya Social per convidar-los.';
+
+  @override
+  String get collaborationAllAdded =>
+      'Tots els teus amics ja col·laboren en aquesta llista.';
+
+  @override
+  String collaborationRemoveSuccess(String username) {
+    return '\"$username\" eliminat de la biblioteca';
+  }
+
+  @override
+  String get collaborationRemoveError => 'Error en eliminar el col·laborador';
+
+  @override
+  String get collaborationRemoveTitle => 'Eliminar col·laborador';
+
+  @override
+  String collaborationRemoveConfirm(String username) {
+    return 'Eliminar \"$username\" d\'aquesta biblioteca?';
+  }
+
+  @override
+  String get collaborationRoleEditor => 'Editor';
+
+  @override
+  String get collaborationRoleReadOnly => 'Només lectura';
+
+  @override
+  String get collaborationSendErrorGeneric => 'No s\'ha pogut enviar';
+
+  @override
+  String get listLeaveTitle => 'Abandonar llista';
+
+  @override
+  String listLeaveConfirm(String name) {
+    return 'Segur que vols deixar \"$name\"?\n\nPerdràs l\'accés a aquesta biblioteca.';
+  }
+
+  @override
+  String get listLeaveAction => 'ABANDONAR';
+
+  @override
+  String get profileTotalItems => 'Elements totals';
+
+  @override
+  String get profilePhotoSaveError => 'Error en desar la foto de perfil';
+
+  @override
+  String get profilePhotoUploadError => 'Error en pujar la imatge';
+
+  @override
+  String get profilePickerGallery => 'Galeria';
+
+  @override
+  String get profilePickerCamera => 'Càmera';
+
+  @override
+  String get genresSectionTitle => 'Personalitzar Gèneres / Categories';
+
+  @override
+  String get genresEmpty => 'Sense gèneres definits.';
+
+  @override
+  String progressSetTitle(String label) {
+    return 'Establir $label';
+  }
+
+  @override
+  String get socialFeedComingSoon => 'Pròximament\nfeed d\'amics';
 }
