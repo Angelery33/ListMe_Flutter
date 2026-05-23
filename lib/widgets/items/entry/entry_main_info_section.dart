@@ -64,7 +64,7 @@ const List<String> kFunkoEditions = [
 /// Renderiza condicionalmente campos adicionales basados en la configuración de la biblioteca.
 /// Cuando [showImportButton] es verdadero, aparece un icono de descarga en la nube en el sufijo del campo
 /// de nombre para activar un flujo de importación de API.
-class EntryMainInfoSection extends StatelessWidget {
+class EntryMainInfoSection extends StatefulWidget {
   /// Controlador vinculado al campo de texto del nombre del elemento.
   final TextEditingController nameController;
 
@@ -110,9 +110,28 @@ class EntryMainInfoSection extends StatelessWidget {
   });
 
   @override
+  State<EntryMainInfoSection> createState() => _EntryMainInfoSectionState();
+}
+
+class _EntryMainInfoSectionState extends State<EntryMainInfoSection> {
+  final FocusNode _descFocus = FocusNode();
+  final FocusNode _numberFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _descFocus.dispose();
+    _numberFocus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // El último campo visible determina qué acción mostrar en nombre y descripción.
+    final hasNumber = widget.showItemNumber && widget.itemNumberController != null;
+    final hasExtra = widget.showProductType || widget.showEdition;
 
     return Card(
       elevation: 1,
@@ -127,26 +146,20 @@ class EntryMainInfoSection extends StatelessWidget {
             const SizedBox(height: 16),
 
             TextFormField(
-              controller: nameController,
+              controller: widget.nameController,
+              textInputAction: TextInputAction.next,
+              onFieldSubmitted: (_) => _descFocus.requestFocus(),
               decoration: InputDecoration(
                 labelText: context.l10n.entryItemName,
-                prefixIcon: Icon(
-                  Icons.title_rounded,
-                  color: colorScheme.primary,
-                ),
-                suffixIcon: showImportButton
+                prefixIcon: Icon(Icons.title_rounded, color: colorScheme.primary),
+                suffixIcon: widget.showImportButton
                     ? IconButton(
-                        icon: Icon(
-                          Icons.cloud_download_rounded,
-                          color: colorScheme.primary,
-                        ),
-                        onPressed: onImportPressed,
+                        icon: Icon(Icons.cloud_download_rounded, color: colorScheme.primary),
+                        onPressed: widget.onImportPressed,
                         tooltip: context.l10n.entryImportFromApi,
                       )
                     : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               textCapitalization: TextCapitalization.sentences,
               validator: (value) => (value == null || value.isEmpty)
@@ -156,57 +169,61 @@ class EntryMainInfoSection extends StatelessWidget {
             const SizedBox(height: 16),
 
             TextFormField(
-              controller: descController,
+              controller: widget.descController,
+              focusNode: _descFocus,
+              // Descripción es multilinea: next pasa al siguiente campo si existe,
+              // si no, done cierra el teclado.
+              textInputAction: (hasNumber || hasExtra) ? TextInputAction.next : TextInputAction.done,
+              onFieldSubmitted: (_) {
+                if (hasNumber) {
+                  _numberFocus.requestFocus();
+                } else {
+                  FocusScope.of(context).unfocus();
+                }
+              },
               decoration: InputDecoration(
                 labelText: context.l10n.entryDescription,
                 alignLabelWithHint: true,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(bottom: 40),
-                  child: Icon(
-                    Icons.description_rounded,
-                    color: colorScheme.primary,
-                  ),
+                  child: Icon(Icons.description_rounded, color: colorScheme.primary),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
             ),
 
-            if (showItemNumber && itemNumberController != null) ...[
+            if (hasNumber) ...[
               const SizedBox(height: 16),
               TextFormField(
-                controller: itemNumberController,
+                controller: widget.itemNumberController,
+                focusNode: _numberFocus,
                 keyboardType: TextInputType.number,
+                textInputAction: hasExtra ? TextInputAction.next : TextInputAction.done,
+                onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   labelText: context.l10n.itemItemNumber,
-                  prefixIcon: Icon(
-                    Icons.numbers_rounded,
-                    color: colorScheme.primary,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  prefixIcon: Icon(Icons.numbers_rounded, color: colorScheme.primary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
 
-            if (showProductType && productTypeController != null) ...[
+            if (widget.showProductType && widget.productTypeController != null) ...[
               const SizedBox(height: 16),
               _SuggestionField(
-                controller: productTypeController!,
+                controller: widget.productTypeController!,
                 label: context.l10n.itemProductType,
                 icon: Icons.category_rounded,
                 suggestions: kFunkoProductTypes,
               ),
             ],
 
-            if (showEdition && editionController != null) ...[
+            if (widget.showEdition && widget.editionController != null) ...[
               const SizedBox(height: 16),
               _SuggestionField(
-                controller: editionController!,
+                controller: widget.editionController!,
                 label: context.l10n.itemEdition,
                 icon: Icons.bookmark_rounded,
                 suggestions: kFunkoEditions,
@@ -218,7 +235,6 @@ class EntryMainInfoSection extends StatelessWidget {
     );
   }
 
-  /// Renderiza la etiqueta del encabezado de la sección con estilo en color primario en mayúsculas.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),

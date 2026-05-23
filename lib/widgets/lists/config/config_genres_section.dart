@@ -58,10 +58,12 @@ class ConfigGenresSection extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     controller: genreController,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => onAddGenre(),
                     decoration: InputDecoration(
                       hintText: context.l10n.listConfigGenresAdd,
-                      prefixIcon: Icon(Icons.label_outline),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.label_outline),
+                      border: const OutlineInputBorder(),
                     ),
                     textCapitalization: TextCapitalization.sentences,
                   ),

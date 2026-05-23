@@ -91,16 +91,14 @@ class EntryPropertiesSection extends StatelessWidget {
             if (supportsPrice) ...[
               TextFormField(
                 controller: priceController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   labelText: context.l10n.itemPrice,
                   prefixIcon: const Icon(Icons.euro_rounded),
                   suffixText: "€",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -150,19 +148,14 @@ class EntryPropertiesSection extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 initialValue: score.toStringAsFixed(2),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
                   hintText: "0.00 - ${maxScore.toInt()}",
                   prefixIcon: const Icon(Icons.score_rounded),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 onChanged: (val) {
                   final parsed = double.tryParse(val);
@@ -250,12 +243,12 @@ class EntryPropertiesSection extends StatelessWidget {
                 )
               : TextFormField(
                   initialValue: genre,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                   decoration: InputDecoration(
                     labelText: context.l10n.itemGenre,
                     prefixIcon: const Icon(Icons.category_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onSaved: onGenreSaved,
                   onChanged: onGenreChanged,

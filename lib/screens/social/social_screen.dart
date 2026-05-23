@@ -19,21 +19,31 @@ import 'package:list_me/widgets/social/friend_card.dart';
 ///
 /// En móvil (< 840 dp) usa un [TabBar] con tres pestañas:
 /// Amigos, Solicitudes y Invitaciones.
-class SocialScreen extends StatelessWidget {
+class SocialScreen extends StatefulWidget {
   const SocialScreen({super.key});
+
+  @override
+  State<SocialScreen> createState() => _SocialScreenState();
+}
+
+class _SocialScreenState extends State<SocialScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final inv = context.read<InvitationsProvider>();
+      if (inv.isStale && !inv.isLoading) inv.loadPendingInvitations();
+      final fr = context.read<FriendsProvider>();
+      if (!fr.isLoading) fr.loadAll();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final responsive = context.watch<ResponsiveProvider>();
     final friends = context.watch<FriendsProvider>();
     final invitations = context.watch<InvitationsProvider>();
-
-    // Cargar datos frescos si están desactualizados
-    if (invitations.isStale && !invitations.isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        invitations.loadPendingInvitations();
-      });
-    }
 
     if (responsive.isExpanded) {
       return _ExpandedLayout(friends: friends, invitations: invitations);
@@ -66,15 +76,14 @@ class _ExpandedLayout extends StatelessWidget {
         title: context.l10n.socialTitle,
         showBackButton: false,
       ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
         children: [
-          // ── Área central ───────────────────────────────────────────────────
-          Expanded(
-            child: _FriendsPanel(friends: friends),
-          ),
-          // ── Panel lateral derecho ──────────────────────────────────────────
-          SizedBox(
+          // ── Lista de amigos (ocupa todo el espacio) ────────────────────────
+          _FriendsPanel(friends: friends),
+          // ── Cards flotantes ancladas arriba-derecha ────────────────────────
+          Positioned(
+            top: 16,
+            right: 16,
             width: 300,
             child: _RightSidePanel(friends: friends, invitations: invitations),
           ),
@@ -195,33 +204,28 @@ class _FriendsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // ── Encabezado ───────────────────────────────────────────────────────
-        Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
-              child: Row(
-                children: [
-                  Text(
-                    'AMIGOS (${friends.friends.length})',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const Spacer(),
-                  FilledButton.tonalIcon(
-                    onPressed: () => _showAddFriendDialog(context, friends),
-                    icon: const Icon(Icons.person_add_outlined, size: 18),
-                    label: const Text('Añadir amigo'),
-                  ),
-                ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
+          child: Row(
+            children: [
+              Text(
+                'AMIGOS (${friends.friends.length})',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
               ),
-            ),
+              const Spacer(),
+              FilledButton.tonalIcon(
+                onPressed: () => _showAddFriendDialog(context, friends),
+                icon: const Icon(Icons.person_add_outlined, size: 18),
+                label: const Text('Añadir amigo'),
+              ),
+            ],
           ),
         ),
         // ── Lista ────────────────────────────────────────────────────────────
@@ -234,22 +238,14 @@ class _FriendsPanel extends StatelessWidget {
                     ? _buildEmptyFriends(context, theme)
                     : ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
                         itemCount: friends.friends.length,
-                        itemBuilder: (_, i) => Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 700),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
-                              child: FriendCard(
-                                friend: friends.friends[i],
-                                onRemove: () => _confirmRemove(
-                                  context,
-                                  friends.friends[i].username,
-                                  friends,
-                                ),
-                              ),
-                            ),
+                        itemBuilder: (_, i) => FriendCard(
+                          friend: friends.friends[i],
+                          onRemove: () => _confirmRemove(
+                            context,
+                            friends.friends[i].username,
+                            friends,
                           ),
                         ),
                       ),

@@ -224,6 +224,8 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                 child: TextField(
                   controller: widget.searchController,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   decoration: InputDecoration(
                     hintText: context.l10n.searchPlaceholder,
                     prefixIcon: Icon(Icons.search, color: hintColor),

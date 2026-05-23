@@ -77,6 +77,47 @@ class _ListScreenState extends State<ListScreen> {
   /// El [ListModel] resuelto utilizado en toda esta pantalla.
   late ListModel _currentList;
 
+  // ── Caché de cálculos costosos ─────────────────────────────────────────────
+  Map<String, List<ItemModel>> _groupedItems = {};
+  List<ItemModel> _activeItems = [];
+  double _totalAcquired = 0;
+  double _totalWishlist = 0;
+
+  /// Inputs del último cálculo para detectar si hay que recalcular.
+  List<ItemModel>? _lastItems;
+  String? _lastFilterGenre;
+  String? _lastSearchQuery;
+  dynamic _lastSortOption;
+
+  /// Recalcula groupedItems y totales solo si algún input ha cambiado.
+  void _recalculateIfNeeded(ItemsProvider p) {
+    if (identical(_lastItems, p.items) &&
+        _lastFilterGenre == p.filterGenre &&
+        _lastSearchQuery == p.searchQuery &&
+        _lastSortOption == p.sortOption) return;
+
+    _lastItems = p.items;
+    _lastFilterGenre = p.filterGenre;
+    _lastSearchQuery = p.searchQuery;
+    _lastSortOption = p.sortOption;
+
+    _groupedItems = ItemGroupingHelper.groupItems(
+      items: p.items,
+      list: _currentList,
+      filterGenre: p.filterGenre,
+      searchQuery: p.searchQuery,
+      sortOption: p.sortOption,
+      isSearching: p.searchQuery.isNotEmpty,
+    );
+    _activeItems = p.items.where((i) => i.current).toList();
+    _totalAcquired = ItemGroupingHelper.calculateTotal(
+      p.items.where((i) => !i.wishlist).toList(),
+    );
+    _totalWishlist = ItemGroupingHelper.calculateTotal(
+      p.items.where((i) => i.wishlist).toList(),
+    );
+  }
+
   /// Guardia para asegurar que [didChangeDependencies] solo se inicialice una vez.
   bool _initialized = false;
 
@@ -130,26 +171,14 @@ class _ListScreenState extends State<ListScreen> {
   Widget build(BuildContext context) {
     final itemsProvider = context.watch<ItemsProvider>();
     final responsive = context.watch<ResponsiveProvider>();
-    final isSearching = itemsProvider.searchQuery.isNotEmpty;
     final theme = Theme.of(context);
     final showTable = _isTableView && !responsive.isCompact;
 
-    final groupedItems = ItemGroupingHelper.groupItems(
-      items: itemsProvider.items,
-      list: _currentList,
-      filterGenre: itemsProvider.filterGenre,
-      searchQuery: itemsProvider.searchQuery,
-      sortOption: itemsProvider.sortOption,
-      isSearching: isSearching,
-    );
-
-    final activeItems = itemsProvider.items.where((i) => i.current).toList();
-    final totalAcquired = ItemGroupingHelper.calculateTotal(
-      itemsProvider.items.where((i) => !i.wishlist).toList(),
-    );
-    final totalWishlist = ItemGroupingHelper.calculateTotal(
-      itemsProvider.items.where((i) => i.wishlist).toList(),
-    );
+    _recalculateIfNeeded(itemsProvider);
+    final groupedItems = _groupedItems;
+    final activeItems = _activeItems;
+    final totalAcquired = _totalAcquired;
+    final totalWishlist = _totalWishlist;
 
     return AppShell(
       currentIndex: 0,

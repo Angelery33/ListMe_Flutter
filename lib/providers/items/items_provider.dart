@@ -22,6 +22,11 @@ class ItemsProvider extends ChangeNotifier {
 
   /// The current in-memory item list, always filtered to top-level items only.
   List<ItemModel> _items = [];
+  List<String> _cachedGenres = [];
+
+  void _rebuildGenres() {
+    _cachedGenres = _items.map((i) => i.genre).whereType<String>().toSet().toList();
+  }
 
   /// Error message from the most recent failed operation, or `null`.
   String? _errorMessage;
@@ -80,8 +85,8 @@ class ItemsProvider extends ChangeNotifier {
   SortOption get sortOption => _sortOption;
 
   /// Unique, non-null genre strings extracted from the current item list.
-  List<String> get availableGenres =>
-      _items.map((i) => i.genre).whereType<String>().toSet().toList();
+  /// Cached and rebuilt only when [_items] is replaced.
+  List<String> get availableGenres => _cachedGenres;
 
   /// Updates [searchQuery] to [query] and notifies listeners so the UI
   /// can re-filter the list without a server round-trip.
@@ -137,6 +142,7 @@ class ItemsProvider extends ChangeNotifier {
 
     try {
       _items = await _itemsRepository.getSubCollections(parentId, libraryId);
+      _rebuildGenres();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -155,6 +161,7 @@ class ItemsProvider extends ChangeNotifier {
 
     try {
       _items = await _itemsRepository.getItemsByRemoteId(remoteId);
+      _rebuildGenres();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -184,6 +191,7 @@ class ItemsProvider extends ChangeNotifier {
       // Only top-level items show in the main library list. Sub-collection
       // items (parentId != null) are reachable from their parent's detail.
       _items = all.where((i) => i.parentId == null).toList();
+      _rebuildGenres();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -199,6 +207,7 @@ class ItemsProvider extends ChangeNotifier {
     try {
       final all = await _itemsRepository.getAllItems(libraryId: libraryId);
       _items = all.where((i) => i.parentId == null).toList();
+      _rebuildGenres();
       notifyListeners();
     } catch (_) {
       // En caso de error silencioso, mantenemos lo que tenemos

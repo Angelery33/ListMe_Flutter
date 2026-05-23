@@ -86,6 +86,18 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: valueController,
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      if (selectedType != null && valueController.text.isNotEmpty) {
+                        widget.onAdd(AttributeItemModel(
+                          attributeTypeId: selectedType!.id!,
+                          idItem: 0,
+                          value: valueController.text,
+                        ));
+                        Navigator.pop(context);
+                      }
+                    },
                     decoration: InputDecoration(labelText: context.l10n.attributesValue),
                   ),
                 ],
@@ -123,40 +135,39 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
   /// [EntryAttributesSection.onCreateAttributeType].
   void _showCreateTypeDialog(BuildContext context) {
     final controller = TextEditingController();
+
+    Future<void> submit(BuildContext ctx) async {
+      final name = controller.text.trim();
+      if (name.isNotEmpty && widget.onCreateAttributeType != null) {
+        await widget.onCreateAttributeType!();
+        if (ctx.mounted) Navigator.pop(ctx);
+      }
+    }
+
     showDialog(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(context.l10n.attributeNewType),
-          content: TextField(
-            controller: controller,
-            decoration: InputDecoration(labelText: context.l10n.attributesNewTypeName),
-            textCapitalization: TextCapitalization.sentences,
-            autofocus: true,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.l10n.attributeNewType),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textInputAction: TextInputAction.done,
+          textCapitalization: TextCapitalization.sentences,
+          onSubmitted: (_) => submit(ctx),
+          decoration: InputDecoration(labelText: context.l10n.attributesNewTypeName),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.l10n.commonCancel),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(context.l10n.commonCancel),
-            ),
-            TextButton(
-              onPressed: () async {
-                final name = controller.text.trim();
-                if (name.isNotEmpty && widget.onCreateAttributeType != null) {
-                  final newType = await widget.onCreateAttributeType!();
-                  if (newType != null && dialogContext.mounted) {
-                    Navigator.pop(dialogContext);
-                  } else if (dialogContext.mounted) {
-                    Navigator.pop(dialogContext);
-                  }
-                }
-              },
-              child: Text(context.l10n.commonCreate),
-            ),
-          ],
-        );
-      },
-    );
+          TextButton(
+            onPressed: () => submit(ctx),
+            child: Text(context.l10n.commonCreate),
+          ),
+        ],
+      ),
+    ).then((_) => controller.dispose());
   }
 
   @override

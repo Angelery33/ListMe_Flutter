@@ -332,6 +332,10 @@ class DetailProgressSection extends StatelessWidget {
                                 controller: controller,
                                 keyboardType: TextInputType.number,
                                 autofocus: true,
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => Navigator.pop(
+                                  ctx, int.tryParse(controller.text),
+                                ),
                                 decoration: InputDecoration(
                                   suffixText: total != null ? '/ $total' : null,
                                 ),

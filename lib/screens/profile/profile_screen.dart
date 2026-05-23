@@ -268,9 +268,19 @@ class ProfileScreen extends StatelessWidget {
   /// actual, y llama a [ProfileProvider.updateUsername] al guardar.
   void _showEditUsernameDialog(BuildContext context) {
     final profile = context.read<ProfileProvider>();
-    final controller = TextEditingController(
-      text: profile.user?.username ?? '',
-    );
+    final controller = TextEditingController(text: profile.user?.username ?? '');
+
+    Future<void> submit(BuildContext ctx) async {
+      if (controller.text.isNotEmpty) {
+        final success = await profile.updateUsername(controller.text);
+        if (success && ctx.mounted) {
+          Navigator.pop(ctx);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.profileUsernameUpdated)),
+          );
+        }
+      }
+    }
 
     showDialog(
       context: context,
@@ -278,6 +288,9 @@ class ProfileScreen extends StatelessWidget {
         title: Text(context.l10n.profileEditUsername),
         content: TextField(
           controller: controller,
+          autofocus: true,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => submit(ctx),
           decoration: InputDecoration(
             labelText: ctx.l10n.profileUser,
             border: const OutlineInputBorder(),
@@ -289,30 +302,58 @@ class ProfileScreen extends StatelessWidget {
             child: Text(ctx.l10n.commonCancel),
           ),
           ElevatedButton(
-            onPressed: () async {
-              if (controller.text.isNotEmpty) {
-                final success = await profile.updateUsername(controller.text);
-                if (success && ctx.mounted) {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(context.l10n.profileUsernameUpdated)),
-                  );
-                }
-              }
-            },
+            onPressed: () => submit(ctx),
             child: Text(ctx.l10n.commonSave),
           ),
         ],
       ),
-    );
+    ).then((_) => controller.dispose());
   }
 
   /// Muestra un [AlertDialog] con tres campos de contraseña (actual, nueva, confirmar)
   /// y llama a [ProfileProvider.changePassword] al guardar después de una validación básica.
   void _showChangePasswordDialog(BuildContext context) {
-    final currentPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final newFocus = FocusNode();
+    final confirmFocus = FocusNode();
+
+    Future<void> submit(BuildContext ctx) async {
+      if (newCtrl.text != confirmCtrl.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ctx.l10n.authPasswordsMismatch)),
+        );
+        return;
+      }
+      if (newCtrl.text.length < 8) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ctx.l10n.profilePasswordTooShort)),
+        );
+        return;
+      }
+      final profile = context.read<ProfileProvider>();
+      final auth = context.read<AuthProvider>();
+      final success = await profile.changePassword(currentCtrl.text, newCtrl.text);
+      if (success && ctx.mounted) {
+        Navigator.pop(ctx);
+        // El backend invalida el refresh token al cambiar contraseña,
+        // así que hacemos logout inmediato para evitar errores posteriores.
+        await auth.logout();
+        if (context.mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context, AppRoutes.login, (route) => false,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(ctx.l10n.profilePasswordChanged)),
+          );
+        }
+      } else if (ctx.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(profile.errorMessage ?? 'Error')),
+        );
+      }
+    }
 
     showDialog(
       context: context,
@@ -322,28 +363,37 @@ class ProfileScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: currentPasswordController,
+              controller: currentCtrl,
               obscureText: true,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) => newFocus.requestFocus(),
               decoration: InputDecoration(
-            labelText: ctx.l10n.profileCurrentPassword,
+                labelText: ctx.l10n.profileCurrentPassword,
                 border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
-              controller: newPasswordController,
+              controller: newCtrl,
+              focusNode: newFocus,
               obscureText: true,
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) => confirmFocus.requestFocus(),
               decoration: InputDecoration(
-            labelText: ctx.l10n.profileNewPassword,
+                labelText: ctx.l10n.profileNewPassword,
                 border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
-              controller: confirmPasswordController,
+              controller: confirmCtrl,
+              focusNode: confirmFocus,
               obscureText: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => submit(ctx),
               decoration: InputDecoration(
-            labelText: ctx.l10n.profileConfirmPassword,
+                labelText: ctx.l10n.profileConfirmPassword,
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -355,54 +405,18 @@ class ProfileScreen extends StatelessWidget {
             child: Text(ctx.l10n.commonCancel),
           ),
           ElevatedButton(
-            onPressed: () async {
-              if (newPasswordController.text !=
-                  confirmPasswordController.text) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(ctx.l10n.authPasswordsMismatch)),
-                );
-                return;
-              }
-              if (newPasswordController.text.length < 8) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(ctx.l10n.profilePasswordTooShort),
-                  ),
-                );
-                return;
-              }
-              final profile = context.read<ProfileProvider>();
-              final auth = context.read<AuthProvider>();
-              final success = await profile.changePassword(
-                currentPasswordController.text,
-                newPasswordController.text,
-              );
-              if (success && ctx.mounted) {
-                Navigator.pop(ctx);
-                // El backend invalida el refresh token al cambiar contraseña,
-                // así que hacemos logout inmediato para evitar errores posteriores.
-                await auth.logout();
-                if (context.mounted) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.login,
-                    (route) => false,
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(ctx.l10n.profilePasswordChanged)),
-                  );
-                }
-              } else if (ctx.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(profile.errorMessage ?? 'Error')),
-                );
-              }
-            },
+            onPressed: () => submit(ctx),
             child: Text(ctx.l10n.profileChange),
           ),
         ],
       ),
-    );
+    ).then((_) {
+      currentCtrl.dispose();
+      newCtrl.dispose();
+      confirmCtrl.dispose();
+      newFocus.dispose();
+      confirmFocus.dispose();
+    });
   }
 
   /// Muestra un diálogo de confirmación antes de llamar a [AuthProvider.logout] y

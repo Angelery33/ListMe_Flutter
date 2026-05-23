@@ -89,6 +89,23 @@ class EntryStatusProgressSection extends StatefulWidget {
 /// para que se refleje el estado de habilitado/deshabilitado del interruptor de "disfrutando ahora".
 class _EntryStatusProgressSectionState
     extends State<EntryStatusProgressSection> {
+  // FocusNodes para navegación entre el par actual/total de cada campo de progreso.
+  final FocusNode _totalProgressFocus = FocusNode();
+  final FocusNode _totalSeasonFocus = FocusNode();
+  final FocusNode _totalChapterFocus = FocusNode();
+  final FocusNode _totalPageFocus = FocusNode();
+  final FocusNode _totalVolumeFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _totalProgressFocus.dispose();
+    _totalSeasonFocus.dispose();
+    _totalChapterFocus.dispose();
+    _totalPageFocus.dispose();
+    _totalVolumeFocus.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -185,78 +202,42 @@ class _EntryStatusProgressSectionState
     if (progressType == "Serie" || progressType == "Anime") {
       return Column(
         children: [
-          _buildDoubleField(
-            context,
-            l.progressSeason,
-            widget.seasonController,
-            widget.totalSeasonController,
-          ),
+          _buildDoubleField(context, l.progressSeason,
+              widget.seasonController, widget.totalSeasonController, _totalSeasonFocus),
           const SizedBox(height: 12),
-          _buildDoubleField(
-            context,
-            l.progressEpisode,
-            widget.chapterController,
-            widget.totalChapterController,
-          ),
+          _buildDoubleField(context, l.progressEpisode,
+              widget.chapterController, widget.totalChapterController, _totalChapterFocus),
         ],
       );
     } else if (progressType == "Libro") {
       return Column(
         children: [
-          _buildDoubleField(
-            context,
-            l.progressPage,
-            widget.pageController,
-            widget.totalPageController,
-          ),
+          _buildDoubleField(context, l.progressPage,
+              widget.pageController, widget.totalPageController, _totalPageFocus),
           const SizedBox(height: 12),
-          _buildDoubleField(
-            context,
-            l.progressVolume,
-            widget.volumeController,
-            widget.totalVolumeController,
-          ),
+          _buildDoubleField(context, l.progressVolume,
+              widget.volumeController, widget.totalVolumeController, _totalVolumeFocus),
         ],
       );
     } else if (progressType == "Manga") {
       return Column(
         children: [
-          _buildDoubleField(
-            context,
-            l.progressChapter,
-            widget.chapterController,
-            widget.totalChapterController,
-          ),
+          _buildDoubleField(context, l.progressChapter,
+              widget.chapterController, widget.totalChapterController, _totalChapterFocus),
           const SizedBox(height: 12),
-          _buildDoubleField(
-            context,
-            l.progressVolume,
-            widget.volumeController,
-            widget.totalVolumeController,
-          ),
+          _buildDoubleField(context, l.progressVolume,
+              widget.volumeController, widget.totalVolumeController, _totalVolumeFocus),
           const SizedBox(height: 12),
-          _buildDoubleField(
-            context,
-            l.progressPage,
-            widget.pageController,
-            widget.totalPageController,
-          ),
+          _buildDoubleField(context, l.progressPage,
+              widget.pageController, widget.totalPageController, _totalPageFocus),
         ],
       );
     } else if (progressType == "Funko") {
-      return _buildDoubleField(
-        context,
-        l.progressQuantity,
-        widget.currentProgressController,
-        widget.totalProgressController,
-      );
+      return _buildDoubleField(context, l.progressQuantity,
+          widget.currentProgressController, widget.totalProgressController, _totalProgressFocus);
     } else {
-      return _buildDoubleField(
-        context,
-        l.progressProgress,
-        widget.currentProgressController,
-        widget.totalProgressController,
-      );
+      return _buildDoubleField(context, l.progressProgress,
+          widget.currentProgressController, widget.totalProgressController, _totalProgressFocus);
     }
   }
 
@@ -268,6 +249,7 @@ class _EntryStatusProgressSectionState
     String label,
     TextEditingController? current,
     TextEditingController? total,
+    FocusNode totalFocus,
   ) {
     return Row(
       children: [
@@ -275,30 +257,28 @@ class _EntryStatusProgressSectionState
           child: TextFormField(
             controller: current,
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (_) => totalFocus.requestFocus(),
             decoration: InputDecoration(
               labelText: "$label ${context.l10n.progressActual}",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            "/",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
+          child: Text("/", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ),
         Expanded(
           child: TextFormField(
             controller: total,
+            focusNode: totalFocus,
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
             decoration: InputDecoration(
               labelText: context.l10n.progressTotal,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),

@@ -529,80 +529,86 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
   /// localmente si se crea una lista nueva.
   void _showAddGenreDialog() {
     final controller = TextEditingController();
+
+    Future<void> submit(BuildContext ctx) async {
+      final name = controller.text.trim();
+      if (name.isNotEmpty && _list.id != null) {
+        final listsProvider = ctx.read<ListsProvider>();
+        await listsProvider.addLibraryGenre(_list.id!, name);
+        if (mounted) {
+          final genres = await listsProvider.getLibraryGenres(_list.id!);
+          setState(() { _libraryGenres = genres; _genre = name; });
+          Navigator.pop(ctx);
+        }
+      }
+    }
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.genreAddTitle),
+      builder: (ctx) => AlertDialog(
+        title: Text(ctx.l10n.genreAddTitle),
         content: TextField(
           controller: controller,
-          decoration: InputDecoration(labelText: context.l10n.genreName),
-          textCapitalization: TextCapitalization.sentences,
           autofocus: true,
+          textInputAction: TextInputAction.done,
+          textCapitalization: TextCapitalization.sentences,
+          onSubmitted: (_) => submit(ctx),
+          decoration: InputDecoration(labelText: ctx.l10n.genreName),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.commonCancel.toUpperCase()),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(ctx.l10n.commonCancel.toUpperCase()),
           ),
           TextButton(
-            onPressed: () async {
-              final name = controller.text.trim();
-              if (name.isNotEmpty && _list.id != null) {
-                final listsProvider = context.read<ListsProvider>();
-                await listsProvider.addLibraryGenre(_list.id!, name);
-                if (mounted) {
-                  final genres = await listsProvider.getLibraryGenres(
-                    _list.id!,
-                  );
-                  setState(() {
-                    _libraryGenres = genres;
-                    _genre = name;
-                  });
-                  Navigator.pop(context);
-                }
-              }
-            },
-            child: Text(context.l10n.commonAdd.toUpperCase()),
+            onPressed: () => submit(ctx),
+            child: Text(ctx.l10n.commonAdd.toUpperCase()),
           ),
         ],
       ),
-    );
+    ).then((_) => controller.dispose());
   }
 
   /// Muestra un [AlertDialog] con un campo de texto para introducir un nuevo nombre de tipo
   /// de atributo y devuelve el nombre introducido, o `null` si se cancela.
   Future<String?> _showCreateAttributeTypeDialog() async {
     final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.l10n.attributeNewType),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: dialogContext.l10n.attributesNewTypeName,
-          ),
-          textCapitalization: TextCapitalization.sentences,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(dialogContext.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () {
+    try {
+      return await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(ctx.l10n.attributeNewType),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            textCapitalization: TextCapitalization.sentences,
+            onSubmitted: (_) {
               final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                Navigator.pop(dialogContext, name);
-              }
+              if (name.isNotEmpty) Navigator.pop(ctx, name);
             },
-            child: Text(dialogContext.l10n.commonCreate),
+            decoration: InputDecoration(
+              labelText: ctx.l10n.attributesNewTypeName,
+            ),
           ),
-        ],
-      ),
-    );
-    return result;
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(ctx.l10n.commonCancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) Navigator.pop(ctx, name);
+              },
+              child: Text(ctx.l10n.commonCreate),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   /// Determina la unidad de progreso y los valores actual/total según [_list.progressType].

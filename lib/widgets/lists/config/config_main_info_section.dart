@@ -6,7 +6,7 @@ import '../../../core/i18n/l10n_extension.dart';
 /// Proporciona un campo de nombre obligatorio (con validación) y un campo de descripción
 /// multilínea opcional. Ambos controladores pertenecen a la pantalla principal
 /// para que pueda leer sus valores al guardar.
-class ConfigMainInfoSection extends StatelessWidget {
+class ConfigMainInfoSection extends StatefulWidget {
   /// Controlador para el campo de texto del nombre de la biblioteca.
   /// El campo es obligatorio; se muestra un error de validación cuando está vacío.
   final TextEditingController nameController;
@@ -22,6 +22,19 @@ class ConfigMainInfoSection extends StatelessWidget {
   });
 
   @override
+  State<ConfigMainInfoSection> createState() => _ConfigMainInfoSectionState();
+}
+
+class _ConfigMainInfoSectionState extends State<ConfigMainInfoSection> {
+  final FocusNode _descFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _descFocus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
@@ -30,9 +43,11 @@ class ConfigMainInfoSection extends StatelessWidget {
         child: Column(
           children: [
             TextFormField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: context.l10n.listConfigNameLabel,
+              controller: widget.nameController,
+              textInputAction: TextInputAction.next,
+              onFieldSubmitted: (_) => _descFocus.requestFocus(),
+              decoration: const InputDecoration(
+                labelText: 'Nombre',
                 prefixIcon: Icon(Icons.list_alt),
                 border: OutlineInputBorder(),
               ),
@@ -41,11 +56,14 @@ class ConfigMainInfoSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: descController,
+              controller: widget.descController,
+              focusNode: _descFocus,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
               decoration: InputDecoration(
                 labelText: context.l10n.listConfigDescriptionOptional,
-                prefixIcon: Icon(Icons.description),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.description),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
