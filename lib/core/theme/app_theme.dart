@@ -60,18 +60,16 @@ class AppTheme {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (isTitanium(scheme)) {
-      final Color lighterGray = !isDark
-          ? const Color(0xFF3C3C3E)
-          : const Color(0xFFE5E5EA);
-      final Color darkerGray = !isDark
+      final Color from = isDark
           ? const Color(0xFF1C1C1E)
-          : const Color.fromARGB(255, 107, 107, 109);
+          : const Color(0xFF1C1C1E);
+      final Color to = isDark
+          ? const Color(0xFF3C3C3E)
+          : const Color(0xFF3C3C3E);
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: isDark
-                ? [darkerGray, lighterGray]
-                : [darkerGray, lighterGray],
+            colors: [from, to],
             begin: Alignment.topLeft,
             end: const Alignment(0.8, 0.8),
           ),
@@ -96,9 +94,8 @@ class AppTheme {
   /// Cuando es `true` los íconos y el título del AppBar deben usar un color
   /// oscuro para contraste con el fondo gris claro del tema Titanium.
   static bool appBarUsesDarkText(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isTitanium(scheme) && !isDark;
+    // El fondo siempre es oscuro → elementos siempre blancos.
+    return false;
   }
 
   // --- Privados ---

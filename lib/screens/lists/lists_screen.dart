@@ -86,12 +86,10 @@ class _ListsScreenState extends State<ListsScreen> {
   /// Construye una lista reordenable (compacta) o una cuadrícula adaptable (mediana /
   /// expandida) dependiendo de [responsive.isCompact].
   Widget _buildListBody(ListsProvider listsProvider, ResponsiveProvider responsive) {
-    final padding = EdgeInsets.fromLTRB(
-      responsive.horizontalPadding,
-      16,
-      responsive.horizontalPadding,
-      100,
-    );
+    final hPadding = responsive.isCompact
+        ? responsive.horizontalPadding
+        : responsive.horizontalPadding + 48;
+    final padding = EdgeInsets.fromLTRB(hPadding, 32, hPadding, 200);
 
     // Compact: reorderable single-column list
     if (responsive.isCompact) {
@@ -104,28 +102,62 @@ class _ListsScreenState extends State<ListsScreen> {
       );
     }
 
-    // Medium / Expanded: grid that grows with screen width
-    final maxCrossAxisExtent = responsive.isExpanded ? 520.0 : 560.0;
-    return GridView.builder(
-      padding: padding,
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: maxCrossAxisExtent,
-        mainAxisExtent: 110,
-        crossAxisSpacing: 18,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: listsProvider.lists.length,
-      itemBuilder: (context, index) =>
-          _buildListCard(listsProvider.lists[index]),
+    // Medium / Expanded: cuatro columnas con altura dinámica por fila.
+    // El padding se aplica al Column interior para que LayoutBuilder
+    // reciba el ancho real disponible y calcule colWidth correctamente.
+    final lists = listsProvider.lists;
+    const cols = 4;
+    const colSpacing = 20.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth
+            - padding.left
+            - padding.right
+            - colSpacing * (cols - 1);
+        final colWidth = availableWidth / cols;
+        final rows = <Widget>[];
+        for (int i = 0; i < lists.length; i += cols) {
+          rows.add(Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(cols, (j) {
+              final idx = i + j;
+              return [
+                if (j > 0) const SizedBox(width: colSpacing),
+                SizedBox(
+                  width: colWidth,
+                  child: idx < lists.length
+                      ? _buildListCard(lists[idx], webLayout: true)
+                      : const SizedBox.shrink(),
+                ),
+              ];
+            }).expand((w) => w).toList(),
+          ));
+          if (i + cols < lists.length) rows.add(const SizedBox(height: 12));
+        }
+        return Align(
+          alignment: Alignment.topLeft,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: padding,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: rows,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   /// Construye una [ListCard] para [list] configurada para navegar y realizar acciones de editar, eliminar y
   /// compartir.
-  Widget _buildListCard(ListModel list) {
+  Widget _buildListCard(ListModel list, {bool webLayout = false}) {
     return ListCard(
       key: ValueKey(list.id),
       list: list,
+      webLayout: webLayout,
       onTap: () => Navigator.pushNamed(context, AppRoutes.list, arguments: list),
       onEdit: () async {
         await Navigator.pushNamed(context, AppRoutes.listConfig, arguments: list);

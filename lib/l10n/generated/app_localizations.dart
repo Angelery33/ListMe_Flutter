@@ -2333,6 +2333,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Próximamente\nfeed de amigos'**
   String get socialFeedComingSoon;
+
+  /// No description provided for @listOwnerYou.
+  ///
+  /// In es, this message translates to:
+  /// **'Tuya'**
+  String get listOwnerYou;
+
+  /// No description provided for @listOwnerCollaborator.
+  ///
+  /// In es, this message translates to:
+  /// **'Colaborador'**
+  String get listOwnerCollaborator;
 }
 
 class _AppLocalizationsDelegate

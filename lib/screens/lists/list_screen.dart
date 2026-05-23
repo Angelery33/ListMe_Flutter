@@ -142,6 +142,10 @@ class _ListScreenState extends State<ListScreen> {
   /// Carga los elementos de la fuente adecuada basándose en los argumentos del widget.
   void _loadItems() {
     final itemsProvider = context.read<ItemsProvider>();
+    // Reset search state whenever a (new) list is opened.
+    itemsProvider.setSearchQuery('');
+    _searchController.clear();
+    setState(() => _isSearchVisible = false);
 
     // Si ya tenemos el objeto list completo con id, usarlo
     if (_currentList.id != null && _currentList.id != 0) {

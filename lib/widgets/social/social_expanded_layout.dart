@@ -37,22 +37,25 @@ class SocialExpandedLayout extends StatelessWidget {
         showBackButton: false,
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+        padding: const EdgeInsets.fromLTRB(64, 50, 64, 30),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Columna izquierda: amigos ──────────────────────────────────
-            SizedBox(
-              width: 280,
+            // ── Columna izquierda: amigos (20 %) ──────────────────────────
+            Expanded(
+              flex: 25,
               child: _FriendsPanel(friends: friends),
             ),
             const SizedBox(width: 16),
-            // ── Columna central: feed ──────────────────────────────────────
-            const Expanded(child: _FeedPanel()),
+            // ── Columna central: feed (50 %) ───────────────────────────────
+            const Expanded(
+              flex: 50,
+              child: _FeedPanel(),
+            ),
             const SizedBox(width: 16),
-            // ── Columna derecha: solicitudes e invitaciones ────────────────
-            SizedBox(
-              width: 300,
+            // ── Columna derecha: solicitudes e invitaciones (25 %) ────────
+            Expanded(
+              flex: 25,
               child: _RightSidePanel(
                 friends: friends,
                 invitations: invitations,
@@ -81,7 +84,7 @@ class _FriendsPanel extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
         ),
@@ -94,19 +97,26 @@ class _FriendsPanel extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
             child: Row(
               children: [
-                Text(
-                  '${context.l10n.socialFriendsTab.toUpperCase()} (${friends.friends.length})',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+                Flexible(
+                  child: Text(
+                    '${context.l10n.socialFriendsTab.toUpperCase()} (${friends.friends.length})',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
-                FilledButton.tonalIcon(
+                const SizedBox(width: 8),
+                IconButton.filled(
                   onPressed: () => showAddFriendDialog(context, friends),
                   icon: const Icon(Icons.person_add_outlined, size: 18),
-                  label: Text(context.l10n.socialAddFriend),
+                  tooltip: context.l10n.socialAddFriend,
+                  style: IconButton.styleFrom(
+                    backgroundColor: theme.colorScheme.secondaryContainer,
+                    foregroundColor: theme.colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ],
             ),

@@ -204,29 +204,33 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
         ),
       );
     } else {
-      final imageWidth = responsive.isMedium ? 320.0 : 400.0;
-      body = Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: imageWidth,
-            child: DetailImageCarousel(item: item, images: detailsProvider.images),
-          ),
-          VerticalDivider(
-            width: 1,
-            thickness: 1,
-            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(responsive.horizontalPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: _detailSections(item, library),
+      body = LayoutBuilder(
+        builder: (context, constraints) {
+          final imageWidth = (constraints.maxWidth * 0.32).clamp(260.0, 480.0);
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: imageWidth,
+                child: DetailImageCarousel(item: item, images: detailsProvider.images),
               ),
-            ),
-          ),
-        ],
+              VerticalDivider(
+                width: 1,
+                thickness: 1,
+                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(responsive.horizontalPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: _detailSections(item, library),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       );
     }
 

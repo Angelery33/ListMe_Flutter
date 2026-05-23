@@ -394,5 +394,8 @@
   "progressSetTitle": "Establir {label}",
   "@progressSetTitle": { "placeholders": { "label": { "type": "String" } } },
 
-  "socialFeedComingSoon": "Pròximament\nfeed d'amics"
+  "socialFeedComingSoon": "Pròximament\nfeed d'amics",
+
+  "listOwnerYou": "Teva",
+  "listOwnerCollaborator": "Col·laborador"
 }

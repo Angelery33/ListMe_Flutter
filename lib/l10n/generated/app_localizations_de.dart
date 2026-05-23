@@ -1158,4 +1158,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get socialFeedComingSoon => 'Demnächst\nFreundes-Feed';
+
+  @override
+  String get listOwnerYou => 'Deine';
+
+  @override
+  String get listOwnerCollaborator => 'Mitarbeiter';
 }

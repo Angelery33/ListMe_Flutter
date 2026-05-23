@@ -394,5 +394,8 @@
   "progressSetTitle": "Imposta {label}",
   "@progressSetTitle": { "placeholders": { "label": { "type": "String" } } },
 
-  "socialFeedComingSoon": "Prossimamente\nfeed amici"
+  "socialFeedComingSoon": "Prossimamente\nfeed amici",
+
+  "listOwnerYou": "Tua",
+  "listOwnerCollaborator": "Collaboratore"
 }

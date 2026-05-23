@@ -101,8 +101,7 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isTitanium = AppTheme.isTitanium(scheme);
-    final useDarkText = isTitanium;
+    final useDarkText = AppTheme.appBarUsesDarkText(context);
 
     final textColor = useDarkText ? Colors.black87 : Colors.white;
     final hintColor = useDarkText ? Colors.black54 : Colors.white54;

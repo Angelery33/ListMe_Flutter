@@ -67,7 +67,7 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
               title,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: fgColor,
               ),
             ),
             backgroundColor: Colors.transparent,

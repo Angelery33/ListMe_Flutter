@@ -5,6 +5,9 @@ import '../../core/config/routes.dart';
 import '../../core/providers/responsive_provider.dart';
 import '../../core/providers/sidebar_provider.dart';
 
+/// Ancho mínimo de pantalla (dp) a partir del cual el rail muestra etiquetas por defecto.
+const double _kRailExpandThreshold = 1100;
+
 /// Pares de icono/icono seleccionado para cada destino de navegación.
 ///
 /// Destinos compartidos entre la barra inferior y el riel de navegación.
@@ -244,6 +247,9 @@ class _WideLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final responsive = context.watch<ResponsiveProvider>();
+    // Auto-expand when screen is wide enough; user toggle overrides on large screens.
+    final effectiveExpanded = isExpanded && responsive.screenWidth >= _kRailExpandThreshold;
 
     return Scaffold(
       appBar: appBar,
@@ -253,13 +259,13 @@ class _WideLayout extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            width: isExpanded ? 175 : 80,
+            width: effectiveExpanded ? 175 : 80,
             color: theme.colorScheme.surface,
             child: Column(
               children: [
                 Expanded(
                   child: NavigationRail(
-                    extended: isExpanded,
+                    extended: effectiveExpanded,
                     selectedIndex: currentIndex,
                     onDestinationSelected: onTap,
                     backgroundColor: Colors.transparent,
@@ -271,7 +277,7 @@ class _WideLayout extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
-                    leading: isExpanded
+                    leading: effectiveExpanded
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             child: Text(
@@ -287,11 +293,11 @@ class _WideLayout extends StatelessWidget {
                         .map(
                           (d) => NavigationRailDestination(
                             icon: Tooltip(
-                              message: isExpanded ? '' : d.label,
+                              message: effectiveExpanded ? '' : d.label,
                               child: Icon(d.icon),
                             ),
                             selectedIcon: Tooltip(
-                              message: isExpanded ? '' : d.label,
+                              message: effectiveExpanded ? '' : d.label,
                               child: Icon(d.selectedIcon),
                             ),
                             label: Text(d.label),
@@ -303,15 +309,15 @@ class _WideLayout extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: AnimatedOpacity(
-                    opacity: isExpanded ? 1.0 : 0.7,
+                    opacity: effectiveExpanded ? 1.0 : 0.7,
                     duration: const Duration(milliseconds: 300),
                     child: IconButton(
                       icon: Icon(
-                        isExpanded ? Icons.keyboard_arrow_left : Icons.keyboard_arrow_right,
+                        effectiveExpanded ? Icons.keyboard_arrow_left : Icons.keyboard_arrow_right,
                         size: 20,
                       ),
                       onPressed: onToggleExpanded,
-                      tooltip: isExpanded ? context.l10n.expandCollapse : context.l10n.expandExpand,
+                      tooltip: effectiveExpanded ? context.l10n.expandCollapse : context.l10n.expandExpand,
                     ),
                   ),
                 ),

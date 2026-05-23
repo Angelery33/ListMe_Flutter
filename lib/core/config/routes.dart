@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_screen.dart';
 import '../../screens/lists/lists_screen.dart';
@@ -12,6 +13,11 @@ import '../../screens/items/item_entry_screen.dart';
 import '../../screens/items/item_detail_screen.dart';
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
+import '../../providers/lists/lists_provider.dart';
+import '../../providers/profile/profile_provider.dart';
+import '../../providers/friends/friends_provider.dart';
+import '../../providers/invitations/invitations_provider.dart';
+import '../navigation/refresh_on_enter.dart';
 
 /// Gestión centralizada de las rutas de la aplicación.
 ///
@@ -64,7 +70,10 @@ class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
     login: (_) => const LoginScreen(),
     register: (_) => const RegisterScreen(),
-    lists: (_) => const ListsScreen(),
+    lists: (context) => RefreshOnEnter(
+      onEnter: () => context.read<ListsProvider>().fetchLists(),
+      child: const ListsScreen(),
+    ),
     list: (context) {
       final args = ModalRoute.of(context)!.settings.arguments;
 
@@ -94,10 +103,19 @@ class AppRoutes {
       final args = ModalRoute.of(context)!.settings.arguments;
       return ListConfigScreen(library: args is ListModel ? args : null);
     },
-    profile: (_) => const ProfileScreen(),
+    profile: (context) => RefreshOnEnter(
+      onEnter: () => context.read<ProfileProvider>().loadProfile(),
+      child: const ProfileScreen(),
+    ),
     settings: (_) => const SettingsScreen(),
     info: (_) => const InfoScreen(),
-    social: (_) => const SocialScreen(),
+    social: (context) => RefreshOnEnter(
+      onEnter: () {
+        context.read<FriendsProvider>().loadAll();
+        context.read<InvitationsProvider>().loadPendingInvitations();
+      },
+      child: const SocialScreen(),
+    ),
     itemEntry: (_) => const ItemEntryScreen(),
     itemDetail: (context) {
       final args = ModalRoute.of(context)?.settings.arguments;

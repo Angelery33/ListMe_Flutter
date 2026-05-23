@@ -118,6 +118,11 @@ class ListModel {
   @HiveField(23)
   final int itemCount;
 
+  /// Nombre de usuario del propietario de la biblioteca. Solo presente en listas
+  /// compartidas donde el usuario autenticado es colaborador.
+  @HiveField(25)
+  final String? ownerUsername;
+
   /// La lista ordenada de valores de estado que se muestran como pestañas de filtro para esta biblioteca.
   /// Se almacena como una cadena separada por comas en la API y se divide al deserializar.
   @HiveField(24)
@@ -152,6 +157,7 @@ class ListModel {
     this.icon = 'list',
     this.itemCount = 0,
     this.statusOrder,
+    this.ownerUsername,
   });
 
   /// Crea un [ListModel] a partir del mapa JSON devuelto por la API, mapeando
@@ -191,6 +197,7 @@ class ListModel {
           ?.split(',')
           .where((s) => s.isNotEmpty)
           .toList(),
+      ownerUsername: json['ownerUsername'] as String?,
     );
   }
 
@@ -258,6 +265,7 @@ class ListModel {
     String? icon,
     int? itemCount,
     List<String>? statusOrder,
+    String? ownerUsername,
   }) {
     return ListModel(
       id: id ?? this.id,
@@ -285,6 +293,7 @@ class ListModel {
       icon: icon ?? this.icon,
       itemCount: itemCount ?? this.itemCount,
       statusOrder: statusOrder ?? this.statusOrder,
+      ownerUsername: ownerUsername ?? this.ownerUsername,
     );
   }
 }
