@@ -46,10 +46,12 @@ class SocialScreen extends StatelessWidget {
 // LAYOUT WEB / EXPANDED (≥ 840 dp)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Layout de dos columnas para pantallas anchas.
+/// Layout web con amigos centrados (ancho limitado) y panel derecho flotante.
 ///
-/// La columna izquierda contiene las secciones de solicitudes de amistad e
-/// invitaciones a listas. La columna derecha muestra la lista de amigos.
+/// - **Centro**: lista de amigos con `maxWidth` de 700 dp, centrada en el espacio
+///   que queda entre el NavigationRail y el panel lateral.
+/// - **Derecha**: columna de 300 dp con dos cards independientes (solicitudes de
+///   amistad e invitaciones a listas), cada una con scroll propio.
 class _ExpandedLayout extends StatelessWidget {
   final FriendsProvider friends;
   final InvitationsProvider invitations;
@@ -67,15 +69,14 @@ class _ExpandedLayout extends StatelessWidget {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Panel izquierdo ────────────────────────────────────────────────
-          SizedBox(
-            width: 350,
-            child: _SidePanel(friends: friends, invitations: invitations),
-          ),
-          const VerticalDivider(width: 1),
-          // ── Panel derecho ──────────────────────────────────────────────────
+          // ── Área central ───────────────────────────────────────────────────
           Expanded(
             child: _FriendsPanel(friends: friends),
+          ),
+          // ── Panel lateral derecho ──────────────────────────────────────────
+          SizedBox(
+            width: 300,
+            child: _RightSidePanel(friends: friends, invitations: invitations),
           ),
         ],
       ),
@@ -83,70 +84,108 @@ class _ExpandedLayout extends StatelessWidget {
   }
 }
 
-/// Panel lateral izquierdo del layout web con dos secciones apiladas:
-/// solicitudes de amistad e invitaciones a listas.
-class _SidePanel extends StatelessWidget {
+/// Panel derecho con dos cards flotantes: solicitudes e invitaciones.
+///
+/// Cada card tiene su propio scroll interno para no bloquear la página entera.
+class _RightSidePanel extends StatelessWidget {
   final FriendsProvider friends;
   final InvitationsProvider invitations;
 
-  const _SidePanel({required this.friends, required this.invitations});
+  const _RightSidePanel({required this.friends, required this.invitations});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-            children: [
-              _SectionHeader(
-                icon: Icons.person_add_outlined,
-                title: 'Solicitudes de amistad',
-                badge: friends.pendingCount,
-              ),
-              const SizedBox(height: 8),
-              if (friends.isLoading)
-                const _SectionLoading()
-              else if (friends.pendingRequests.isEmpty)
-                const _SectionEmpty(
-                  icon: Icons.people_outline,
-                  message: 'Sin solicitudes pendientes',
-                )
-              else
-                ...friends.pendingRequests.map(
-                  (r) => _FriendRequestTile(
-                    request: r,
-                    onAccept: () => friends.acceptRequest(r.id),
-                    onReject: () => friends.rejectRequest(r.id),
-                  ),
-                ),
-              const SizedBox(height: 28),
-              _SectionHeader(
-                icon: Icons.mail_outline_rounded,
-                title: 'Invitaciones a listas',
-                badge: invitations.pendingCount,
-              ),
-              const SizedBox(height: 8),
-              if (invitations.isLoading)
-                const _SectionLoading()
-              else if (invitations.pendingInvitations.isEmpty)
-                const _SectionEmpty(
-                  icon: Icons.inbox_outlined,
-                  message: 'Sin invitaciones pendientes',
-                )
-              else
-                ...invitations.pendingInvitations.map(
-                  (inv) => _InvitationTile(invitation: inv),
-                ),
-            ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(0, 20, 16, 24),
+      child: Column(
+        children: [
+          // ── Card: Solicitudes de amistad ───────────────────────────────────
+          _FloatingCard(
+            header: _SectionHeader(
+              icon: Icons.person_add_outlined,
+              title: 'Solicitudes',
+              badge: friends.pendingCount,
+            ),
+            child: friends.isLoading
+                ? const _SectionLoading()
+                : friends.pendingRequests.isEmpty
+                    ? const _SectionEmpty(
+                        icon: Icons.people_outline,
+                        message: 'Sin solicitudes pendientes',
+                      )
+                    : Column(
+                        children: friends.pendingRequests
+                            .map(
+                              (r) => _FriendRequestTile(
+                                request: r,
+                                onAccept: () => friends.acceptRequest(r.id),
+                                onReject: () => friends.rejectRequest(r.id),
+                              ),
+                            )
+                            .toList(),
+                      ),
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          // ── Card: Invitaciones a listas ────────────────────────────────────
+          _FloatingCard(
+            header: _SectionHeader(
+              icon: Icons.mail_outline_rounded,
+              title: 'Invitaciones',
+              badge: invitations.pendingCount,
+            ),
+            child: invitations.isLoading
+                ? const _SectionLoading()
+                : invitations.pendingInvitations.isEmpty
+                    ? const _SectionEmpty(
+                        icon: Icons.inbox_outlined,
+                        message: 'Sin invitaciones pendientes',
+                      )
+                    : Column(
+                        children: invitations.pendingInvitations
+                            .map((inv) => _InvitationTile(invitation: inv))
+                            .toList(),
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// Panel principal derecho del layout web con la lista de amigos.
+/// Card flotante con borde suave usada en el panel lateral derecho.
+class _FloatingCard extends StatelessWidget {
+  final Widget header;
+  final Widget child;
+
+  const _FloatingCard({required this.header, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            header,
+            const SizedBox(height: 12),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Panel central del layout web con la lista de amigos centrada y con ancho limitado.
 class _FriendsPanel extends StatelessWidget {
   final FriendsProvider friends;
 
@@ -156,29 +195,36 @@ class _FriendsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 16, 4),
-          child: Row(
-            children: [
-              Text(
-                'AMIGOS (${friends.friends.length})',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
+        // ── Encabezado ───────────────────────────────────────────────────────
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
+              child: Row(
+                children: [
+                  Text(
+                    'AMIGOS (${friends.friends.length})',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const Spacer(),
+                  FilledButton.tonalIcon(
+                    onPressed: () => _showAddFriendDialog(context, friends),
+                    icon: const Icon(Icons.person_add_outlined, size: 18),
+                    label: const Text('Añadir amigo'),
+                  ),
+                ],
               ),
-              const Spacer(),
-              FilledButton.tonalIcon(
-                onPressed: () => _showAddFriendDialog(context, friends),
-                icon: const Icon(Icons.person_add_outlined, size: 18),
-                label: const Text('Añadir amigo'),
-              ),
-            ],
+            ),
           ),
         ),
+        // ── Lista ────────────────────────────────────────────────────────────
         Expanded(
           child: RefreshIndicator(
             onRefresh: friends.loadAll,
@@ -188,14 +234,22 @@ class _FriendsPanel extends StatelessWidget {
                     ? _buildEmptyFriends(context, theme)
                     : ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
                         itemCount: friends.friends.length,
-                        itemBuilder: (_, i) => FriendCard(
-                          friend: friends.friends[i],
-                          onRemove: () => _confirmRemove(
-                            context,
-                            friends.friends[i].username,
-                            friends,
+                        itemBuilder: (_, i) => Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 700),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: FriendCard(
+                                friend: friends.friends[i],
+                                onRemove: () => _confirmRemove(
+                                  context,
+                                  friends.friends[i].username,
+                                  friends,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),

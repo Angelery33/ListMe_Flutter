@@ -286,8 +286,14 @@ class _WideLayout extends StatelessWidget {
                     destinations: _destinationsFor(context)
                         .map(
                           (d) => NavigationRailDestination(
-                            icon: Icon(d.icon),
-                            selectedIcon: Icon(d.selectedIcon),
+                            icon: Tooltip(
+                              message: isExpanded ? '' : d.label,
+                              child: Icon(d.icon),
+                            ),
+                            selectedIcon: Tooltip(
+                              message: isExpanded ? '' : d.label,
+                              child: Icon(d.selectedIcon),
+                            ),
                             label: Text(d.label),
                           ),
                         )

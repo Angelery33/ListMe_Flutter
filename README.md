@@ -1,22 +1,35 @@
 # ListMe
 
-> **Gestiona todo lo que quieres ver, leer y jugar** — en un solo lugar, desde cualquier dispositivo.
+> **Organiza cualquier cosa que quieras recordar, coleccionar o seguir** — en un solo lugar, desde cualquier dispositivo.
 
-ListMe es una aplicación multiplataforma (Android, Web, Windows) construida con Flutter que permite organizar colecciones personales de películas, series, libros, manga, anime y videojuegos. Los usuarios pueden crear bibliotecas, añadir ítems de forma manual o importarlos desde APIs externas (TMDb, OMDb, Google Books, MAL/Jikan), y compartir sus listas con otros usuarios mediante invitaciones.
+ListMe es una aplicación multiplataforma (Android, Web, Windows) construida con Flutter que permite crear listas de cualquier tipo: películas pendientes, restaurantes visitados, libros leídos, ideas de tatuajes, lugares que visitar, videojuegos completados o cualquier colección que se te ocurra. Los usuarios pueden añadir ítems de forma manual o importarlos desde APIs externas (TMDb, OMDb, Google Books, MAL/Jikan), personalizar cada ítem con atributos propios y compartir sus listas con otros usuarios mediante invitaciones.
 
 ---
 
 ## Características principales
 
-- **Bibliotecas personalizadas** — crea y organiza colecciones por categoría (películas, series, libros, manga, anime, videojuegos)
+- **Listas para todo** — crea listas de cualquier tipo: media, lugares, ideas, colecciones físicas o lo que necesites
 - **Importación desde APIs** — busca y añade contenido directamente desde TMDb, OMDb, Google Books y MyAnimeList (Jikan)
-- **Atributos dinámicos** — cada ítem puede tener atributos personalizados (puntuación, estado, fecha, notas…)
+- **Atributos dinámicos** — cada ítem puede tener atributos personalizados (puntuación, estado, fecha, notas, precio…)
 - **Galería de imágenes** — sube fotos a cada ítem y elige una imagen favorita como miniatura
-- **Listas compartidas** — invita a otros usuarios a colaborar en tus bibliotecas
+- **Listas compartidas** — invita a otros usuarios a colaborar en tus listas
 - **Búsqueda y filtros** — filtra por nombre, categoría, estado y más
 - **Soporte multiidioma** — español e inglés incluidos
 - **Temas y personalización** — modo claro/oscuro, colores de acento, escala de fuente
 - **Claves API configurables** — introduce tus propias claves de TMDb, OMDb y Google Books desde los ajustes
+
+---
+
+## Casos de uso de ejemplo
+
+| Lista | Qué guardar en cada ítem |
+|-------|--------------------------|
+| Películas pendientes | Título, género, plataforma, puntuación |
+| Restaurantes visitados | Nombre, ciudad, tipo de cocina, valoración |
+| Ideas de tatuajes | Descripción, estilo, artista de referencia, foto |
+| Libros leídos | Título, autor, fecha de lectura, reseña |
+| Lugares que visitar | Nombre, país, foto, estado (pendiente / visitado) |
+| Videojuegos completados | Título, horas jugadas, puntuación, plataforma |
 
 ---
 
