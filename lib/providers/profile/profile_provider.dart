@@ -150,6 +150,32 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
+  /// Actualiza la foto de perfil del usuario autenticado.
+  ///
+  /// [photoUrl] debe ser una URL de descarga válida de Firebase Storage. Actualiza
+  /// [user] localmente en caso de éxito. Devuelve `true` en caso de éxito, `false`
+  /// y establece [errorMessage] en caso de fallo.
+  Future<bool> updateProfilePhoto(String photoUrl) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _user = await _profileRepository.updateProfilePhoto(photoUrl);
+      _logger.info('ProfileProvider: Foto de perfil actualizada');
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Error al actualizar foto de perfil';
+      _logger.error('ProfileProvider: Error al actualizar foto', e);
+      notifyListeners();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   /// Limpia [errorMessage] y notifica a los listeners para que los banners de error se oculten.
   void clearError() {
     _errorMessage = null;

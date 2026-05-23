@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:list_me/core/i18n/l10n_extension.dart';
 import 'package:list_me/providers/auth/auth_provider.dart';
 import 'package:list_me/providers/profile/profile_provider.dart';
@@ -9,6 +10,8 @@ import 'package:list_me/widgets/shared/responsive_centered_content.dart';
 import 'package:list_me/core/config/routes.dart';
 import 'package:list_me/providers/invitations/invitations_provider.dart';
 import 'package:list_me/screens/social/invitations_screen.dart';
+import 'package:list_me/core/services/firebase_storage_service.dart';
+import 'package:list_me/core/services/image_picker_service.dart';
 
 /// Pantalla que muestra el perfil del usuario autenticado, estadísticas de uso y
 /// acciones de gestión de cuenta.
@@ -46,18 +49,7 @@ class ProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: theme.colorScheme.primaryContainer,
-                    child: Text(
-                      (profile.user?.username ?? 'U')[0].toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ),
+                  const _ProfileAvatar(),
                   const SizedBox(height: 16),
                   Text(
                     profile.user?.username ?? 'Usuario',
@@ -501,6 +493,137 @@ class ProfileScreen extends StatelessWidget {
             child: Text(ctx.l10n.commonDelete),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Avatar de perfil interactivo que muestra la foto del usuario o su inicial.
+///
+/// Al tocar el avatar se presenta una hoja inferior con las opciones de cámara y galería.
+/// Tras seleccionar una imagen, la sube a Firebase Storage y persiste la URL en el backend
+/// a través de [ProfileProvider.updateProfilePhoto].
+class _ProfileAvatar extends StatefulWidget {
+  const _ProfileAvatar();
+
+  @override
+  State<_ProfileAvatar> createState() => _ProfileAvatarState();
+}
+
+class _ProfileAvatarState extends State<_ProfileAvatar> {
+  bool _uploading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final profile = context.watch<ProfileProvider>();
+    final photoUrl = profile.user?.photoUrl;
+    final username = profile.user?.username ?? 'U';
+
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        GestureDetector(
+          onTap: _uploading ? null : () => _pickAndUpload(context),
+          child: CircleAvatar(
+            radius: 50,
+            backgroundColor: scheme.primaryContainer,
+            backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
+                ? NetworkImage(photoUrl)
+                : null,
+            child: (photoUrl == null || photoUrl.isEmpty)
+                ? Text(
+                    username[0].toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onPrimaryContainer,
+                    ),
+                  )
+                : null,
+          ),
+        ),
+        if (_uploading)
+          const Positioned.fill(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.black38,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+          ),
+        if (!_uploading)
+          Container(
+            decoration: BoxDecoration(
+              color: scheme.primary,
+              shape: BoxShape.circle,
+              border: Border.all(color: scheme.surface, width: 2),
+            ),
+            child: Icon(Icons.camera_alt, size: 18, color: scheme.onPrimary),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _pickAndUpload(BuildContext context) async {
+    final source = await _showSourceSheet(context);
+    if (source == null) return;
+
+    final pickerService = ImagePickerService();
+    final file = await pickerService.pickImage(source: source);
+    if (file == null || !mounted) return;
+
+    setState(() => _uploading = true);
+
+    final profile = context.read<ProfileProvider>();
+    final userId = profile.user?.id?.toString() ?? 'unknown';
+    final storageService = FirebaseStorageService();
+    final url = await storageService.uploadProfilePhoto(file, userId);
+
+    if (!mounted) return;
+
+    if (url != null) {
+      final success = await profile.updateProfilePhoto(url);
+      if (mounted && !success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al guardar foto de perfil')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al subir la imagen')),
+      );
+    }
+
+    if (mounted) setState(() => _uploading = false);
+  }
+
+  /// Muestra una hoja inferior para elegir entre cámara y galería.
+  /// Devuelve `null` si el usuario cancela.
+  Future<ImageSource?> _showSourceSheet(BuildContext context) async {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Galería'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Cámara'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

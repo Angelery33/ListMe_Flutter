@@ -65,6 +65,25 @@ class ProfileRepository {
     }
   }
 
+  /// Actualiza la URL de la foto de perfil del usuario autenticado en el backend.
+  ///
+  /// El cliente es responsable de subir la imagen a Firebase Storage previamente y
+  /// pasar la URL de descarga resultante. Devuelve el [UserModel] actualizado.
+  Future<UserModel> updateProfilePhoto(String photoUrl) async {
+    try {
+      _logger.debug('ProfileRepository: Actualizando foto de perfil');
+      final response = await _apiClient.dio.put(
+        '/auth/profile/photo',
+        data: {'photoUrl': photoUrl},
+      );
+      _logger.info('ProfileRepository: Foto de perfil actualizada');
+      return UserModel.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      _logger.error('ProfileRepository: Error al actualizar foto de perfil', e);
+      rethrow;
+    }
+  }
+
   /// Elimina permanentemente la cuenta del usuario autenticado y todos los datos
   /// asociados del backend. Esta operación es irreversible.
   Future<void> deleteAccount() async {
