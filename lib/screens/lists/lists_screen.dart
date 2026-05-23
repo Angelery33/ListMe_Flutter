@@ -9,7 +9,8 @@ import '../../widgets/lists/list_card.dart';
 import '../../widgets/lists/empty_lists_state.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/app_shell.dart';
-import '../../providers/invitations/invitations_provider.dart';
+import '../../providers/friends/friends_provider.dart';
+import '../../widgets/lists/share_friend_dialog.dart';
 
 /// Pantalla que muestra todas las bibliotecas del usuario actual.
 ///
@@ -135,67 +136,15 @@ class _ListsScreenState extends State<ListsScreen> {
     );
   }
 
-  /// Muestra un diálogo para enviar una invitación de colaboración para [list] a otro
-  /// usuario identificado por su nombre de usuario.
+  /// Muestra el diálogo de invitación con selector de amigos para [list].
   void _showShareDialog(ListModel list) {
-    final usernameController = TextEditingController();
-    bool readOnly = true;
-
+    final friends = context.read<FriendsProvider>().friends;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(ctx.l10n.listsShareTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${ctx.l10n.listsShareMessage} "${list.name}"'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: ctx.l10n.listsShareEmail,
-                  hintText: "Nombre de usuario",
-                ),
-              ),
-              const SizedBox(height: 12),
-              CheckboxListTile(
-                title: const Text("Solo lectura"),
-                value: readOnly,
-                onChanged: (v) => setState(() => readOnly = v ?? true),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(ctx.l10n.commonCancel.toUpperCase()),
-            ),
-            TextButton(
-              onPressed: () async {
-                final username = usernameController.text.trim();
-                if (username.isNotEmpty) {
-                  Navigator.pop(ctx);
-                  final success = await context.read<InvitationsProvider>().sendInvitation(
-                    list.id!,
-                    username,
-                    readOnly,
-                  );
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(success
-                          ? context.l10n.listsInviteSent
-                          : "Error al enviar invitación"),
-                      ),
-                    );
-                  }
-                }
-              },
-              child: Text(ctx.l10n.commonSend.toUpperCase()),
-            ),
-          ],
-        ),
+      builder: (_) => ShareFriendDialog(
+        listId: list.id!,
+        listName: list.name,
+        friends: friends,
       ),
     );
   }

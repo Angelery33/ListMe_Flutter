@@ -8,8 +8,6 @@ import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';
 import 'package:list_me/widgets/shared/app_shell.dart';
 import 'package:list_me/widgets/shared/responsive_centered_content.dart';
 import 'package:list_me/core/config/routes.dart';
-import 'package:list_me/providers/invitations/invitations_provider.dart';
-import 'package:list_me/screens/social/invitations_screen.dart';
 import 'package:list_me/core/services/firebase_storage_service.dart';
 import 'package:list_me/core/services/image_picker_service.dart';
 
@@ -27,13 +25,6 @@ class ProfileScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final profile = context.watch<ProfileProvider>();
     final auth = context.read<AuthProvider>();
-    final invitations = context.watch<InvitationsProvider>();
-
-    if (invitations.isStale && !invitations.isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        invitations.loadPendingInvitations();
-      });
-    }
 
     return AppShell(
       currentIndex: 1,
@@ -111,19 +102,6 @@ class ProfileScreen extends StatelessWidget {
                         title: context.l10n.profileChangePassword,
                         subtitle: context.l10n.profileChangePasswordSubtitle,
                         onTap: () => _showChangePasswordDialog(context),
-                      ),
-                      _buildListTile(
-                        context,
-                        icon: Icons.mail_outline,
-                        title: "Invitaciones",
-                        subtitle: "Gestiona tus solicitudes de colaboración",
-                        badgeCount: invitations.pendingCount,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const InvitationsScreen(),
-                          ),
-                        ),
                       ),
                     ],
                   ),

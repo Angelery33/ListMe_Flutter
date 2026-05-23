@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/i18n/l10n_extension.dart';
+import '../../../data/friends/friend_model.dart';
 import '../../../data/lists/collaborator_model.dart';
+import '../../../providers/friends/friends_provider.dart';
 import '../../../providers/invitations/invitations_provider.dart';
 import '../../../providers/lists/lists_provider.dart';
 
 /// Sección de la pantalla de configuración que permite al propietario invitar
-/// colaboradores y ver/eliminar los ya existentes.
+/// colaboradores eligiendo entre sus amigos, y ver/eliminar los ya existentes.
 ///
 /// Solo se renderiza cuando el usuario es propietario y la biblioteca ya tiene [libraryId].
+/// En lugar de escribir un nombre de usuario, se muestra la lista de amigos filtrando
+/// los que ya son colaboradores de esta biblioteca.
 class ConfigCollaborationSection extends StatefulWidget {
   /// ID del servidor de la biblioteca. `null` oculta la sección (lista no guardada aún).
   final int? libraryId;
@@ -27,17 +31,13 @@ class ConfigCollaborationSection extends StatefulWidget {
       _ConfigCollaborationSectionState();
 }
 
-/// Estado para [ConfigCollaborationSection].
-///
-/// Carga la lista de colaboradores al iniciar y permite enviar invitaciones
-/// y eliminar colaboradores existentes.
 class _ConfigCollaborationSectionState
     extends State<ConfigCollaborationSection> {
-  /// Controlador del campo donde el propietario escribe el nombre de usuario del invitado.
-  final _usernameController = TextEditingController();
-
   /// Si el colaborador invitado tendrá solo lectura. Valor por defecto seguro.
   bool _isReadOnly = true;
+
+  /// Amigo seleccionado para invitar, o `null` si aún no se ha elegido ninguno.
+  FriendModel? _selectedFriend;
 
   /// Lista de colaboradores activos cargada desde el servidor.
   List<CollaboratorModel> _collaborators = [];
@@ -67,28 +67,28 @@ class _ConfigCollaborationSectionState
     }
   }
 
-  /// Envía la invitación al usuario introducido en [_usernameController].
+  /// Envía la invitación al amigo seleccionado con el permiso configurado.
   Future<void> _sendInvitation() async {
-    if (_usernameController.text.trim().isEmpty) return;
-    if (widget.libraryId == null) return;
+    if (_selectedFriend == null || widget.libraryId == null) return;
 
     final provider = context.read<InvitationsProvider>();
     final success = await provider.sendInvitation(
       widget.libraryId!,
-      _usernameController.text.trim(),
+      _selectedFriend!.username,
       _isReadOnly,
     );
 
     if (mounted) {
       if (success) {
-        _usernameController.clear();
+        setState(() => _selectedFriend = null);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.l10n.listsInviteSent)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text("Error: ${provider.error ?? 'No se pudo enviar'}")),
+            content: Text('Error: ${provider.error ?? 'No se pudo enviar'}'),
+          ),
         );
       }
     }
@@ -99,7 +99,7 @@ class _ConfigCollaborationSectionState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Eliminar colaborador"),
+        title: const Text('Eliminar colaborador'),
         content:
             Text('¿Eliminar a "${collaborator.username}" de esta biblioteca?'),
         actions: [
@@ -126,16 +126,16 @@ class _ConfigCollaborationSectionState
 
     if (mounted) {
       if (ok) {
-        setState(
-            () => _collaborators.removeWhere((c) => c.userId == collaborator.userId));
+        setState(() =>
+            _collaborators.removeWhere((c) => c.userId == collaborator.userId));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  '"${collaborator.username}" eliminado de la biblioteca')),
+            content: Text('"${collaborator.username}" eliminado de la biblioteca'),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error al eliminar colaborador")),
+          const SnackBar(content: Text('Error al eliminar colaborador')),
         );
       }
     }
@@ -148,6 +148,14 @@ class _ConfigCollaborationSectionState
     }
 
     final theme = Theme.of(context);
+    final allFriends = context.watch<FriendsProvider>().friends;
+
+    // Filtra los amigos que ya son colaboradores de esta lista.
+    final collaboratorUsernames =
+        _collaborators.map((c) => c.username).toSet();
+    final invitableFriends = allFriends
+        .where((f) => !collaboratorUsernames.contains(f.username))
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +163,7 @@ class _ConfigCollaborationSectionState
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            "COLABORACIÓN",
+            'COLABORACIÓN',
             style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -174,7 +182,7 @@ class _ConfigCollaborationSectionState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Current collaborators ──────────────────────────────────
+                // ── Colaboradores actuales ─────────────────────────────────
                 if (_loadingCollaborators)
                   const Padding(
                     padding: EdgeInsets.only(bottom: 12),
@@ -182,7 +190,7 @@ class _ConfigCollaborationSectionState
                   )
                 else if (_collaborators.isNotEmpty) ...[
                   Text(
-                    "Colaboradores actuales",
+                    'Colaboradores actuales',
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.bold,
@@ -193,21 +201,15 @@ class _ConfigCollaborationSectionState
                     (c) => ListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
+                      leading: _FriendAvatar(
+                        username: c.username,
+                        photoUrl: null,
                         radius: 16,
-                        backgroundColor:
-                            theme.colorScheme.primaryContainer,
-                        child: Text(
-                          c.username[0].toUpperCase(),
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: theme.colorScheme.onPrimaryContainer),
-                        ),
                       ),
                       title: Text(c.username,
                           style: theme.textTheme.bodyMedium),
                       subtitle: Text(
-                        c.isEditor ? "Editor" : "Solo lectura",
+                        c.isEditor ? 'Editor' : 'Solo lectura',
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -215,7 +217,7 @@ class _ConfigCollaborationSectionState
                       trailing: IconButton(
                         icon: const Icon(Icons.person_remove_outlined,
                             color: Colors.red, size: 20),
-                        tooltip: "Eliminar colaborador",
+                        tooltip: 'Eliminar colaborador',
                         onPressed: () => _confirmRemove(c),
                       ),
                     ),
@@ -223,43 +225,69 @@ class _ConfigCollaborationSectionState
                   const Divider(height: 24),
                 ],
 
-                // ── Invite new collaborator ────────────────────────────────
-                TextField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: "Nombre de usuario",
-                    hintText: "Ej: maria_92",
-                    prefixIcon: Icon(Icons.person_add_outlined),
-                    border: OutlineInputBorder(),
+                // ── Selector de amigos para invitar ───────────────────────
+                Text(
+                  'Invitar amigo',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "Permiso de solo lectura",
-                        style: theme.textTheme.bodyMedium,
+                const SizedBox(height: 10),
+
+                if (allFriends.isEmpty)
+                  // Sin amigos aún
+                  _EmptyFriendsHint()
+                else if (invitableFriends.isEmpty)
+                  // Todos los amigos ya son colaboradores
+                  _AllFriendsAdded()
+                else ...[
+                  // Lista de amigos seleccionables
+                  SizedBox(
+                    height: invitableFriends.length > 3 ? 220 : null,
+                    child: _FriendPickerList(
+                      friends: invitableFriends,
+                      selected: _selectedFriend,
+                      onSelect: (f) => setState(() => _selectedFriend = f),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Permiso
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Permiso de solo lectura',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                      Switch(
+                        value: _isReadOnly,
+                        onChanged: (val) => setState(() => _isReadOnly = val),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Botón enviar
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _selectedFriend != null
+                          ? _sendInvitation
+                          : null,
+                      icon: const Icon(Icons.send_rounded),
+                      label: Text(
+                        _selectedFriend != null
+                            ? 'Invitar a ${_selectedFriend!.username}'
+                            : 'Selecciona un amigo',
                       ),
                     ),
-                    Switch(
-                      value: _isReadOnly,
-                      onChanged: (val) => setState(() => _isReadOnly = val),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _sendInvitation,
-                    icon: const Icon(Icons.send_rounded),
-                    label: const Text("Enviar Invitación"),
                   ),
-                ),
+                ],
+
                 const SizedBox(height: 8),
                 Text(
-                  "El usuario recibirá una notificación en su app para aceptar la colaboración.",
+                  'El usuario recibirá una notificación para aceptar la colaboración.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -270,6 +298,173 @@ class _ConfigCollaborationSectionState
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WIDGETS INTERNOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Lista scrollable de amigos seleccionables para invitar a la biblioteca.
+///
+/// Cada tile muestra el avatar del amigo y su username. El seleccionado
+/// se resalta con el color primario y un icono de check.
+class _FriendPickerList extends StatelessWidget {
+  final List<FriendModel> friends;
+  final FriendModel? selected;
+  final ValueChanged<FriendModel> onSelect;
+
+  const _FriendPickerList({
+    required this.friends,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: friends.length > 3
+          ? const ClampingScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
+      itemCount: friends.length,
+      itemBuilder: (_, i) {
+        final friend = friends[i];
+        final isSelected = selected?.id == friend.id;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          margin: const EdgeInsets.only(bottom: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? scheme.primaryContainer.withValues(alpha: 0.5)
+                : scheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? scheme.primary
+                  : scheme.outlineVariant.withValues(alpha: 0.4),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: ListTile(
+            dense: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            leading: _FriendAvatar(
+              username: friend.username,
+              photoUrl: friend.photoUrl,
+              radius: 18,
+            ),
+            title: Text(
+              friend.username,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? scheme.primary : null,
+              ),
+            ),
+            trailing: isSelected
+                ? Icon(Icons.check_circle_rounded,
+                    color: scheme.primary, size: 20)
+                : null,
+            onTap: () => onSelect(friend),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Avatar circular con foto de perfil o inicial del username.
+class _FriendAvatar extends StatelessWidget {
+  final String username;
+  final String? photoUrl;
+  final double radius;
+
+  const _FriendAvatar({
+    required this.username,
+    required this.photoUrl,
+    this.radius = 20,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundImage: NetworkImage(photoUrl!),
+        backgroundColor: scheme.primaryContainer,
+      );
+    }
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: scheme.primaryContainer,
+      child: Text(
+        username[0].toUpperCase(),
+        style: TextStyle(
+          fontSize: radius * 0.8,
+          fontWeight: FontWeight.bold,
+          color: scheme.onPrimaryContainer,
+        ),
+      ),
+    );
+  }
+}
+
+/// Hint que se muestra cuando el usuario no tiene amigos aún.
+class _EmptyFriendsHint extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Icon(Icons.people_outline,
+              size: 20, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Añade amigos desde la pestaña Social para poder invitarlos.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Mensaje que se muestra cuando todos los amigos ya son colaboradores.
+class _AllFriendsAdded extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle_outline,
+              size: 20, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Todos tus amigos ya colaboran en esta lista.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

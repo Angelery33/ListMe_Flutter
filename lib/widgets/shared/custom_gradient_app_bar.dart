@@ -10,6 +10,8 @@ import '../../core/theme/theme.dart';
 /// [Positioned.fill] detrás de una [AppBar] transparente, manteniendo todo el comportamiento
 /// estándar de la [AppBar] (botón de retroceso, acciones, título centrado, etc.)
 /// mientras se cambia el fondo por el degradado de marca de la aplicación.
+/// Opcionalmente acepta un widget [bottom] (p.ej. [TabBar]) que se añade debajo
+/// de la barra, incrementando automáticamente [preferredSize].
 class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// El texto mostrado como título de la barra de aplicaciones.
   final String title;
@@ -20,6 +22,10 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
   /// Widget de encabezado personalizado opcional. Cuando es `null`, el botón de retroceso se muestra
   /// automáticamente si [showBackButton] es `true`.
   final Widget? leading;
+
+  /// Widget opcional que se coloca en la parte inferior de la AppBar (p.ej. [TabBar]).
+  /// Cuando se proporciona, [preferredSize] aumenta su altura en [kTextTabBarHeight].
+  final PreferredSizeWidget? bottom;
 
   /// La altura de la barra en píxeles lógicos. Por defecto es [kToolbarHeight].
   final double height;
@@ -33,12 +39,15 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
     required this.title,
     this.actions,
     this.leading,
+    this.bottom,
     this.height = kToolbarHeight,
     this.showBackButton = true,
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(height);
+  Size get preferredSize => Size.fromHeight(
+        height + (bottom?.preferredSize.height ?? 0),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +77,7 @@ class CustomGradientAppBar extends StatelessWidget implements PreferredSizeWidge
             actions: actions,
             leading: leading,
             iconTheme: IconThemeData(color: fgColor),
+            bottom: bottom,
           ),
         ),
       ],
