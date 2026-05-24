@@ -39,7 +39,10 @@ class ListsProvider extends ChangeNotifier {
   void _loadFromLocal() {
     _logger.debug('ListsProvider: Cargando desde persistencia local');
     _lists = _localStorage.getLibraries();
-    _lists.sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
+    _lists.sort((a, b) {
+      if (a.owner != b.owner) return a.owner ? -1 : 1;
+      return (a.position ?? 0).compareTo(b.position ?? 0);
+    });
     notifyListeners();
   }
 
@@ -99,7 +102,10 @@ class ListsProvider extends ChangeNotifier {
         return serverList;
       }).toList();
 
-      _lists.sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
+      _lists.sort((a, b) {
+        if (a.owner != b.owner) return a.owner ? -1 : 1;
+        return (a.position ?? 0).compareTo(b.position ?? 0);
+      });
 
       // Persistir lo mezclado en local
       _localStorage.saveLibraries(_lists);
@@ -211,17 +217,36 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Reordena solo las listas propias del usuario. Los índices son relativos
+  /// a la sublista de listas propias (owner == true).
+  ///
+  /// Reconstruye [_lists] como [owned reordenadas] + [shared], garantizando
+  /// que los ítems propios siempre ocupen los índices 0..owned.length-1.
+  void reorderOwnedLists(int oldIndex, int newIndex, {bool adjustIndex = true}) {
+    if (adjustIndex && oldIndex < newIndex) newIndex -= 1;
+    final owned = _lists.where((l) => l.owner).toList();
+    final shared = _lists.where((l) => !l.owner).toList();
+    final item = owned.removeAt(oldIndex);
+    owned.insert(newIndex, item);
+    _lists = [...owned, ...shared];
+    _localStorage.saveLibraries(_lists);
+    notifyListeners();
+    _persistOrder();
+  }
+
   /// Mueve la lista en [oldIndex] a [newIndex] en el orden local, persiste
   /// el orden en Hive inmediatamente y luego sincroniza de forma asíncrona las nuevas posiciones con
   /// el servidor en segundo plano.
-  void reorderLists(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) newIndex -= 1;
+  ///
+  /// [adjustIndex] debe ser `true` cuando el llamador es [ReorderableListView]
+  /// (que entrega newIndex antes de eliminar el elemento) y `false` cuando el
+  /// llamador es [ReorderableBuilder] del grid (que ya entrega el índice final).
+  void reorderLists(int oldIndex, int newIndex, {bool adjustIndex = true}) {
+    if (adjustIndex && oldIndex < newIndex) newIndex -= 1;
     final item = _lists.removeAt(oldIndex);
     _lists.insert(newIndex, item);
     _localStorage.saveLibraries(_lists);
     notifyListeners();
-
-    // Persiste las nuevas posiciones en segundo plano
     _persistOrder();
   }
 
@@ -233,7 +258,7 @@ class ListsProvider extends ChangeNotifier {
     final items = _lists
         .asMap()
         .entries
-        .where((e) => e.value.id != null)
+        .where((e) => e.value.id != null && e.value.owner)
         .map((e) => {'id': e.value.id!, 'position': e.key})
         .toList();
     try {

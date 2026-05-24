@@ -420,6 +420,54 @@ abstract class AppLocalizations {
   /// **'Versión'**
   String get settingsVersion;
 
+  /// No description provided for @settingsSectionLists.
+  ///
+  /// In es, this message translates to:
+  /// **'Listas'**
+  String get settingsSectionLists;
+
+  /// No description provided for @settingsSharedListsLayout.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista de listas ajenas'**
+  String get settingsSharedListsLayout;
+
+  /// No description provided for @settingsSharedListsLayoutSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo se muestran las listas de otros usuarios'**
+  String get settingsSharedListsLayoutSubtitle;
+
+  /// No description provided for @settingsLayoutSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Sección'**
+  String get settingsLayoutSection;
+
+  /// No description provided for @settingsLayoutTab.
+  ///
+  /// In es, this message translates to:
+  /// **'Pestaña'**
+  String get settingsLayoutTab;
+
+  /// No description provided for @settingsLayoutBottom.
+  ///
+  /// In es, this message translates to:
+  /// **'Al final'**
+  String get settingsLayoutBottom;
+
+  /// No description provided for @listsSharedWithMe.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartidas conmigo'**
+  String get listsSharedWithMe;
+
+  /// No description provided for @listsMyLists.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis listas'**
+  String get listsMyLists;
+
   /// No description provided for @profileTitle.
   ///
   /// In es, this message translates to:

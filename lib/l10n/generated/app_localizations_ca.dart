@@ -165,6 +165,31 @@ class AppLocalizationsCa extends AppLocalizations {
   String get settingsVersion => 'Versió';
 
   @override
+  String get settingsSectionLists => 'Llistes';
+
+  @override
+  String get settingsSharedListsLayout => 'Vista de llistes d\'altres';
+
+  @override
+  String get settingsSharedListsLayoutSubtitle =>
+      'Com es mostren les llistes d\'altres usuaris';
+
+  @override
+  String get settingsLayoutSection => 'Secció';
+
+  @override
+  String get settingsLayoutTab => 'Pestanya';
+
+  @override
+  String get settingsLayoutBottom => 'Al final';
+
+  @override
+  String get listsSharedWithMe => 'Compartides amb mi';
+
+  @override
+  String get listsMyLists => 'Les meves llistes';
+
+  @override
   String get profileTitle => 'El meu perfil';
 
   @override

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum SharedListsLayout { section, tab, bottom }
+
 /// Proveedor de estado para los ajustes de la aplicación.
 ///
 /// Gestiona preferencias no sensibles del usuario (ej: modo noche, idioma).
@@ -30,6 +32,9 @@ class SettingsProvider extends ChangeNotifier {
   /// ISO 4217 currency code used for price display (e.g. `'EUR'`).
   String _currency = 'EUR';
 
+  /// Layout preference for shared (non-owned) lists.
+  SharedListsLayout _sharedListsLayout = SharedListsLayout.section;
+
   /// The currently active [ThemeMode].
   ThemeMode get themeMode => _themeMode;
 
@@ -53,6 +58,9 @@ class SettingsProvider extends ChangeNotifier {
 
   /// The ISO 4217 currency code currently in use.
   String get currency => _currency;
+
+  /// The layout preference for shared (non-owned) lists.
+  SharedListsLayout get sharedListsLayout => _sharedListsLayout;
 
   /// Carga los ajustes desde el almacenamiento local.
   Future<void> loadSettings() async {
@@ -78,6 +86,10 @@ class SettingsProvider extends ChangeNotifier {
     // Locale & Currency
     _locale = prefs.getString('locale') ?? 'es';
     _currency = prefs.getString('currency') ?? 'EUR';
+
+    // Shared lists layout
+    final layoutIndex = prefs.getInt('sharedListsLayout') ?? 0;
+    _sharedListsLayout = SharedListsLayout.values[layoutIndex];
 
     notifyListeners();
   }
@@ -158,6 +170,15 @@ class SettingsProvider extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('tmdbApiKey', key);
+  }
+
+  /// Persists [layout] to shared preferences and notifies listeners.
+  Future<void> setSharedListsLayout(SharedListsLayout layout) async {
+    if (_sharedListsLayout == layout) return;
+    _sharedListsLayout = layout;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('sharedListsLayout', layout.index);
   }
 
   /// Stores the user's Google Books API [key] for book/manga search import and

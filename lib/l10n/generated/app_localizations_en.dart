@@ -165,6 +165,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsVersion => 'Version';
 
   @override
+  String get settingsSectionLists => 'Lists';
+
+  @override
+  String get settingsSharedListsLayout => 'Shared lists layout';
+
+  @override
+  String get settingsSharedListsLayoutSubtitle =>
+      'How other users\' lists are displayed';
+
+  @override
+  String get settingsLayoutSection => 'Section';
+
+  @override
+  String get settingsLayoutTab => 'Tab';
+
+  @override
+  String get settingsLayoutBottom => 'At the end';
+
+  @override
+  String get listsSharedWithMe => 'Shared with me';
+
+  @override
+  String get listsMyLists => 'My lists';
+
+  @override
   String get profileTitle => 'My Profile';
 
   @override

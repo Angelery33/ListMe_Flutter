@@ -44,6 +44,8 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _RegionalSection(settings: settings, theme: theme),
                 const SizedBox(height: 24),
+                _ListsSection(settings: settings, theme: theme),
+                const SizedBox(height: 24),
                 _AccountSection(),
                 const SizedBox(height: 40),
                 _VersionFooter(theme: theme),
@@ -227,6 +229,66 @@ class _RegionalSection extends StatelessWidget {
             onChanged: (val) {
               if (val != null) settings.setCurrency(val);
             },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Sección de ajustes para la disposición de listas ajenas.
+class _ListsSection extends StatelessWidget {
+  final SettingsProvider settings;
+  final ThemeData theme;
+  const _ListsSection({required this.settings, required this.theme});
+
+  String _layoutLabel(BuildContext context, SharedListsLayout layout) {
+    switch (layout) {
+      case SharedListsLayout.section: return context.l10n.settingsLayoutSection;
+      case SharedListsLayout.tab:     return context.l10n.settingsLayoutTab;
+      case SharedListsLayout.bottom:  return context.l10n.settingsLayoutBottom;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _Section(
+      title: context.l10n.settingsSectionLists,
+      children: [
+        _SettingTile(
+          title: context.l10n.settingsSharedListsLayout,
+          subtitle: context.l10n.settingsSharedListsLayoutSubtitle,
+          trailing: Text(
+            _layoutLabel(context, settings.sharedListsLayout),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: SegmentedButton<SharedListsLayout>(
+            segments: [
+              ButtonSegment(
+                value: SharedListsLayout.section,
+                icon: const Icon(Icons.view_agenda_outlined),
+                label: Text(context.l10n.settingsLayoutSection),
+              ),
+              ButtonSegment(
+                value: SharedListsLayout.tab,
+                icon: const Icon(Icons.tab_outlined),
+                label: Text(context.l10n.settingsLayoutTab),
+              ),
+              ButtonSegment(
+                value: SharedListsLayout.bottom,
+                icon: const Icon(Icons.vertical_align_bottom_outlined),
+                label: Text(context.l10n.settingsLayoutBottom),
+              ),
+            ],
+            selected: {settings.sharedListsLayout},
+            onSelectionChanged: (val) => settings.setSharedListsLayout(val.first),
+            showSelectedIcon: false,
           ),
         ),
       ],

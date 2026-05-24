@@ -165,6 +165,31 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsVersion => 'Versão';
 
   @override
+  String get settingsSectionLists => 'Listas';
+
+  @override
+  String get settingsSharedListsLayout => 'Vista de listas de outros';
+
+  @override
+  String get settingsSharedListsLayoutSubtitle =>
+      'Como são mostradas as listas de outros utilizadores';
+
+  @override
+  String get settingsLayoutSection => 'Secção';
+
+  @override
+  String get settingsLayoutTab => 'Separador';
+
+  @override
+  String get settingsLayoutBottom => 'No final';
+
+  @override
+  String get listsSharedWithMe => 'Partilhadas comigo';
+
+  @override
+  String get listsMyLists => 'As minhas listas';
+
+  @override
   String get profileTitle => 'Meu Perfil';
 
   @override
