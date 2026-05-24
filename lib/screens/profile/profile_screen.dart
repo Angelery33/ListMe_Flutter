@@ -579,57 +579,64 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
     final source = await _showSourceSheet(context);
     if (source == null) return;
 
+    // Capturar el provider antes del primer await largo (image picker)
     final profile = context.read<ProfileProvider>();
-    final l10n = context.l10n;
 
     final pickerService = ImagePickerService();
     final file = await pickerService.pickImage(source: source);
     debugPrint('[ProfileAvatar] file picked: ${file?.path}');
 
-    if (file == null) {
+    // Si el usuario canceló la selección o el recortador, no hacer nada
+    if (file == null) return;
+
+    // El widget puede haberse desmontado mientras el recortador nativo estaba abierto
+    // (Android destruye el Surface de Flutter al pasar a otra Activity).
+    // Aun así continuamos con la subida: el provider sigue vivo y
+    // notifyListeners() actualizará el nuevo estado del avatar al volver.
+    if (mounted) setState(() => _uploading = true);
+
+    final userId = profile.user?.id?.toString() ?? 'unknown';
+    debugPrint('[ProfileAvatar] uploading for userId=$userId');
+
+    String? url;
+    try {
+      url = await FirebaseStorageService().uploadProfilePhoto(file, userId);
+    } catch (e) {
+      debugPrint('[ProfileAvatar] Firebase error: $e');
       if (mounted) {
+        setState(() => _uploading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: no se pudo obtener la imagen')),
+          SnackBar(content: Text('Error Firebase: $e')),
         );
       }
       return;
     }
 
-    if (!mounted) {
-      debugPrint('[ProfileAvatar] not mounted after pickImage');
-      return;
-    }
-    setState(() => _uploading = true);
-
-    final userId = profile.user?.id?.toString() ?? 'unknown';
-    debugPrint('[ProfileAvatar] uploading for userId=$userId');
-    final storageService = FirebaseStorageService();
-    final url = await storageService.uploadProfilePhoto(file, userId);
     debugPrint('[ProfileAvatar] firebase url=$url');
 
-    if (!mounted) return;
-
     if (url == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: fallo al subir a Firebase Storage')),
-      );
-      setState(() => _uploading = false);
+      if (mounted) {
+        setState(() => _uploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Firebase devolvió URL nula')),
+        );
+      }
       return;
     }
 
     final success = await profile.updateProfilePhoto(url);
-    debugPrint('[ProfileAvatar] backend save success=$success, errorMsg=${profile.errorMessage}');
+    debugPrint('[ProfileAvatar] backend save success=$success');
 
-    if (!mounted) return;
-    setState(() => _uploading = false);
-
-    if (!success) {
+    if (mounted) {
+      setState(() => _uploading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar: ${profile.errorMessage ?? l10n.profilePhotoSaveError}')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Foto actualizada correctamente')),
+        SnackBar(
+          content: Text(
+            success
+                ? 'Foto actualizada correctamente'
+                : 'Error al guardar: ${profile.errorMessage ?? context.l10n.profilePhotoSaveError}',
+          ),
+        ),
       );
     }
   }

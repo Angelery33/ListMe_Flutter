@@ -60,30 +60,27 @@ class FirebaseStorageService {
   /// [imageFile] El archivo de imagen seleccionado por el usuario.
   /// [userId]    Identificador único del usuario (usado como prefijo del nombre de archivo).
   Future<String?> uploadProfilePhoto(XFile imageFile, String userId) async {
-    try {
-      final name = imageFile.name;
-      final ext = name.contains('.') ? '.${name.split('.').last}' : '.jpg';
-      final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}$ext';
-      debugPrint('FirebaseStorage: Subiendo foto de perfil $fileName');
-      final ref = _storage.ref().child('profiles').child(fileName);
+    final name = imageFile.name;
+    final ext = name.contains('.') ? '.${name.split('.').last}' : '.jpg';
+    final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}$ext';
+    debugPrint('FirebaseStorage: Subiendo foto de perfil $fileName (path=${imageFile.path})');
+    final ref = _storage.ref().child('profiles').child(fileName);
 
-      final bytes = await imageFile.readAsBytes();
-      final uploadTask = ref.putData(
-        bytes,
-        SettableMetadata(
-          contentType: 'image/jpeg',
-          cacheControl: 'public, max-age=31536000',
-        ),
-      );
+    final bytes = await imageFile.readAsBytes();
+    debugPrint('FirebaseStorage: Bytes leídos: ${bytes.length}');
 
-      final snapshot = await uploadTask.whenComplete(() {});
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      debugPrint('FirebaseStorage: Foto de perfil URL=$downloadUrl');
-      return downloadUrl;
-    } catch (e) {
-      debugPrint('FirebaseStorage uploadProfilePhoto Error: $e');
-      return null;
-    }
+    final uploadTask = ref.putData(
+      bytes,
+      SettableMetadata(
+        contentType: 'image/jpeg',
+        cacheControl: 'public, max-age=31536000',
+      ),
+    );
+
+    final snapshot = await uploadTask.whenComplete(() {});
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+    debugPrint('FirebaseStorage: Foto de perfil URL=$downloadUrl');
+    return downloadUrl;
   }
 
   /// Elimina la imagen en [imageUrl] de Firebase Storage.

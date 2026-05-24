@@ -156,13 +156,11 @@ class ProfileProvider extends ChangeNotifier {
   /// [user] localmente en caso de éxito. Devuelve `true` en caso de éxito, `false`
   /// y establece [errorMessage] en caso de fallo.
   Future<bool> updateProfilePhoto(String photoUrl) async {
-    _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
 
     try {
       _user = await _profileRepository.updateProfilePhoto(photoUrl);
-      _logger.info('ProfileProvider: Foto de perfil actualizada');
+      _logger.info('ProfileProvider: Foto de perfil actualizada a: $photoUrl');
       notifyListeners();
       return true;
     } catch (e) {
@@ -170,9 +168,6 @@ class ProfileProvider extends ChangeNotifier {
       _logger.error('ProfileProvider: Error al actualizar foto', e);
       notifyListeners();
       return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
   }
 

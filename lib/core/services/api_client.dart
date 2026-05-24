@@ -114,9 +114,9 @@ class ApiClient {
 
     _dio.interceptors.add(
       LogInterceptor(
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: true,
+        requestHeader: false,
+        requestBody: false,
+        responseHeader: false,
         responseBody: true,
       ),
     );

@@ -75,8 +75,8 @@ class ListCard extends StatelessWidget {
                     ? _WebContent(list: list, theme: theme)
                     : _MobileContent(list: list, theme: theme),
               ),
-              // ── Menú 3 puntos ─────────────────────────────────────────────
-              PopupMenuButton<String>(
+              // ── Menú 3 puntos (solo propietario) ──────────────────────────
+              if (list.owner) PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_vert_rounded,
                   color: scheme.onSurfaceVariant,
@@ -87,11 +87,12 @@ class ListCard extends StatelessWidget {
                   if (value == 'share') onShare?.call();
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text(context.l10n.commonEdit,
-                        style: theme.textTheme.bodyMedium),
-                  ),
+                  if (list.owner)
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text(context.l10n.commonEdit,
+                          style: theme.textTheme.bodyMedium),
+                    ),
                   if (list.owner)
                     PopupMenuItem(
                       value: 'share',
@@ -221,37 +222,34 @@ class _MobileContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onSurface = theme.colorScheme.onSurfaceVariant;
+    final countLabel =
+        '${list.itemCount} ${list.itemCount == 1 ? context.l10n.commonItem : context.l10n.commonItems}';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── Nombre ──────────────────────────────────────────────────────
+        Text(
+          list.name,
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 3),
+        // ── Fila inferior: recuento · [compartido] · [propietario] ──────
         Row(
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    list.name,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${list.itemCount} ${list.itemCount == 1 ? context.l10n.commonItem : context.l10n.commonItems}',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: onSurface.withValues(alpha: 0.7)),
-                  ),
-                ],
-              ),
+            Text(
+              countLabel,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: onSurface.withValues(alpha: 0.7)),
             ),
             if (list.isShared) ...[
               const SizedBox(width: 8),
               Icon(Icons.people_alt_rounded,
-                  size: 18, color: onSurface.withValues(alpha: 0.6)),
+                  size: 15, color: onSurface.withValues(alpha: 0.6)),
             ],
             if (!list.owner) ...[
               const SizedBox(width: 8),
@@ -266,8 +264,7 @@ class _MobileContent extends StatelessWidget {
               list.description!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: onSurface),
+              style: theme.textTheme.bodySmall?.copyWith(color: onSurface),
             ),
           ),
       ],
