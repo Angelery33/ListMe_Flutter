@@ -37,7 +37,7 @@ class SocialExpandedLayout extends StatelessWidget {
         showBackButton: false,
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(64, 50, 64, 30),
+        padding: const EdgeInsets.fromLTRB(50, 50, 50, 30),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

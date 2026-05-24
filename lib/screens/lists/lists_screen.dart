@@ -91,8 +91,8 @@ class _ListsScreenState extends State<ListsScreen> {
         : responsive.horizontalPadding + 48;
     final padding = EdgeInsets.fromLTRB(hPadding, 32, hPadding, 200);
 
-    // Compact: reorderable single-column list
-    if (responsive.isCompact) {
+    // Compact + Medium (tablet vertical): lista reordenable de una columna
+    if (responsive.isCompact || responsive.isMedium) {
       return ReorderableListView.builder(
         padding: padding,
         itemCount: listsProvider.lists.length,
