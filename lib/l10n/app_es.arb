@@ -111,6 +111,7 @@
   "authWelcome": "Bienvenido",
   "authCreateAccount": "Crear cuenta",
   "authInvalidEmail": "Introduce un email válido",
+  "authPasswordRequirements": "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número",
 
   "navLists": "Listas",
   "navProfile": "Perfil",
@@ -271,6 +272,7 @@
 
   "searchImportTitle": "Buscar e importar",
   "searchImportPlaceholder": "Buscar…",
+  "searchImportAuthorFilter": "Filtrar por autor (opcional)",
   "searchImportNoResults": "No se encontraron resultados",
   "searchImportError": "Error al buscar",
 

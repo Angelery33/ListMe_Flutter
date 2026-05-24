@@ -738,6 +738,12 @@ abstract class AppLocalizations {
   /// **'Introduce un email válido'**
   String get authInvalidEmail;
 
+  /// No description provided for @authPasswordRequirements.
+  ///
+  /// In es, this message translates to:
+  /// **'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número'**
+  String get authPasswordRequirements;
+
   /// No description provided for @navLists.
   ///
   /// In es, this message translates to:
@@ -1583,6 +1589,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Buscar…'**
   String get searchImportPlaceholder;
+
+  /// No description provided for @searchImportAuthorFilter.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por autor (opcional)'**
+  String get searchImportAuthorFilter;
 
   /// No description provided for @searchImportNoResults.
   ///

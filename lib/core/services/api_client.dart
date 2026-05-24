@@ -112,7 +112,6 @@ class ApiClient {
       ),
     );
 
-    // Logger for debugging
     _dio.interceptors.add(
       LogInterceptor(
         requestHeader: true,

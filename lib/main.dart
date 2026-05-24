@@ -80,8 +80,10 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) =>
-              ItemDetailsProvider(context.read<ItemsRepository>()),
+          create: (context) => ItemDetailsProvider(
+            context.read<ItemsRepository>(),
+            context.read<AttributesRepository>(),
+          ),
         ),
         ChangeNotifierProvider(
           create: (context) => ProfileProvider(

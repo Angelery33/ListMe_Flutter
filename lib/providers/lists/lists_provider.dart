@@ -221,7 +221,7 @@ class ListsProvider extends ChangeNotifier {
     _localStorage.saveLibraries(_lists);
     notifyListeners();
 
-    // Persist new positions in the background
+    // Persiste las nuevas posiciones en segundo plano
     _persistOrder();
   }
 
@@ -239,11 +239,11 @@ class ListsProvider extends ChangeNotifier {
     try {
       await _listsRepository.reorderLibraries(items);
     } catch (_) {
-      // Order is already updated locally; silently ignore network errors
+      // El orden ya está actualizado localmente; ignorar errores de red silenciosamente
     }
   }
 
-  // Genre Management Helpers
+  // Helpers de gestión de géneros
 
   /// Añade un género llamado [name] a la biblioteca identificada por [listId] y
   /// devuelve el [LibraryGenreModel] creado, o `null` en caso de fallo.

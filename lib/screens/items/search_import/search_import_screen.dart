@@ -30,6 +30,7 @@ class SearchImportScreen extends StatefulWidget {
 /// las llamadas de enriquecimiento de detalles realizadas cuando el usuario selecciona un resultado.
 class _SearchImportScreenState extends State<SearchImportScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _authorController = TextEditingController();
   final ExternalApiService _apiService = ExternalApiService.instance;
 
   /// Filas de resultados de búsqueda de la consulta activa.
@@ -69,6 +70,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
     _debounce?.cancel();
     _scrollController.dispose();
     _searchController.dispose();
+    _authorController.dispose();
     super.dispose();
   }
 
@@ -182,7 +184,12 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
 
     switch (widget.category) {
       case 'Book':
-        return await _apiService.searchBooks(query: query, page: page, apiKey: booksApiKey);
+        return await _apiService.searchBooks(
+          query: query,
+          page: page,
+          apiKey: booksApiKey,
+          author: _authorController.text.trim().isEmpty ? null : _authorController.text.trim(),
+        );
       case 'Anime':
         if (source == 'TMDb') {
           return await _apiService.searchTMDb(
@@ -198,6 +205,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
           query: query,
           page: page,
           apiKey: booksApiKey,
+          comicMode: true,
         )).map((b) => {...b, 'source': 'Google Books'}).toList();
       case 'Manga':
         if (source == 'Tomos') {
@@ -339,7 +347,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
@@ -356,6 +364,23 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
               onSubmitted: (_) => _search(),
             ),
           ),
+          if (widget.category == 'Book')
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: TextField(
+                controller: _authorController,
+                onChanged: (_) => _onSearchChanged(_searchController.text),
+                decoration: InputDecoration(
+                  hintText: context.l10n.searchImportAuthorFilter,
+                  prefixIcon: const Icon(Icons.person_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onSubmitted: (_) => _search(),
+              ),
+            ),
+          const SizedBox(height: 8),
           _buildSourceSelector(),
           if (_isLoading)
             const Expanded(child: Center(child: CircularProgressIndicator()))
@@ -374,7 +399,7 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
                   final w = constraints.maxWidth;
                   final isWide = w > 700;
                   if (isWide) {
-                    final colW = (w - 8 - 24) / 2; // spacing + padding
+                    final colW = (w - 8 - 24) / 2; // separación + padding
                     final cardH = (colW * 0.38).clamp(140.0, 240.0);
                     return GridView.builder(
                       controller: _scrollController,

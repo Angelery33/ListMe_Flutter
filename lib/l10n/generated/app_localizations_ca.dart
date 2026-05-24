@@ -326,6 +326,10 @@ class AppLocalizationsCa extends AppLocalizations {
   String get authInvalidEmail => 'Introdueix un email vàlid';
 
   @override
+  String get authPasswordRequirements =>
+      'La contrasenya ha de tenir almenys 8 caràcters, una majúscula i un número';
+
+  @override
   String get navLists => 'Llistes';
 
   @override
@@ -755,6 +759,9 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get searchImportPlaceholder => 'Cercar…';
+
+  @override
+  String get searchImportAuthorFilter => 'Filtrar per autor (opcional)';
 
   @override
   String get searchImportNoResults => 'No s\'han trobat resultats';

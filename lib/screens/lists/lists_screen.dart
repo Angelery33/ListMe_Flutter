@@ -102,18 +102,16 @@ class _ListsScreenState extends State<ListsScreen> {
       );
     }
 
-    // Medium / Expanded: cuatro columnas con altura dinámica por fila.
-    // El padding se aplica al Column interior para que LayoutBuilder
-    // reciba el ancho real disponible y calcule colWidth correctamente.
+    // Medium / Expanded: columnas con altura dinámica por fila, el número de columnas
+    // se adapta al ancho disponible (mínimo 280px por columna).
     final lists = listsProvider.lists;
-    const cols = 4;
     const colSpacing = 20.0;
+    const minColWidth = 400.0;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth
-            - padding.left
-            - padding.right
-            - colSpacing * (cols - 1);
+        final usableWidth = constraints.maxWidth - padding.left - padding.right;
+        final cols = (usableWidth / (minColWidth + colSpacing)).floor().clamp(2, 6);
+        final availableWidth = usableWidth - colSpacing * (cols - 1);
         final colWidth = availableWidth / cols;
         final rows = <Widget>[];
         for (int i = 0; i < lists.length; i += cols) {

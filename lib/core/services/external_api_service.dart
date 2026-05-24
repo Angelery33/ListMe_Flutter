@@ -52,97 +52,174 @@ class ExternalApiService {
     int page = 1,
     required String query,
     String? apiKey,
+    String? author,
     bool mangaMode = false,
+    bool comicMode = false,
   }) async {
     final int startIndex = (page - 1) * 10;
     final keyParam = (apiKey != null && apiKey.isNotEmpty) ? '&key=$apiKey' : '';
+    final effectiveQuery = (author != null && author.trim().isNotEmpty)
+        ? '$query+inauthor:${Uri.encodeComponent(author.trim())}'
+        : query;
 
-    final url = Uri.parse(
-      'https://www.googleapis.com/books/v1/volumes'
-      '?q=${Uri.encodeComponent(query)}'
-      '&startIndex=$startIndex'
-      '&maxResults=15'
-      '&printType=books'
-      '$keyParam',
-    );
-    try {
+    const _comicKeywords = [
+      'comic', 'comics', 'graphic novel', 'graphic novels',
+      'superhero', 'bd', 'bande dessinée',
+      'cómic', 'cómics', 'novela gráfica', 'tebeo', 'historieta',
+      'comic books', 'comic book',
+    ];
+    const _mangaKeywords = ['manga', 'manhwa', 'manhua'];
+
+    // Para comic mode, busca en paralelo la query original y "{query} comics"
+    // para encontrar ediciones españolas de títulos anglosajones.
+    Future<List> _fetchItems(String q) async {
+      final url = Uri.parse(
+        'https://www.googleapis.com/books/v1/volumes'
+        '?q=${Uri.encodeComponent(q)}'
+        '&startIndex=$startIndex'
+        '&maxResults=15'
+        '&printType=books'
+        '$keyParam',
+      );
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final items = data['items'] as List? ?? [];
-        final results = items
-            .where((item) {
-              // Descartar resultados sin título
-              final info = item['volumeInfo'];
-              return info['title'] != null;
-            })
-            .map((item) {
-              final info = item['volumeInfo'];
-              final industryIdentifiers =
-                  info['industryIdentifiers'] as List? ?? [];
-              String? isbn;
-              for (final id in industryIdentifiers) {
-                if (id['type'] == 'ISBN_13') {
-                  isbn = id['identifier'];
-                  break;
-                }
-              }
-              isbn ??= industryIdentifiers.isNotEmpty
-                  ? industryIdentifiers.first['identifier']
-                  : null;
-
-              // Normalizar idioma
-              String? language = info['language'];
-              if (language == 'es') language = 'Español';
-              else if (language == 'en') language = 'Inglés';
-              else if (language == 'ja') language = 'Japonés';
-              else if (language == 'fr') language = 'Francés';
-              else if (language == 'de') language = 'Alemán';
-              else if (language == 'it') language = 'Italiano';
-              else if (language == 'pt') language = 'Portugués';
-
-              // Extraer año
-              String? publishedDate = info['publishedDate'];
-              String? year;
-              if (publishedDate != null && publishedDate.length >= 4) {
-                year = publishedDate.substring(0, 4);
-              }
-
-              // Preferir smallThumbnail como fallback si no hay thumbnail
-              final imageLinks = info['imageLinks'] as Map?;
-              String? thumbnail = imageLinks?['thumbnail']
-                  ?? imageLinks?['smallThumbnail'];
-              String? large = imageLinks?['large']
-                  ?? imageLinks?['extraLarge']
-                  ?? imageLinks?['medium']
-                  ?? thumbnail;
-
-              return {
-                'source': 'Google Books',
-                'remoteId': item['id'],
-                'name': info['title'] ?? 'Sin título',
-                'description': info['description'] ?? '',
-                'imagePath': thumbnail?.replaceFirst('http:', 'https:'),
-                'imagePathLarge': large?.replaceFirst('http:', 'https:'),
-                'genre': (info['categories'] as List?)?.first ?? '',
-                'author': (info['authors'] as List?)?.join(', ') ?? '',
-                'publisher': info['publisher'] ?? '',
-                'publishedDate': publishedDate ?? '',
-                'year': year ?? '',
-                'pageCount': info['pageCount'],
-                'isbn': isbn,
-                'language': language,
-                'externalRating': (info['averageRating'] as num?)?.toDouble(),
-                'ratingsCount': info['ratingsCount'],
-              };
-            })
-            .toList();
-
-        _sortResults(results, query);
-        return results;
-      } else {
-        throw Exception('Error de Google Books (${response.statusCode})');
+        return data['items'] as List? ?? [];
       }
+      return [];
+    }
+
+    try {
+      List rawItems;
+      if (comicMode) {
+        final queryHasComicWord = effectiveQuery.toLowerCase().contains('comic');
+        final futures = [
+          _fetchItems(effectiveQuery),
+          if (!queryHasComicWord) _fetchItems('$effectiveQuery comics'),
+        ];
+        final pages = await Future.wait(futures);
+        // Fusionar y deduplicar por remoteId
+        final seen = <String>{};
+        rawItems = pages
+            .expand((p) => p)
+            .where((item) => seen.add(item['id'] as String))
+            .toList();
+      } else {
+        rawItems = await _fetchItems(effectiveQuery);
+      }
+
+      const _bookExcludeTerms = [
+        'proceedings', 'dissertation', 'thesis', 'working paper',
+        'technical report', 'annual report', 'bulletin of',
+        'conference on', 'conference proceedings', 'journal of',
+        'law review', 'study guide', 'study aids',
+        'acta ', 'transactions on', 'symposium on',
+      ];
+      const _descExcludeTerms = [
+        'masterarbeit', 'bachelorarbeit', 'bachelor thesis', 'master thesis',
+        'phd thesis', 'doctoral thesis', 'doctoral dissertation',
+        'forschungsarbeit', 'seminararbeit', 'hausarbeit',
+        'university press', 'academic press',
+      ];
+
+      final keywords = comicMode ? _comicKeywords : (mangaMode ? _mangaKeywords : null);
+
+      final results = rawItems
+          .where((item) {
+            final info = item['volumeInfo'];
+            if (info['title'] == null) return false;
+
+            final title = (info['title'] ?? '').toString().toLowerCase();
+            final categories = ((info['categories'] as List?) ?? [])
+                .map((c) => c.toString().toLowerCase())
+                .join(' ');
+
+            if (keywords != null) {
+              final description = (info['description'] ?? '').toString().toLowerCase();
+              return keywords.any((k) =>
+                  categories.contains(k) || title.contains(k) || description.contains(k));
+            }
+
+            // Modo libro normal: excluir papers, documentos académicos y contenido muy corto
+            final pageCount = info['pageCount'] as int?;
+            if (pageCount != null && pageCount < 30) return false;
+
+            // Sin portada → muy probablemente paper o documento digitalizado
+            final imageLinks = info['imageLinks'];
+            if (imageLinks == null) return false;
+
+            final combined = '$title $categories';
+            if (_bookExcludeTerms.any((t) => combined.contains(t))) return false;
+
+            final description = (info['description'] ?? '').toString().toLowerCase();
+            if (_descExcludeTerms.any((t) => description.contains(t))) return false;
+
+            return true;
+          })
+          .map((item) {
+            final info = item['volumeInfo'];
+            final industryIdentifiers =
+                info['industryIdentifiers'] as List? ?? [];
+            String? isbn;
+            for (final id in industryIdentifiers) {
+              if (id['type'] == 'ISBN_13') {
+                isbn = id['identifier'];
+                break;
+              }
+            }
+            isbn ??= industryIdentifiers.isNotEmpty
+                ? industryIdentifiers.first['identifier']
+                : null;
+
+            // Normalizar idioma
+            String? language = info['language'];
+            if (language == 'es') language = 'Español';
+            else if (language == 'en') language = 'Inglés';
+            else if (language == 'ja') language = 'Japonés';
+            else if (language == 'fr') language = 'Francés';
+            else if (language == 'de') language = 'Alemán';
+            else if (language == 'it') language = 'Italiano';
+            else if (language == 'pt') language = 'Portugués';
+
+            // Extraer año
+            String? publishedDate = info['publishedDate'];
+            String? year;
+            if (publishedDate != null && publishedDate.length >= 4) {
+              year = publishedDate.substring(0, 4);
+            }
+
+            // Preferir smallThumbnail como fallback si no hay thumbnail
+            final imageLinks = info['imageLinks'] as Map?;
+            String? thumbnail = imageLinks?['thumbnail']
+                ?? imageLinks?['smallThumbnail'];
+            String? large = imageLinks?['large']
+                ?? imageLinks?['extraLarge']
+                ?? imageLinks?['medium']
+                ?? thumbnail;
+
+            return {
+              'source': 'Google Books',
+              'remoteId': item['id'],
+              'name': info['title'] ?? 'Sin título',
+              'description': info['description'] ?? '',
+              'imagePath': thumbnail?.replaceFirst('http:', 'https:'),
+              'imagePathLarge': large?.replaceFirst('http:', 'https:'),
+              'genre': (info['categories'] as List?)?.first ?? '',
+              'author': (info['authors'] as List?)?.join(', ') ?? '',
+              'publisher': info['publisher'] ?? '',
+              'publishedDate': publishedDate ?? '',
+              'year': year ?? '',
+              'pageCount': info['pageCount'],
+              'isbn': isbn,
+              'language': language,
+              'externalRating': (info['averageRating'] as num?)?.toDouble(),
+              'ratingsCount': info['ratingsCount'],
+            };
+          })
+          .toList();
+
+      _sortResults(results, query);
+      return results;
     } catch (e) {
       _logger.error('Error searching books: $e');
       if (e is Exception) rethrow;

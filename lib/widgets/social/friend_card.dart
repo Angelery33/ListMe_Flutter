@@ -27,11 +27,11 @@ class FriendCard extends StatelessWidget {
       elevation: isDark ? 4 : 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         child: Row(
           children: [
             _buildAvatar(scheme),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +52,7 @@ class FriendCard extends StatelessWidget {
                         value: friend.totalLibraries.toString(),
                         label: '',
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                       _buildStat(
                         context,
                         icon: Icons.check_circle_outline,
@@ -93,13 +93,13 @@ class FriendCard extends StatelessWidget {
   Widget _buildAvatar(ColorScheme scheme) {
     if (friend.photoUrl != null && friend.photoUrl!.isNotEmpty) {
       return CircleAvatar(
-        radius: 28,
+        radius: 26,
         backgroundImage: NetworkImage(friend.photoUrl!),
         backgroundColor: scheme.primaryContainer,
       );
     }
     return CircleAvatar(
-      radius: 28,
+      radius: 22,
       backgroundColor: scheme.primaryContainer,
       child: Text(
         friend.username[0].toUpperCase(),

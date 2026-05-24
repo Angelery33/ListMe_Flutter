@@ -188,8 +188,8 @@ class ItemsProvider extends ChangeNotifier {
 
     try {
       final all = await _itemsRepository.getAllItems(libraryId: libraryId);
-      // Only top-level items show in the main library list. Sub-collection
-      // items (parentId != null) are reachable from their parent's detail.
+      // Solo los elementos raíz aparecen en la lista principal; los subelementos
+      // (parentId != null) son accesibles desde el detalle de su padre.
       _items = all.where((i) => i.parentId == null).toList();
       _rebuildGenres();
       _isLoading = false;
@@ -222,7 +222,7 @@ class ItemsProvider extends ChangeNotifier {
   Future<ItemModel?> createItem(ItemModel newItem) async {
     try {
       final createdItem = await _itemsRepository.createItem(newItem);
-      // Sub-collection items don't belong in the main library list.
+      // Los subelementos no pertenecen a la lista principal de la biblioteca.
       if (createdItem.parentId == null) {
         _items.add(createdItem);
       }

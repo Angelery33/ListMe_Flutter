@@ -20,7 +20,7 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, auth, _) {
         switch (auth.status) {
           case AuthStatus.authenticated:
-            return const ListsScreen(); // Home removed, Lists is the root
+            return const ListsScreen(); // Se eliminó Home, Listas es la raíz
           case AuthStatus.unauthenticated:
           case AuthStatus.error:
             return const LoginScreen();

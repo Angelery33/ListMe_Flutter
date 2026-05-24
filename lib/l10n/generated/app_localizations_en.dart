@@ -326,6 +326,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authInvalidEmail => 'Enter a valid email';
 
   @override
+  String get authPasswordRequirements =>
+      'Password must be at least 8 characters, include one uppercase letter and one number';
+
+  @override
   String get navLists => 'Lists';
 
   @override
@@ -751,6 +755,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchImportPlaceholder => 'Search…';
+
+  @override
+  String get searchImportAuthorFilter => 'Filter by author (optional)';
 
   @override
   String get searchImportNoResults => 'No results found';

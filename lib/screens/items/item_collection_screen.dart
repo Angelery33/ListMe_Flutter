@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/i18n/l10n_extension.dart';
+import '../../core/utils/item_grouping_helper.dart';
 
 import '../../data/items/item_model.dart';
 import '../../data/lists/list_model.dart';
@@ -9,17 +10,12 @@ import '../../widgets/items/compact_item_card.dart';
 import '../../widgets/shared/custom_gradient_app_bar.dart';
 import 'item_detail_screen.dart';
 
-/// Pantalla que muestra los sub-elementos (volúmenes, episodios, etc.) de una
-/// colección [ItemModel].
-///
-/// Lee los datos de los sub-elementos de [ItemDetailsProvider] y permite al usuario
-/// abrir sub-elementos individuales o añadir nuevos.
-class ItemCollectionScreen extends StatefulWidget {
-  /// El elemento de colección padre cuyos sub-elementos se muestran.
-  final ItemModel parent;
+enum _CollectionSort { score, name }
 
-  /// La biblioteca a la que pertenece [parent], pasada a las pantallas hijas para que
-  /// puedan respetar la configuración a nivel de lista (por ejemplo, [ListModel.canEdit]).
+/// Pantalla que muestra los sub-elementos de una colección agrupados por estado
+/// y ordenados por puntuación o alfabéticamente dentro de cada grupo.
+class ItemCollectionScreen extends StatefulWidget {
+  final ItemModel parent;
   final ListModel? list;
 
   const ItemCollectionScreen({super.key, required this.parent, this.list});
@@ -28,11 +24,9 @@ class ItemCollectionScreen extends StatefulWidget {
   State<ItemCollectionScreen> createState() => _ItemCollectionScreenState();
 }
 
-/// Estado para [ItemCollectionScreen].
-///
-/// Activa la carga de sub-elementos en el primer frame y se actualiza después de regresar de
-/// cualquier pantalla de detalle o entrada.
 class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
+  _CollectionSort _sort = _CollectionSort.score;
+
   @override
   void initState() {
     super.initState();
@@ -41,8 +35,6 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
     });
   }
 
-  /// Navega a [ItemDetailScreen] para [sub] y actualiza los sub-elementos al
-  /// regresar.
   Future<void> _openSubItem(ItemModel sub) async {
     await Navigator.push(
       context,
@@ -55,26 +47,57 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
     }
   }
 
-  /// Abre la pantalla de entrada de elementos pre-rellenada con el ID del padre para que el nuevo
-  /// elemento se vincule a esta colección, luego actualiza al regresar.
   Future<void> _addSubItem() async {
     final result = await Navigator.pushNamed(
       context,
       '/item-entry',
-      arguments: {
-        'list': widget.list,
-        'parentId': widget.parent.id,
-      },
+      arguments: {'list': widget.list, 'parentId': widget.parent.id},
     );
     if (result == true && mounted) {
       await context.read<ItemDetailsProvider>().loadSubItems();
     }
   }
 
+  Map<String, List<ItemModel>> _groupAndSort(List<ItemModel> items) {
+    final sorted = List<ItemModel>.from(items);
+    if (_sort == _CollectionSort.score) {
+      sorted.sort((a, b) => (b.score ?? -1).compareTo(a.score ?? -1));
+    } else {
+      sorted.sort((a, b) => a.name.compareTo(b.name));
+    }
+
+    const statusOrder = ['IN_PROGRESS', 'PENDING', 'PAUSED', 'DROPPED', 'COMPLETED'];
+    const statusToKey = {
+      'PENDING': kGroupKeyPending,
+      'IN_PROGRESS': kGroupKeyInProgress,
+      'PAUSED': kGroupKeyPaused,
+      'DROPPED': kGroupKeyDropped,
+      'COMPLETED': kGroupKeyCompleted,
+    };
+
+    final hasAnyStatus = sorted.any((i) => i.status != null && i.status != 'PENDING');
+
+    if (!hasAnyStatus) return {'': sorted};
+
+    final grouped = <String, List<ItemModel>>{};
+    for (final status in statusOrder) {
+      final key = statusToKey[status]!;
+      final group = sorted.where((i) => i.status == status).toList();
+      if (group.isNotEmpty) grouped[key] = group;
+    }
+    final knownStatuses = statusToKey.keys.toSet();
+    final rest = sorted.where((i) => !knownStatuses.contains(i.status)).toList();
+    if (rest.isNotEmpty) grouped[kGroupKeyPending] ??= rest;
+
+    return grouped;
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ItemDetailsProvider>();
     final subItems = provider.subItems;
+    final grouped = _groupAndSort(subItems);
+    final canEdit = widget.list?.canEdit ?? true;
 
     return Scaffold(
       appBar: CustomGradientAppBar(
@@ -82,12 +105,29 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
         showBackButton: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: context.l10n.commonAdd,
-            onPressed: _addSubItem,
+            icon: Icon(
+              _sort == _CollectionSort.score
+                  ? Icons.sort_by_alpha
+                  : Icons.star_outline,
+            ),
+            tooltip: _sort == _CollectionSort.score
+                ? context.l10n.sortNameAZ
+                : context.l10n.sortScore,
+            onPressed: () => setState(() {
+              _sort = _sort == _CollectionSort.score
+                  ? _CollectionSort.name
+                  : _CollectionSort.score;
+            }),
           ),
         ],
       ),
+      floatingActionButton: canEdit
+          ? FloatingActionButton(
+              onPressed: _addSubItem,
+              tooltip: context.l10n.collectionAddItem,
+              child: const Icon(Icons.add_rounded),
+            )
+          : null,
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : subItems.isEmpty
@@ -103,34 +143,88 @@ class _ItemCollectionScreenState extends State<ItemCollectionScreen> {
                           context.l10n.collectionEmpty,
                           style: const TextStyle(fontStyle: FontStyle.italic),
                         ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: _addSubItem,
-                          icon: const Icon(Icons.add),
-                          label: Text(context.l10n.collectionAddItem),
-                        ),
                       ],
                     ),
                   ),
                 )
-              : GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  gridDelegate:
-                      const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 160,
-                    childAspectRatio: 1.0,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: subItems.length,
-                  itemBuilder: (context, index) {
-                    final sub = subItems[index];
-                    return CompactItemCard(
-                      item: sub,
-                      onTap: () => _openSubItem(sub),
-                    );
-                  },
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
+                  children: [
+                    for (final entry in grouped.entries) ...[
+                      if (entry.key.isNotEmpty)
+                        _SectionHeader(groupKey: entry.key),
+                      _CollectionGrid(
+                        items: entry.value,
+                        list: widget.list,
+                        onTap: _openSubItem,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ],
                 ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String groupKey;
+  const _SectionHeader({required this.groupKey});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = groupLabelFor(context, groupKey);
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 6, left: 4),
+      child: Text(
+        label.toUpperCase(),
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.primary,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _CollectionGrid extends StatelessWidget {
+  final List<ItemModel> items;
+  final ListModel? list;
+  final void Function(ItemModel) onTap;
+
+  const _CollectionGrid({
+    required this.items,
+    required this.list,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = (constraints.maxWidth / 90).floor().clamp(2, 12);
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            childAspectRatio: 9 / (16 * 0.8),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final sub = items[index];
+            return CompactItemCard(
+              item: sub,
+              isGradeable: list?.gradeable ?? true,
+              supportsProgress: list?.supportsProgress ?? false,
+              onTap: () => onTap(sub),
+            );
+          },
+        );
+      },
     );
   }
 }

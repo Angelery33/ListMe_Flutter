@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../data/attributes/attribute_item_model.dart';
+
 import '../../../../providers/items/item_details_provider.dart';
 
 /// Muestra los atributos personalizados de un elemento en la pantalla de detalles.
@@ -40,7 +41,7 @@ class DetailAttributesSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...attributes.map((attr) => _buildAttributeItem(context, attr)),
+          ...attributes.map((attr) => _buildAttributeItem(context, attr, provider.attributeTypes)),
         ],
       ),
     );
@@ -48,7 +49,7 @@ class DetailAttributesSection extends StatelessWidget {
 
   /// Renderiza un único atributo [attr] como una fila con un icono de avatar circular,
   /// el nombre del tipo resuelto como una leyenda y el valor del atributo como el cuerpo.
-  Widget _buildAttributeItem(BuildContext context, AttributeItemModel attr) {
+  Widget _buildAttributeItem(BuildContext context, AttributeItemModel attr, List types) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -78,7 +79,7 @@ class DetailAttributesSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _getTypeName(attr.attributeTypeId),
+                  _getTypeName(attr.attributeTypeId, types),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
                   ),
@@ -99,16 +100,10 @@ class DetailAttributesSection extends StatelessWidget {
 
   /// Mapea un ID de tipo de atributo numérico a una etiqueta en español legible por humanos.
   /// Recurre a 'Detalle' para IDs desconocidos.
-  String _getTypeName(int typeId) {
-    // Map type IDs to readable names - this could be enhanced with actual type names from API
-    const typeNames = {
-      1: 'Autor',
-      2: 'Editorial',
-      3: 'Género',
-      4: 'Año',
-      5: 'Duración',
-      6: 'Temporada',
-    };
-    return typeNames[typeId] ?? 'Detalle';
+  String _getTypeName(int typeId, List types) {
+    for (final t in types) {
+      if (t.id == typeId) return t.name;
+    }
+    return 'Detalle';
   }
 }

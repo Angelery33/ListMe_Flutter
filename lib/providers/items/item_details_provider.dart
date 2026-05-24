@@ -3,6 +3,8 @@ import '../../data/items/item_model.dart';
 import '../../data/items/items_repository.dart';
 import '../../data/items/item_image_model.dart';
 import '../../data/attributes/attribute_item_model.dart';
+import '../../data/attributes/attribute_type_model.dart';
+import '../../data/attributes/attributes_repository.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Proveedor que gestiona el estado de la vista de detalle para un único [ItemModel].
@@ -12,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 /// detalle individuales puedan actualizar el elemento sin recargar todo.
 class ItemDetailsProvider extends ChangeNotifier {
   final ItemsRepository _itemsRepository;
+  final AttributesRepository _attributesRepository;
 
   /// El elemento mostrado actualmente, o `null` mientras se carga por primera vez.
   ItemModel? _item;
@@ -25,14 +28,19 @@ class ItemDetailsProvider extends ChangeNotifier {
   /// Pares clave/valor de atributos personalizados adjuntos a [_item].
   List<AttributeItemModel> _attributes = [];
 
+  /// Definiciones de tipos de atributos, usadas para resolver nombres en la UI.
+  List<AttributeTypeModel> _attributeTypes = [];
+
   /// Indica si hay alguna operación asíncrona en curso actualmente.
   bool _isLoading = false;
 
   /// Error legible por humanos de la operación fallida más reciente, o `null`.
   String? _errorMessage;
 
-  /// Crea un [ItemDetailsProvider] respaldado por [_itemsRepository].
-  ItemDetailsProvider(this._itemsRepository);
+  /// Atributos expuestos para que la UI resuelva nombres de tipos.
+  List<AttributeTypeModel> get attributeTypes => _attributeTypes;
+
+  ItemDetailsProvider(this._itemsRepository, this._attributesRepository);
 
   /// El elemento que se muestra actualmente en la pantalla de detalle.
   ItemModel? get item => _item;
@@ -57,8 +65,8 @@ class ItemDetailsProvider extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
 
-    // Fast render with initial item only when we don't already have fresh data
-    // for this item (avoids cover flicker when navigating back to the screen).
+    // Renderizado inmediato con el item inicial solo si no hay datos frescos ya cargados
+    // para este item (evita parpadeo de portada al volver a la pantalla).
     if (initialItem != null && _item?.id != initialItem.id) {
       _item = initialItem;
       notifyListeners();
@@ -69,7 +77,14 @@ class ItemDetailsProvider extends ChangeNotifier {
       _item = await _itemsRepository.getItemById(itemId);
 
       if (_item != null) {
-        _images = await _itemsRepository.getItemImages(itemId);
+        final results = await Future.wait([
+          _itemsRepository.getItemImages(itemId),
+          _attributesRepository.getItemAttributes(itemId),
+          _attributesRepository.getAllAttributeTypes(),
+        ]);
+        _images = results[0] as List<ItemImageModel>;
+        _attributes = results[1] as List<AttributeItemModel>;
+        _attributeTypes = results[2] as List<AttributeTypeModel>;
         _sortImagesAndSyncFavorite();
 
         if (_item!.collection) {

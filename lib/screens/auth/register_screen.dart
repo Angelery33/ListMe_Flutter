@@ -76,9 +76,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (!email.contains('@')) {
+    if (!email.contains('@') || !email.contains('.')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.authFillAll)),
+        SnackBar(content: Text(context.l10n.authInvalidEmail)),
+      );
+      return;
+    }
+
+    final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*\d).{8,}$');
+    if (!passwordRegex.hasMatch(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.authPasswordRequirements)),
       );
       return;
     }
@@ -217,7 +225,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   focusNode: _passwordFocusNode,
                                   onSubmitted: () => _confirmPasswordFocusNode.requestFocus(),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 6),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Text(
+                                    context.l10n.authPasswordRequirements,
+                                    style: const TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
                                 _buildTextField(
                                   controller: _confirmPasswordController,
                                   label: context.l10n.authConfirmPassword,

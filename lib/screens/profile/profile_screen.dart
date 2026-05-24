@@ -518,22 +518,40 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
       children: [
         GestureDetector(
           onTap: _uploading ? null : () => _pickAndUpload(context),
-          child: CircleAvatar(
-            radius: 50,
-            backgroundColor: scheme.primaryContainer,
-            backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
-                ? NetworkImage(photoUrl)
-                : null,
-            child: (photoUrl == null || photoUrl.isEmpty)
-                ? Text(
-                    username[0].toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: scheme.onPrimaryContainer,
+          child: ClipOval(
+            child: Container(
+              key: ValueKey(photoUrl),
+              width: 100,
+              height: 100,
+              color: scheme.primaryContainer,
+              child: (photoUrl != null && photoUrl.isNotEmpty)
+                  ? Image.network(
+                      photoUrl,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Text(
+                          username[0].toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: scheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        username[0].toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onPrimaryContainer,
+                        ),
+                      ),
                     ),
-                  )
-                : null,
+            ),
           ),
         ),
         if (_uploading)
@@ -561,33 +579,59 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
     final source = await _showSourceSheet(context);
     if (source == null) return;
 
+    final profile = context.read<ProfileProvider>();
+    final l10n = context.l10n;
+
     final pickerService = ImagePickerService();
     final file = await pickerService.pickImage(source: source);
-    if (file == null || !mounted) return;
+    debugPrint('[ProfileAvatar] file picked: ${file?.path}');
 
+    if (file == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: no se pudo obtener la imagen')),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) {
+      debugPrint('[ProfileAvatar] not mounted after pickImage');
+      return;
+    }
     setState(() => _uploading = true);
 
-    final profile = context.read<ProfileProvider>();
     final userId = profile.user?.id?.toString() ?? 'unknown';
+    debugPrint('[ProfileAvatar] uploading for userId=$userId');
     final storageService = FirebaseStorageService();
     final url = await storageService.uploadProfilePhoto(file, userId);
+    debugPrint('[ProfileAvatar] firebase url=$url');
 
     if (!mounted) return;
 
-    if (url != null) {
-      final success = await profile.updateProfilePhoto(url);
-      if (mounted && !success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.profilePhotoSaveError)),
-        );
-      }
-    } else {
+    if (url == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.profilePhotoUploadError)),
+        const SnackBar(content: Text('Error: fallo al subir a Firebase Storage')),
       );
+      setState(() => _uploading = false);
+      return;
     }
 
-    if (mounted) setState(() => _uploading = false);
+    final success = await profile.updateProfilePhoto(url);
+    debugPrint('[ProfileAvatar] backend save success=$success, errorMsg=${profile.errorMessage}');
+
+    if (!mounted) return;
+    setState(() => _uploading = false);
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar: ${profile.errorMessage ?? l10n.profilePhotoSaveError}')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Foto actualizada correctamente')),
+      );
+    }
   }
 
   /// Muestra una hoja inferior para elegir entre cámara y galería.

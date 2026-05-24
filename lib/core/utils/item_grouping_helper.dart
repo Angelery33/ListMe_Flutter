@@ -212,7 +212,7 @@ class ItemGroupingHelper {
       if (group.isNotEmpty) grouped[key] = group;
     }
 
-    // Items with statuses not in the configured order fall into their natural group
+    // Los elementos con estados no contemplados en el orden configurado caen en su grupo natural
   }
 
   static void _groupByWishlist(
