@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/services/api_client.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/token_storage.dart';
+import '../../core/config/navigator_key.dart';
+import '../../core/config/routes.dart';
 import '../../data/auth/auth_repository.dart';
 import '../../data/auth/auth_models.dart';
 import '../../core/services/logger_service.dart';
@@ -36,6 +40,12 @@ class AuthProvider extends ChangeNotifier {
       _logger.warning('AuthProvider: sesión expirada, redirigiendo al login');
       _status = AuthStatus.unauthenticated;
       notifyListeners();
+      // Limpia toda la pila de navegación y va al login sin importar en qué
+      // pantalla esté el usuario cuando el token expira
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        AppRoutes.login,
+        (_) => false,
+      );
     });
     checkAuthStatus();
   }
@@ -55,14 +65,36 @@ class AuthProvider extends ChangeNotifier {
   /// Devuelve `true` mientras una operación de autenticación asíncrona está en curso.
   bool get isLoading => _status == AuthStatus.loading;
 
-  /// Consulta el repositorio para determinar si ya existe un token de sesión
-  /// y actualiza [status] a [AuthStatus.authenticated] o
-  /// [AuthStatus.unauthenticated] según corresponda.
+  /// Comprueba si existe sesión y la renueva proactivamente en cada arranque.
+  ///
+  /// Si hay refresh token, intenta refrescarlo inmediatamente para mantener la sesión
+  /// activa sin que el usuario tenga que volver a iniciar sesión (hasta que el refresh
+  /// token caduque en el servidor, típicamente 30 días).
+  /// Si el refresco falla (token expirado o sin conexión pero hay access token local),
+  /// se mantiene autenticado y el interceptor reactivo de [ApiClient] gestionará
+  /// el siguiente fallo 401.
   Future<void> checkAuthStatus() async {
-    final isLoggedIn = await _authRepository.isLoggedIn();
-    _status = isLoggedIn
-        ? AuthStatus.authenticated
-        : AuthStatus.unauthenticated;
+    final refreshToken = await TokenStorage.getRefreshToken();
+    final accessToken = await TokenStorage.getAccessToken();
+
+    if (refreshToken != null) {
+      final refreshed = await AuthService.instance.refreshToken();
+      if (refreshed) {
+        _logger.info('AuthProvider: Sesión renovada proactivamente al arrancar');
+        _status = AuthStatus.authenticated;
+      } else if (accessToken != null) {
+        // Sin red o fallo puntual: mantenemos autenticado con token local
+        _logger.warning('AuthProvider: Refresco falló pero hay token local, continuamos autenticados');
+        _status = AuthStatus.authenticated;
+      } else {
+        _status = AuthStatus.unauthenticated;
+      }
+    } else if (accessToken != null) {
+      _status = AuthStatus.authenticated;
+    } else {
+      _status = AuthStatus.unauthenticated;
+    }
+
     notifyListeners();
   }
 

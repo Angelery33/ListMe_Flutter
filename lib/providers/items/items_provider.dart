@@ -8,19 +8,19 @@ import '../../data/attributes/attribute_item_model.dart';
 import '../../data/attributes/attributes_repository.dart';
 import '../../core/utils/item_grouping_helper.dart';
 
-/// Provider that manages the list of [ItemModel]s shown in a library screen.
+/// Proveedor que gestiona la lista de [ItemModel]s mostrados en la pantalla de una biblioteca.
 ///
-/// Handles loading, filtering, sorting and CRUD operations for items. Keeps
-/// track of the current context (library, parent collection, or remote list)
-/// so that [syncItems] knows how to re-fetch after a mutation.
+/// Controla la carga, filtrado, ordenación y operaciones CRUD sobre elementos.
+/// Mantiene el contexto actual (biblioteca, colección padre o lista remota)
+/// para que [syncItems] sepa cómo volver a obtener datos tras una mutación.
 class ItemsProvider extends ChangeNotifier {
   final ItemsRepository _itemsRepository;
   final AttributesRepository _attributesRepository;
 
-  /// Whether a remote operation is currently running.
+  /// Indica si hay una operación remota en curso.
   bool _isLoading = false;
 
-  /// The current in-memory item list, always filtered to top-level items only.
+  /// Lista de elementos en memoria, siempre filtrada a elementos raíz.
   List<ItemModel> _items = [];
   List<String> _cachedGenres = [];
 
@@ -28,81 +28,80 @@ class ItemsProvider extends ChangeNotifier {
     _cachedGenres = _items.map((i) => i.genre).whereType<String>().toSet().toList();
   }
 
-  /// Error message from the most recent failed operation, or `null`.
+  /// Mensaje de error de la última operación fallida, o `null`.
   String? _errorMessage;
 
   // Filtros y Ordenación
 
-  /// Current text used to filter items by name.
+  /// Texto de búsqueda actual para filtrar elementos por nombre.
   String _searchQuery = '';
 
-  /// Current genre filter, or `null` when no genre filter is active.
+  /// Filtro de género activo, o `null` cuando no hay ninguno activo.
   String? _filterGenre;
 
-  /// Current sort order applied to the item list.
+  /// Orden de clasificación aplicado actualmente a la lista de elementos.
   SortOption _sortOption = SortOption.dateNewest;
 
   // Estado actual
 
-  /// ID of the library currently being viewed, or `null` for remote/sub views.
+  /// ID de la biblioteca que se está visualizando, o `null` en vistas remotas o de subcolección.
   int? _currentLibraryId;
 
-  /// Parent item ID when viewing a sub-collection, otherwise `null`.
+  /// ID del elemento padre al ver una subcolección, o `null` en otro caso.
   int? _currentParentId;
 
-  /// Remote shared-list ID when viewing a public list, otherwise `null`.
+  /// ID de lista compartida remota al ver una lista pública, o `null` en otro caso.
   String? _currentRemoteId;
 
-  /// Creates an [ItemsProvider] backed by [_itemsRepository] and
-  /// [_attributesRepository].
+  /// Crea un [ItemsProvider] respaldado por [_itemsRepository] y [_attributesRepository].
   ItemsProvider(this._itemsRepository, this._attributesRepository);
 
-  /// Whether a remote operation is currently running.
+  /// Indica si hay una operación remota en curso.
   bool get isLoading => _isLoading;
 
-  /// The current (possibly filtered) item list.
+  /// Lista de elementos actual (posiblemente filtrada).
   List<ItemModel> get items => _items;
 
-  /// Error from the last failed call, or `null`.
+  /// Error de la última llamada fallida, o `null`.
   String? get errorMessage => _errorMessage;
 
-  /// The library ID currently loaded, or `null`.
+  /// ID de la biblioteca cargada actualmente, o `null`.
   int? get currentLibraryId => _currentLibraryId;
 
-  /// The parent item ID when inside a sub-collection, or `null`.
+  /// ID del elemento padre al estar dentro de una subcolección, o `null`.
   int? get currentParentId => _currentParentId;
 
-  /// The remote list ID when viewing a shared list, or `null`.
+  /// ID de la lista remota al visualizar una lista compartida, o `null`.
   String? get currentRemoteId => _currentRemoteId;
 
-  /// Current search text used to filter results in the UI.
+  /// Texto de búsqueda actual usado para filtrar resultados en la UI.
   String get searchQuery => _searchQuery;
 
-  /// Active genre filter, or `null` when all genres are shown.
+  /// Filtro de género activo, o `null` cuando se muestran todos los géneros.
   String? get filterGenre => _filterGenre;
 
-  /// Active sort option applied to the displayed item list.
+  /// Opción de ordenación activa aplicada a la lista de elementos mostrada.
   SortOption get sortOption => _sortOption;
 
-  /// Unique, non-null genre strings extracted from the current item list.
-  /// Cached and rebuilt only when [_items] is replaced.
+  /// Cadenas de género únicas y no nulas extraídas de la lista actual.
+  /// Se cachean y reconstruyen solo cuando se reemplaza [_items].
   List<String> get availableGenres => _cachedGenres;
 
-  /// Updates [searchQuery] to [query] and notifies listeners so the UI
-  /// can re-filter the list without a server round-trip.
+  /// Actualiza [searchQuery] a [query] y notifica a los listeners para que la UI
+  /// pueda refiltrar la lista sin un viaje de ida y vuelta al servidor.
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
   }
 
-  /// Sets the active genre filter to [genre] (or clears it if `null`) and
-  /// notifies listeners.
+  /// Establece el filtro de género activo a [genre] (o lo borra si es `null`)
+  /// y notifica a los listeners.
   void setFilterGenre(String? genre) {
     _filterGenre = genre;
     notifyListeners();
   }
 
-  /// Changes the active sort [option] and notifies listeners.
+  /// Cambia la opción de ordenación activa a [option] y notifica a los listeners.
   void setSortOption(SortOption option) {
     _sortOption = option;
     notifyListeners();
@@ -132,8 +131,8 @@ class ItemsProvider extends ChangeNotifier {
     await _fetchByRemoteId(remoteId);
   }
 
-  /// Fetches sub-collection items (children of [parentId]) inside [libraryId]
-  /// and replaces [items], showing a loading indicator while in flight.
+  /// Obtiene los elementos de la subcolección (hijos de [parentId]) dentro de [libraryId]
+  /// y reemplaza [items], mostrando un indicador de carga mientras está en vuelo.
   Future<void> _fetchSubCollections(int parentId, int libraryId) async {
     _isLoading = true;
     _errorMessage = null;
@@ -152,7 +151,7 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Fetches items from a publicly shared list identified by [remoteId].
+  /// Obtiene los elementos de una lista pública compartida identificada por [remoteId].
   Future<void> _fetchByRemoteId(String remoteId) async {
     _isLoading = true;
     _errorMessage = null;
@@ -178,8 +177,8 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Loads all top-level items for [libraryId], clearing the list first to
-  /// show a clean loading state when switching between libraries.
+  /// Carga todos los elementos raíz de [libraryId], borrando la lista primero para
+  /// mostrar un estado de carga limpio al cambiar entre bibliotecas.
   Future<void> fetchItemsByLibrary(int libraryId) async {
     _isLoading = true;
     _errorMessage = null;
@@ -214,11 +213,11 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Creates [newItem] on the server and appends it to the local list when
-  /// it has no parent (i.e. it is a top-level item).
+  /// Crea [newItem] en el servidor y lo añade a la lista local cuando
+  /// no tiene padre (es decir, es un elemento raíz).
   ///
-  /// Returns the created [ItemModel] on success, or `null` and sets
-  /// [errorMessage] on failure.
+  /// Devuelve el [ItemModel] creado en caso de éxito, o `null` y establece
+  /// [errorMessage] en caso de fallo.
   Future<ItemModel?> createItem(ItemModel newItem) async {
     try {
       final createdItem = await _itemsRepository.createItem(newItem);
@@ -235,10 +234,10 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Sends [updatedItem] to the server for item with [id] and replaces the
-  /// matching entry in the local list.
+  /// Envía [updatedItem] al servidor para el elemento con [id] y reemplaza
+  /// la entrada correspondiente en la lista local.
   ///
-  /// Returns `true` on success, `false` and sets [errorMessage] on failure.
+  /// Devuelve `true` en caso de éxito, `false` y establece [errorMessage] en caso de fallo.
   Future<bool> updateItem(int id, ItemModel updatedItem) async {
     try {
       final item = await _itemsRepository.updateItem(id, updatedItem);
@@ -255,15 +254,15 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Deletes the image record identified by [imageId] from the server.
+  /// Elimina el registro de imagen identificado por [imageId] del servidor.
   Future<void> deleteItemImage(int imageId) async {
     await _itemsRepository.deleteItemImage(imageId);
   }
 
-  /// Deletes the item with [id] from the server and removes it from the
-  /// local list so the UI updates immediately.
+  /// Elimina el elemento con [id] del servidor y lo quita de la lista local
+  /// para que la UI se actualice inmediatamente.
   ///
-  /// Returns `true` on success, `false` and sets [errorMessage] on failure.
+  /// Devuelve `true` en caso de éxito, `false` y establece [errorMessage] en caso de fallo.
   Future<bool> deleteItem(int id) async {
     try {
       await _itemsRepository.deleteItem(id);
@@ -290,42 +289,42 @@ class ItemsProvider extends ChangeNotifier {
     await updateItem(item.id!, updated);
   }
 
-  /// Returns all attribute types available for the current user, fetched from
-  /// [AttributesRepository].
+  /// Devuelve todos los tipos de atributo disponibles para el usuario actual,
+  /// obtenidos desde [AttributesRepository].
   Future<List<AttributeTypeModel>> getAttributeTypes() async {
     return await _attributesRepository.getAllAttributeTypes();
   }
 
-  /// Creates a new text-type attribute type with the given [name] and returns
-  /// the persisted [AttributeTypeModel].
+  /// Crea un nuevo tipo de atributo de texto con el [name] dado y devuelve
+  /// el [AttributeTypeModel] persistido.
   Future<AttributeTypeModel> createAttributeType(String name) async {
     final newType = AttributeTypeModel(name: name, dataType: "TEXT");
     return await _attributesRepository.createAttributeType(newType);
   }
 
-  /// Returns all attribute key/value pairs attached to the item identified
-  /// by [itemId].
+  /// Devuelve todos los pares clave/valor de atributos asociados al elemento
+  /// identificado por [itemId].
   Future<List<AttributeItemModel>> getItemAttributes(int itemId) async {
     return await _attributesRepository.getItemAttributes(itemId);
   }
 
-  /// Persists a new [attribute] entry linking an attribute type to an item.
+  /// Persiste una nueva entrada [attribute] que vincula un tipo de atributo con un elemento.
   Future<AttributeItemModel> addAttributeToItem(AttributeItemModel attribute) async {
     return await _attributesRepository.addAttributeToItem(attribute);
   }
 
-  /// Returns all images stored for the item identified by [itemId].
+  /// Devuelve todas las imágenes almacenadas para el elemento identificado por [itemId].
   Future<List<ItemImageModel>> getItemImages(int itemId) async {
     return await _itemsRepository.getItemImages(itemId);
   }
 
-  /// Returns the subset of [items] that belong to [libraryId].
+  /// Devuelve el subconjunto de [items] que pertenecen a [libraryId].
   List<ItemModel> getItemsByLibrary(int libraryId) {
     return _items.where((i) => i.idLibrary == libraryId).toList();
   }
 
-  /// Persists [image] as a new gallery entry on the server and notifies
-  /// listeners. Returns the created [ItemImageModel], or `null` on failure.
+  /// Persiste [image] como una nueva entrada de galería en el servidor y notifica
+  /// a los listeners. Devuelve el [ItemImageModel] creado, o `null` en caso de fallo.
   Future<ItemImageModel?> createItemImage(ItemImageModel image) async {
     try {
       final created = await _itemsRepository.createItemImage(image);
@@ -338,8 +337,8 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Marks the image with [imageId] as the favourite for item [itemId] via
-  /// the server. Returns `true` on success, `false` on failure.
+  /// Marca la imagen con [imageId] como favorita para el elemento [itemId] en el
+  /// servidor. Devuelve `true` en caso de éxito, `false` en caso de fallo.
   Future<bool> setFavoriteImage(int itemId, int imageId) async {
     try {
       await _itemsRepository.setFavoriteImage(itemId, imageId);
@@ -350,8 +349,8 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Updates an item in the local cache without an API call.
-  /// Used to propagate changes from ItemDetailsProvider (e.g. new favorite image).
+  /// Actualiza un elemento en la caché local sin llamada a la API.
+  /// Usado para propagar cambios desde ItemDetailsProvider (p. ej. nueva imagen favorita).
   void updateLocalItem(ItemModel updated) {
     final idx = _items.indexWhere((i) => i.id == updated.id);
     if (idx != -1 && _items[idx].remoteImageUrl != updated.remoteImageUrl) {
@@ -360,10 +359,10 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Updates the remote image URL of item [itemId] to [remoteUrl] both locally
-  /// and on the server, keeping the cover thumbnail in sync with the gallery.
+  /// Actualiza la URL de imagen remota del elemento [itemId] a [remoteUrl] tanto
+  /// localmente como en el servidor, manteniendo la miniatura de portada sincronizada con la galería.
   ///
-  /// Returns `true` on success, `false` and sets [errorMessage] on failure.
+  /// Devuelve `true` en caso de éxito, `false` y establece [errorMessage] en caso de fallo.
   Future<bool> updateItemImageUrl(int itemId, String remoteUrl) async {
     try {
       final index = _items.indexWhere((i) => i.id == itemId);
@@ -379,8 +378,8 @@ class ItemsProvider extends ChangeNotifier {
     }
   }
 
-  /// Uploads [imageFile] to the server for item [itemId] and returns the
-  /// resulting [ItemImageModel], or `null` on failure.
+  /// Sube [imageFile] al servidor para el elemento [itemId] y devuelve el
+  /// [ItemImageModel] resultante, o `null` en caso de fallo.
   Future<ItemImageModel?> uploadImage(int itemId, XFile imageFile) async {
     try {
       final image = await _itemsRepository.uploadImageFromFile(itemId, imageFile);

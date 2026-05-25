@@ -8,95 +8,95 @@ enum SharedListsLayout { section, tab, bottom }
 /// Gestiona preferencias no sensibles del usuario (ej: modo noche, idioma).
 /// Persistencia con shared_preferences (datos no sensibles).
 class SettingsProvider extends ChangeNotifier {
-  /// The current theme mode (light, dark, or system).
+  /// Modo de tema actual (claro, oscuro o según el sistema).
   ThemeMode _themeMode = ThemeMode.system;
 
-  /// Multiplier applied to the app's text scale factor (1.0 = default).
+  /// Multiplicador aplicado a la escala de texto de la app (1.0 = valor por defecto).
   double _fontScale = 1.0;
 
-  /// Key identifying the active accent colour palette (e.g. `'amethyst'`).
+  /// Clave que identifica la paleta de color de acento activa (p. ej. `'amethyst'`).
   String _accentColor = 'amethyst';
 
-  /// User-supplied OMDb API key for movie/series search import.
+  /// Clave de API OMDb introducida por el usuario para importar películas/series.
   String _omdbApiKey = '';
 
-  /// User-supplied TMDb API key for movie/series search import.
+  /// Clave de API TMDb introducida por el usuario para importar películas/series.
   String _tmdbApiKey = '';
 
-  /// User-supplied Google Books API key for book/manga search import.
+  /// Clave de API Google Books introducida por el usuario para importar libros/manga.
   String _googleBooksApiKey = '';
 
-  /// BCP-47 language code for the app locale (e.g. `'es'`, `'en'`).
+  /// Código de idioma BCP-47 para el locale de la app (p. ej. `'es'`, `'en'`).
   String _locale = 'es';
 
-  /// ISO 4217 currency code used for price display (e.g. `'EUR'`).
+  /// Código de moneda ISO 4217 usado para mostrar precios (p. ej. `'EUR'`).
   String _currency = 'EUR';
 
-  /// Layout preference for shared (non-owned) lists.
+  /// Preferencia de disposición para las listas compartidas (no propias).
   SharedListsLayout _sharedListsLayout = SharedListsLayout.section;
 
-  /// The currently active [ThemeMode].
+  /// El [ThemeMode] activo actualmente.
   ThemeMode get themeMode => _themeMode;
 
-  /// The active font scale multiplier.
+  /// El multiplicador de escala de fuente activo.
   double get fontScale => _fontScale;
 
-  /// The key of the active accent colour.
+  /// La clave del color de acento activo.
   String get accentColor => _accentColor;
 
-  /// The OMDb API key stored by the user.
+  /// La clave de API OMDb almacenada por el usuario.
   String get omdbApiKey => _omdbApiKey;
 
-  /// The TMDb API key stored by the user.
+  /// La clave de API TMDb almacenada por el usuario.
   String get tmdbApiKey => _tmdbApiKey;
 
-  /// The Google Books API key stored by the user.
+  /// La clave de API Google Books almacenada por el usuario.
   String get googleBooksApiKey => _googleBooksApiKey;
 
-  /// The BCP-47 locale code currently in use.
+  /// El código de locale BCP-47 actualmente en uso.
   String get locale => _locale;
 
-  /// The ISO 4217 currency code currently in use.
+  /// El código de moneda ISO 4217 actualmente en uso.
   String get currency => _currency;
 
-  /// The layout preference for shared (non-owned) lists.
+  /// La preferencia de disposición para las listas compartidas (no propias).
   SharedListsLayout get sharedListsLayout => _sharedListsLayout;
 
   /// Carga los ajustes desde el almacenamiento local.
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Theme Mode
-    final modeIndex = prefs.getInt('themeMode') ?? 0; // 0 = system
+    // Modo de tema
+    final modeIndex = prefs.getInt('themeMode') ?? 0; // 0 = sistema
     _themeMode = ThemeMode.values[modeIndex];
 
-    // Font Scale
+    // Escala de fuente
     _fontScale = prefs.getDouble('fontScale') ?? 1.0;
 
-    // Accent Color
+    // Color de acento
     _accentColor = prefs.getString('accentColor') ?? 'amethyst';
 
-    // API Keys - Keys por defecto de proyectos anteriores
+    // Claves de API - valores por defecto de proyectos anteriores
     _omdbApiKey = prefs.getString('omdbApiKey') ?? '';
     final storedTmdbKey = prefs.getString('tmdbApiKey') ?? '';
     _tmdbApiKey = storedTmdbKey.isNotEmpty ? storedTmdbKey : 'a4294c7b69c82d96850476e2439c2da6';
     final storedBooksKey = prefs.getString('googleBooksApiKey') ?? '';
     _googleBooksApiKey = storedBooksKey.isNotEmpty ? storedBooksKey : 'AIzaSyByNQL_OhzQX3wB7eKKlOKXLvh0Ri3826Q';
 
-    // Locale & Currency
+    // Locale y moneda
     _locale = prefs.getString('locale') ?? 'es';
     _currency = prefs.getString('currency') ?? 'EUR';
 
-    // Shared lists layout
+    // Disposición de listas compartidas
     final layoutIndex = prefs.getInt('sharedListsLayout') ?? 0;
     _sharedListsLayout = SharedListsLayout.values[layoutIndex];
 
     notifyListeners();
   }
 
-  /// Persists [locale] to shared preferences and notifies listeners.
+  /// Persiste [locale] en las preferencias compartidas y notifica a los listeners.
   ///
-  /// No-op when [locale] equals the current value to avoid unnecessary writes.
+  /// No hace nada si [locale] coincide con el valor actual para evitar escrituras innecesarias.
   Future<void> setLocale(String locale) async {
     if (_locale == locale) return;
     _locale = locale;
@@ -105,9 +105,9 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setString('locale', locale);
   }
 
-  /// Persists [currency] to shared preferences and notifies listeners.
+  /// Persiste [currency] en las preferencias compartidas y notifica a los listeners.
   ///
-  /// No-op when [currency] equals the current value.
+  /// No hace nada si [currency] coincide con el valor actual.
   Future<void> setCurrency(String currency) async {
     if (_currency == currency) return;
     _currency = currency;
@@ -116,9 +116,9 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setString('currency', currency);
   }
 
-  /// Switches the app's theme to [mode] and persists the choice.
+  /// Cambia el tema de la app a [mode] y persiste la elección.
   ///
-  /// No-op when [mode] equals the current [themeMode].
+  /// No hace nada si [mode] coincide con el [themeMode] actual.
   Future<void> setThemeMode(ThemeMode mode) async {
     if (_themeMode == mode) return;
     _themeMode = mode;
@@ -128,9 +128,9 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setInt('themeMode', mode.index);
   }
 
-  /// Updates the text scale multiplier to [scale] and persists the change.
+  /// Actualiza el multiplicador de escala de texto a [scale] y persiste el cambio.
   ///
-  /// No-op when [scale] equals the current [fontScale].
+  /// No hace nada si [scale] coincide con el [fontScale] actual.
   Future<void> setFontScale(double scale) async {
     if (_fontScale == scale) return;
     _fontScale = scale;
@@ -140,9 +140,9 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setDouble('fontScale', scale);
   }
 
-  /// Switches the accent colour palette to [accent] and persists the choice.
+  /// Cambia la paleta de color de acento a [accent] y persiste la elección.
   ///
-  /// No-op when [accent] equals the current [accentColor].
+  /// No hace nada si [accent] coincide con el [accentColor] actual.
   Future<void> setAccentColor(String accent) async {
     if (_accentColor == accent) return;
     _accentColor = accent;
@@ -152,8 +152,8 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setString('accentColor', accent);
   }
 
-  /// Stores the user's OMDb API [key] for movie/series search import and
-  /// persists it to shared preferences.
+  /// Almacena la clave de API OMDb [key] del usuario para importar películas/series
+  /// y la persiste en las preferencias compartidas.
   Future<void> setOmdbApiKey(String key) async {
     _omdbApiKey = key;
     notifyListeners();
@@ -162,8 +162,8 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setString('omdbApiKey', key);
   }
 
-  /// Stores the user's TMDb API [key] for movie/series search import and
-  /// persists it to shared preferences.
+  /// Almacena la clave de API TMDb [key] del usuario para importar películas/series
+  /// y la persiste en las preferencias compartidas.
   Future<void> setTmdbApiKey(String key) async {
     _tmdbApiKey = key;
     notifyListeners();
@@ -172,7 +172,7 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setString('tmdbApiKey', key);
   }
 
-  /// Persists [layout] to shared preferences and notifies listeners.
+  /// Persiste [layout] en las preferencias compartidas y notifica a los listeners.
   Future<void> setSharedListsLayout(SharedListsLayout layout) async {
     if (_sharedListsLayout == layout) return;
     _sharedListsLayout = layout;
@@ -181,8 +181,8 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setInt('sharedListsLayout', layout.index);
   }
 
-  /// Stores the user's Google Books API [key] for book/manga search import and
-  /// persists it to shared preferences.
+  /// Almacena la clave de API Google Books [key] del usuario para importar libros/manga
+  /// y la persiste en las preferencias compartidas.
   Future<void> setGoogleBooksApiKey(String key) async {
     _googleBooksApiKey = key;
     notifyListeners();

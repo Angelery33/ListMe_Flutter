@@ -160,7 +160,7 @@ class _ListsScreenState extends State<ListsScreen> {
       itemBuilder: (context, index) {
         if (index < owned.length) {
           final list = owned[index];
-          return ReorderableDragStartListener(
+          return ReorderableDelayedDragStartListener(
             key: ValueKey(list.id),
             index: index,
             child: _buildListCard(list),
@@ -185,44 +185,41 @@ class _ListsScreenState extends State<ListsScreen> {
   Widget _buildGridSections(List<ListModel> owned, List<ListModel> shared, double hPadding) {
     const colSpacing = 20.0;
     const minColWidth = 400.0;
+    final listsProvider = context.read<ListsProvider>();
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final usableWidth = constraints.maxWidth - hPadding * 2;
         final cols = (usableWidth / (minColWidth + colSpacing)).floor().clamp(2, 6);
-        final delegate = SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: cols,
-          crossAxisSpacing: colSpacing,
-          mainAxisSpacing: 12,
-          mainAxisExtent: 110,
-        );
 
-        return CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(hPadding, 32, hPadding, 0),
-              sliver: SliverGrid(
-                gridDelegate: delegate,
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildListCard(owned[index], webLayout: true),
-                  childCount: owned.length,
-                ),
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ReorderableGrid(
+                lists: owned,
+                padding: EdgeInsets.fromLTRB(hPadding, 32, hPadding, 0),
+                onReorder: (o, n) => listsProvider.reorderOwnedLists(o, n, adjustIndex: false),
+                buildCard: (list) => _buildListCard(list, webLayout: true),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: _SectionHeader(label: context.l10n.listsSharedWithMe, hPadding: hPadding),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(hPadding, 8, hPadding, 200),
-              sliver: SliverGrid(
-                gridDelegate: delegate,
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildListCard(shared[index], webLayout: true),
-                  childCount: shared.length,
+              _SectionHeader(label: context.l10n.listsSharedWithMe, hPadding: hPadding),
+              GridView.builder(
+                padding: EdgeInsets.fromLTRB(hPadding, 8, hPadding, 200),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: cols,
+                  crossAxisSpacing: colSpacing,
+                  mainAxisSpacing: 12,
+                  mainAxisExtent: 110,
                 ),
+                itemCount: shared.length,
+                itemBuilder: (context, index) => _buildListCard(shared[index], webLayout: true),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -255,7 +252,7 @@ class _ListsScreenState extends State<ListsScreen> {
         onReorder: listsProvider.reorderOwnedLists,
         itemBuilder: (context, index) {
           final list = owned[index];
-          return ReorderableDragStartListener(
+          return ReorderableDelayedDragStartListener(
             key: ValueKey(list.id),
             index: index,
             child: _buildListCard(list),
@@ -370,6 +367,8 @@ class _ReorderableGrid extends StatefulWidget {
   final void Function(int oldIndex, int newIndex) onReorder;
   final Widget Function(ListModel list) buildCard;
   final List<int> lockedIndices;
+  final bool shrinkWrap;
+  final ScrollPhysics? physics;
 
   const _ReorderableGrid({
     required this.lists,
@@ -377,6 +376,8 @@ class _ReorderableGrid extends StatefulWidget {
     required this.onReorder,
     required this.buildCard,
     this.lockedIndices = const [],
+    this.shrinkWrap = false,
+    this.physics,
   });
 
   @override
@@ -426,6 +427,8 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
             key: _gridKey,
             controller: _scrollController,
             padding: widget.padding,
+            shrinkWrap: widget.shrinkWrap,
+            physics: widget.physics,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: cols,
               crossAxisSpacing: colSpacing,

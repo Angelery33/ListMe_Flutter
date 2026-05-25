@@ -29,6 +29,7 @@ import 'core/services/local_storage_service.dart';
 import 'core/auth/auth_wrapper.dart';
 import 'core/services/api_client.dart';
 import 'core/navigation/route_observer.dart';
+import 'core/config/navigator_key.dart';
 
 /// Punto de entrada: inicializa los bindings de Flutter, Firebase, el almacenamiento local y
 /// el proveedor de ajustes antes de pasar el control a [runApp].
@@ -140,6 +141,7 @@ class ListMeApp extends StatelessWidget {
           locale: Locale(settings.locale),
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
+          navigatorKey: navigatorKey,
           navigatorObservers: [appRouteObserver],
           home: const AuthWrapper(),
           routes: AppRoutes.routes,

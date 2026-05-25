@@ -133,7 +133,7 @@ class EntryPropertiesSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                score.toStringAsFixed(2),
+                score == 0 ? '—' : score.toStringAsFixed(2),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onPrimaryContainer,
@@ -147,7 +147,7 @@ class EntryPropertiesSection extends StatelessWidget {
           children: [
             Expanded(
               child: TextFormField(
-                initialValue: score.toStringAsFixed(2),
+                initialValue: score == 0 ? '' : score.toStringAsFixed(2),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),

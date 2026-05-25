@@ -1,3 +1,5 @@
+// Archivo generado automáticamente. NO EDITAR MANUALMENTE.
+// Para regenerar ejecuta: flutter gen-l10n
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -677,6 +679,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Magenta'**
   String get accentMagenta;
+
+  /// No description provided for @accentLime.
+  ///
+  /// In es, this message translates to:
+  /// **'Lima'**
+  String get accentLime;
 
   /// No description provided for @accentTitanium.
   ///

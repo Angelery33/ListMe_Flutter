@@ -21,7 +21,7 @@ class AccentColorSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accents = ['amethyst', 'sapphire', 'ruby', 'emerald','cobalt', 'cyan', 'magenta', 'titanium'];
+    final accents = ['amethyst', 'sapphire', 'ruby', 'emerald', 'lime', 'cobalt', 'cyan', 'magenta', 'titanium'];
 
     return SizedBox(
       height: 60,

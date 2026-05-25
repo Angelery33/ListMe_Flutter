@@ -250,4 +250,62 @@ class ColorSchemes {
     surface: AppColors.magentaSurfaceDark,
     brightness: Brightness.dark,
   );
+
+  // ---------------------------------------------------------------------------
+  // LIME
+  // ---------------------------------------------------------------------------
+
+  /// Esquema claro del tema Lima (verde lima / verdes claros), con todos los roles M3.
+  static final ColorScheme limeLight = ColorScheme(
+    brightness: Brightness.light,
+    primary: AppColors.limePrimaryLight,
+    onPrimary: AppColors.limeOnPrimaryLight,
+    primaryContainer: AppColors.limePrimaryContainerLight,
+    onPrimaryContainer: AppColors.limeOnPrimaryContainerLight,
+    secondary: AppColors.limeSecondaryLight,
+    onSecondary: AppColors.limeOnSecondaryLight,
+    secondaryContainer: AppColors.limeSecondaryContainerLight,
+    onSecondaryContainer: AppColors.limeOnSecondaryContainerLight,
+    tertiary: AppColors.limeTertiaryLight,
+    onTertiary: AppColors.limeOnTertiaryLight,
+    tertiaryContainer: AppColors.limeTertiaryContainerLight,
+    onTertiaryContainer: AppColors.limeOnTertiaryContainerLight,
+    error: AppColors.limeErrorLight,
+    onError: AppColors.limeOnErrorLight,
+    errorContainer: AppColors.limeErrorContainerLight,
+    onErrorContainer: AppColors.limeOnErrorContainerLight,
+    surface: AppColors.limeSurfaceLight,
+    onSurface: AppColors.limeOnSurfaceLight,
+    surfaceContainerHighest: AppColors.limeSurfaceVariantLight,
+    onSurfaceVariant: AppColors.limeOnSurfaceVariantLight,
+    outline: AppColors.limeOutlineLight,
+    outlineVariant: AppColors.limeOutlineVariantLight,
+  );
+
+  /// Esquema oscuro del tema Lima (verde lima / verdes claros), con todos los roles M3.
+  static final ColorScheme limeDark = ColorScheme(
+    brightness: Brightness.dark,
+    primary: AppColors.limePrimaryDark,
+    onPrimary: AppColors.limeOnPrimaryDark,
+    primaryContainer: AppColors.limePrimaryContainerDark,
+    onPrimaryContainer: AppColors.limeOnPrimaryContainerDark,
+    secondary: AppColors.limeSecondaryDark,
+    onSecondary: AppColors.limeOnSecondaryDark,
+    secondaryContainer: AppColors.limeSecondaryContainerDark,
+    onSecondaryContainer: AppColors.limeOnSecondaryContainerDark,
+    tertiary: AppColors.limeTertiaryDark,
+    onTertiary: AppColors.limeOnTertiaryDark,
+    tertiaryContainer: AppColors.limeTertiaryContainerDark,
+    onTertiaryContainer: AppColors.limeOnTertiaryContainerDark,
+    error: AppColors.limeErrorDark,
+    onError: AppColors.limeOnErrorDark,
+    errorContainer: AppColors.limeErrorContainerDark,
+    onErrorContainer: AppColors.limeOnErrorContainerDark,
+    surface: AppColors.limeSurfaceDark,
+    onSurface: AppColors.limeOnSurfaceDark,
+    surfaceContainerHighest: AppColors.limeSurfaceVariantDark,
+    onSurfaceVariant: AppColors.limeOnSurfaceVariantDark,
+    outline: AppColors.limeOutlineDark,
+    outlineVariant: AppColors.limeOutlineVariantDark,
+  );
 }

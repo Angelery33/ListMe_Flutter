@@ -336,9 +336,9 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   /// Marca la imagen con [imageId] como la favorita para el elemento actual.
   ///
-  /// Updates the local [images] list optimistically so the UI reorders
-  /// instantly, then syncs [item]'s remote URL via [_sortImagesAndSyncFavorite].
-  /// Returns `true` on success, `false` and sets [errorMessage] on failure.
+  /// Actualiza la lista [images] de forma optimista para que la UI reordene
+  /// al instante, luego sincroniza la URL remota de [item] mediante [_sortImagesAndSyncFavorite].
+  /// Devuelve `true` en caso de éxito, `false` y establece [errorMessage] en caso de fallo.
   Future<bool> setFavoriteImage(int imageId) async {
     if (_item?.id == null) return false;
 
@@ -364,7 +364,7 @@ class ItemDetailsProvider extends ChangeNotifier {
   /// Sube [imageFile] al servidor para el elemento actual y añade el
   /// [ItemImageModel] resultante a [images].
   ///
-  /// Returns the created [ItemImageModel] on success, or `null` on failure.
+  /// Devuelve el [ItemImageModel] creado en caso de éxito, o `null` en caso de fallo.
   Future<ItemImageModel?> uploadImage(XFile imageFile) async {
     if (_item?.id == null) return null;
 

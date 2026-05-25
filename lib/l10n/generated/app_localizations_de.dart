@@ -1,3 +1,6 @@
+// Archivo generado automáticamente. NO EDITAR MANUALMENTE.
+// Para regenerar ejecuta: flutter gen-l10n
+
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
@@ -295,6 +298,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accentMagenta => 'Magenta';
+
+  @override
+  String get accentLime => 'Limette';
 
   @override
   String get accentTitanium => 'Titan';

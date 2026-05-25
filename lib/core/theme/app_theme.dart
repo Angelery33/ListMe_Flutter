@@ -134,6 +134,10 @@ class AppTheme {
         isDark
             ? (ColorSchemes.magentaDark, AppColors.magentaSurfaceDark)
             : (ColorSchemes.magentaLight, AppColors.magentaSurfaceLight),
+      'lime' =>
+        isDark
+            ? (ColorSchemes.limeDark, AppColors.limeSurfaceDark)
+            : (ColorSchemes.limeLight, AppColors.limeSurfaceLight),
       _ =>
         isDark
             ? (ColorSchemes.titaniumDark, AppColors.titaniumSurfaceDark)

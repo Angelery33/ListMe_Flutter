@@ -563,6 +563,8 @@ String _accentLabel(BuildContext context, String accent) {
       return l.accentRuby;
     case 'emerald':
       return l.accentEmerald;
+    case 'lime':
+      return l.accentLime;
     case 'cobalt':
       return l.accentCobalt;
     case 'cyan':

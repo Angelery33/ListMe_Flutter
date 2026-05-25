@@ -170,4 +170,53 @@ class AppColors {
   static const magentaPrimaryDark     = Color(0xFFF48FB1);
   /// Superficie de fondo para el tema Magenta en modo oscuro.
   static const magentaSurfaceDark     = Color(0xFF300516);
+
+  // ---------------------------------------------------------------------------
+  // LIME / Verde Lima
+  // ---------------------------------------------------------------------------
+  static const limePrimaryLight            = Color(0xFF4A7C00);   // verde lima saturado
+  static const limeOnPrimaryLight          = Color(0xFFFFFFFF);
+  static const limePrimaryContainerLight   = Color(0xFFCBF576);   // lima clarito
+  static const limeOnPrimaryContainerLight = Color(0xFF142000);
+  static const limeSecondaryLight          = Color(0xFF5B6442);   // oliva suave
+  static const limeOnSecondaryLight        = Color(0xFFFFFFFF);
+  static const limeSecondaryContainerLight = Color(0xFFDEEABE);   // verde muy pálido
+  static const limeOnSecondaryContainerLight = Color(0xFF192005);
+  static const limeTertiaryLight           = Color(0xFF386662);   // verde-teal calmante
+  static const limeOnTertiaryLight         = Color(0xFFFFFFFF);
+  static const limeTertiaryContainerLight  = Color(0xFFBCECE7);   // menta clarita
+  static const limeOnTertiaryContainerLight = Color(0xFF00201E);
+  static const limeErrorLight              = Color(0xFFBA1A1A);
+  static const limeOnErrorLight            = Color(0xFFFFFFFF);
+  static const limeErrorContainerLight     = Color(0xFFFFDAD6);
+  static const limeOnErrorContainerLight   = Color(0xFF93000A);
+  static const limeSurfaceLight            = Color(0xFFF7FBEE);   // blanco con toque lima
+  static const limeOnSurfaceLight          = Color(0xFF191E0E);
+  static const limeSurfaceVariantLight     = Color(0xFFE1E8CC);
+  static const limeOnSurfaceVariantLight   = Color(0xFF44493A);
+  static const limeOutlineLight            = Color(0xFF747969);
+  static const limeOutlineVariantLight     = Color(0xFFC5CCA2);   // lima grisáceo
+
+  static const limePrimaryDark             = Color(0xFFB0D95C);   // lima brillante sobre oscuro
+  static const limeOnPrimaryDark           = Color(0xFF213500);
+  static const limePrimaryContainerDark    = Color(0xFF365C00);
+  static const limeOnPrimaryContainerDark  = Color(0xFFCBF576);
+  static const limeSecondaryDark           = Color(0xFFC2CEA4);   // salvia clara
+  static const limeOnSecondaryDark         = Color(0xFF2C3516);
+  static const limeSecondaryContainerDark  = Color(0xFF434C2C);
+  static const limeOnSecondaryContainerDark = Color(0xFFDEEABE);
+  static const limeTertiaryDark            = Color(0xFFA0CFCB);   // menta sobre oscuro
+  static const limeOnTertiaryDark          = Color(0xFF003734);
+  static const limeTertiaryContainerDark   = Color(0xFF1F4E4A);
+  static const limeOnTertiaryContainerDark = Color(0xFFBCECE7);
+  static const limeErrorDark               = Color(0xFFFFB4AB);
+  static const limeOnErrorDark             = Color(0xFF690005);
+  static const limeErrorContainerDark      = Color(0xFF93000A);
+  static const limeOnErrorContainerDark    = Color(0xFFFFDAD6);
+  static const limeSurfaceDark             = Color(0xFF111408);   // casi negro con matiz verde
+  static const limeOnSurfaceDark           = Color(0xFFE2E7D4);
+  static const limeSurfaceVariantDark      = Color(0xFF44493A);
+  static const limeOnSurfaceVariantDark    = Color(0xFFC5CCA2);
+  static const limeOutlineDark             = Color(0xFF8E9470);
+  static const limeOutlineVariantDark      = Color(0xFF44493A);
 }
