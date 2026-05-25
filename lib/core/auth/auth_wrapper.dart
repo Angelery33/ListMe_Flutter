@@ -16,23 +16,18 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, auth, _) {
-        switch (auth.status) {
-          case AuthStatus.authenticated:
-            return const ListsScreen(); // Se eliminó Home, Listas es la raíz
-          case AuthStatus.unauthenticated:
-          case AuthStatus.error:
-            return const LoginScreen();
-          case AuthStatus.loading:
-          case AuthStatus.initial:
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-        }
-      },
-    );
+    final status = context.select<AuthProvider, AuthStatus>((a) => a.status);
+    switch (status) {
+      case AuthStatus.authenticated:
+        return const ListsScreen();
+      case AuthStatus.unauthenticated:
+      case AuthStatus.error:
+        return const LoginScreen();
+      case AuthStatus.loading:
+      case AuthStatus.initial:
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+    }
   }
 }

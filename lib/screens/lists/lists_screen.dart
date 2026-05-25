@@ -133,7 +133,7 @@ class _ListsScreenState extends State<ListsScreen> {
     }
 
     // Expanded + sección: dos SliverGrids sin reordenación
-    return _buildGridSections(owned, shared, hPadding);
+    return _buildGridSections(owned, shared, hPadding, listsProvider);
   }
 
   Widget _buildListView(
@@ -182,10 +182,9 @@ class _ListsScreenState extends State<ListsScreen> {
     );
   }
 
-  Widget _buildGridSections(List<ListModel> owned, List<ListModel> shared, double hPadding) {
+  Widget _buildGridSections(List<ListModel> owned, List<ListModel> shared, double hPadding, ListsProvider listsProvider) {
     const colSpacing = 20.0;
     const minColWidth = 400.0;
-    final listsProvider = context.read<ListsProvider>();
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -547,7 +546,12 @@ class _StaticGridCardProxy extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(dialogContext);
               if (list.id != null) {
-                await context.read<ListsProvider>().deleteList(list.id!);
+                final success = await context.read<ListsProvider>().deleteList(list.id!);
+                if (success && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('"${list.name}"')),
+                  );
+                }
               }
             },
             child: Text(

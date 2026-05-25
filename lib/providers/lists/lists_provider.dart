@@ -14,9 +14,9 @@ import '../../core/services/firebase_storage_service.dart';
 class ListsProvider extends ChangeNotifier {
   final ListsRepository _listsRepository;
   final ItemsRepository _itemsRepository;
+  final FirebaseStorageService _firebaseStorage;
   final LocalStorageService _localStorage = LocalStorageService.instance;
   final LoggerService _logger = LoggerService.instance;
-  final FirebaseStorageService _firebaseStorage = FirebaseStorageService();
 
   /// Indica si hay una operación remota en ejecución actualmente.
   bool _isLoading = false;
@@ -27,10 +27,14 @@ class ListsProvider extends ChangeNotifier {
   /// Mensaje de error de la operación fallida más reciente, o `null`.
   String? _errorMessage;
 
-  /// Crea un [ListsProvider] respaldado por [_listsRepository] e
-  /// [_itemsRepository], cargando inmediatamente los datos en caché del disco y
-  /// luego sincronizándolos desde el servidor.
-  ListsProvider(this._listsRepository, this._itemsRepository) {
+  /// Crea un [ListsProvider] respaldado por [_listsRepository],
+  /// [_itemsRepository] y [_firebaseStorage], cargando inmediatamente los datos
+  /// en caché del disco y luego sincronizándolos desde el servidor.
+  ListsProvider(
+    this._listsRepository,
+    this._itemsRepository, {
+    FirebaseStorageService? firebaseStorage,
+  }) : _firebaseStorage = firebaseStorage ?? FirebaseStorageService() {
     _loadFromLocal();
     fetchLists();
   }
@@ -190,20 +194,21 @@ class ListsProvider extends ChangeNotifier {
     try {
       final libraryItems = await _itemsRepository.getAllItems(libraryId: id);
 
-      for (final item in libraryItems) {
-        if (item.id != null) {
+      // Borrado paralelo: obtener imágenes de todos los ítems simultáneamente
+      await Future.wait(
+        libraryItems.where((item) => item.id != null).map((item) async {
           final images = await _itemsRepository.getItemImages(item.id!);
-          for (final img in images) {
-            if (img.imageUri?.isNotEmpty ?? false) {
-              await _firebaseStorage.deleteImage(img.imageUri);
-            }
-          }
-          if (item.imagePath?.isNotEmpty ?? false) {
-            await _firebaseStorage.deleteImage(item.imagePath);
-          }
+          // Borrar imágenes de galería y portada en paralelo
+          await Future.wait([
+            ...images
+                .where((img) => img.imageUri?.isNotEmpty ?? false)
+                .map((img) => _firebaseStorage.deleteImage(img.imageUri)),
+            if (item.imagePath?.isNotEmpty ?? false)
+              _firebaseStorage.deleteImage(item.imagePath),
+          ]);
           await _itemsRepository.deleteItem(item.id!);
-        }
-      }
+        }),
+      );
 
       await _listsRepository.deleteLibrary(id);
       _lists.removeWhere((l) => l.id == id);
@@ -309,7 +314,7 @@ class ListsProvider extends ChangeNotifier {
     return await _listsRepository.addLibraryGenre(genre);
   }
 
-  // ── Collaborator management ──────────────────────────────────────────────────
+  // ── Gestión de colaboradores ─────────────────────────────────────────────────
 
   /// Devuelve la lista de colaboradores de la biblioteca [libraryId].
   ///

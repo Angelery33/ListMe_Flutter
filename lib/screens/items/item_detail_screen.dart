@@ -79,7 +79,11 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> with RouteAware {
   void didPopNext() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && widget.item.id != null) {
-        _detailsProvider?.loadItemDetails(widget.item.id!, initialItem: widget.item);
+        // Usar el ítem ya cargado como initialItem para evitar mostrar datos desactualizados
+        _detailsProvider?.loadItemDetails(
+          widget.item.id!,
+          initialItem: _detailsProvider?.item ?? widget.item,
+        );
       }
     });
   }
@@ -90,9 +94,9 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> with RouteAware {
     if (!mounted) return;
     final updated = _detailsProvider?.item;
     if (updated == null) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<ItemsProvider>().updateLocalItem(updated);
-    });
+    // Llamada directa sin postFrameCallback para evitar acumulación de callbacks
+    // si el provider notifica múltiples veces en el mismo frame.
+    context.read<ItemsProvider>().updateLocalItem(updated);
   }
 
   /// Navega a la pantalla de entrada de elementos para editar [currentItem] y

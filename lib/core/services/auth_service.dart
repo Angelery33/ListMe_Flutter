@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:list_me/core/services/api_client.dart';
 import 'package:list_me/core/services/logger_service.dart';
@@ -8,16 +7,14 @@ import 'package:list_me/data/auth/auth_models.dart';
 /// Servicio singleton responsable de la lógica de refresco de JWT.
 ///
 /// Utiliza una instancia de [Dio] dedicada (sin el interceptor de autenticación) para evitar
-/// bucles de refresco infinitos. Los intentos de refresco concurrentes se deduplican:
-/// solo se realiza una llamada HTTP a la vez; cualquier llamador adicional que llegue
-/// mientras un refresco está en progreso se encola y se resuelve una vez que se completa
-/// la primera llamada.
+/// bucles de refresco infinitos. Si se llama mientras ya hay un refresco en progreso,
+/// devuelve `false` inmediatamente — el encolado de peticiones concurrentes lo gestiona
+/// [ApiClient] directamente.
 class AuthService {
   /// Instancia global singleton.
   static final AuthService instance = AuthService._();
   final LoggerService _logger = LoggerService.instance;
   bool _isRefreshing = false;
-  final List<Completer<bool>> _queuedRequests = [];
 
   AuthService._();
 
@@ -43,9 +40,9 @@ class AuthService {
         return false;
       }
 
-      _logger.debug('AuthService: Intentando refrescar token con refresh token: ${refreshToken.substring(0, 20)}...');
+      _logger.debug('AuthService: Intentando refrescar token...');
 
-      // Crear una nueva instancia de Dio SIN interceptor para evitar recursión infinita
+      // Instancia de Dio sin interceptor para evitar recursión infinita
       final dio = Dio(
         BaseOptions(
           baseUrl: ApiClient.instance.dio.options.baseUrl,
@@ -55,7 +52,6 @@ class AuthService {
         ),
       );
 
-      // POST a la ruta correcta (sin barra inicial ya que baseUrl incluye /api/v1)
       final response = await dio.post(
         'auth/refresh',
         data: TokenRefreshRequest(refreshToken: refreshToken).toJson(),
@@ -63,12 +59,10 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final loginResponse = LoginResponse.fromJson(response.data);
-
         await TokenStorage.saveTokens(
           accessToken: loginResponse.accessToken,
           refreshToken: loginResponse.refreshToken,
         );
-
         _logger.info('AuthService: Token refrescado exitosamente');
         return true;
       } else {
@@ -82,28 +76,6 @@ class AuthService {
       return false;
     } finally {
       _isRefreshing = false;
-      _processQueuedRequests();
     }
-  }
-
-  void _processQueuedRequests() {
-    for (final completer in _queuedRequests) {
-      completer.complete(_isAuthenticated());
-    }
-    _queuedRequests.clear();
-  }
-
-  Future<bool> _isAuthenticated() async {
-    final token = await TokenStorage.getAccessToken();
-    return token != null;
-  }
-
-  /// Añade un [completer] a la cola interna para que se resuelva la próxima vez que
-  /// se complete un intento de refresco de token.
-  ///
-  /// [completer] El completer que se resolverá con `true` o `false`
-  /// dependiendo de si la autenticación tuvo éxito después del refresco.
-  void queueRequest(Completer<bool> completer) {
-    _queuedRequests.add(completer);
   }
 }

@@ -35,6 +35,10 @@ class SettingsProvider extends ChangeNotifier {
   /// Preferencia de disposición para las listas compartidas (no propias).
   SharedListsLayout _sharedListsLayout = SharedListsLayout.section;
 
+  /// Instancia cacheada de [SharedPreferences] para evitar llamar a
+  /// [SharedPreferences.getInstance] en cada setter.
+  SharedPreferences? _prefs;
+
   /// El [ThemeMode] activo actualmente.
   ThemeMode get themeMode => _themeMode;
 
@@ -62,33 +66,34 @@ class SettingsProvider extends ChangeNotifier {
   /// La preferencia de disposición para las listas compartidas (no propias).
   SharedListsLayout get sharedListsLayout => _sharedListsLayout;
 
-  /// Carga los ajustes desde el almacenamiento local.
+  /// Carga los ajustes desde el almacenamiento local e inicializa la instancia
+  /// cacheada de [SharedPreferences] para reutilizarla en los setters.
   Future<void> loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+    _prefs = await SharedPreferences.getInstance();
 
     // Modo de tema
-    final modeIndex = prefs.getInt('themeMode') ?? 0; // 0 = sistema
+    final modeIndex = _prefs!.getInt('themeMode') ?? 0; // 0 = sistema
     _themeMode = ThemeMode.values[modeIndex];
 
     // Escala de fuente
-    _fontScale = prefs.getDouble('fontScale') ?? 1.0;
+    _fontScale = _prefs!.getDouble('fontScale') ?? 1.0;
 
     // Color de acento
-    _accentColor = prefs.getString('accentColor') ?? 'amethyst';
+    _accentColor = _prefs!.getString('accentColor') ?? 'amethyst';
 
     // Claves de API - valores por defecto de proyectos anteriores
-    _omdbApiKey = prefs.getString('omdbApiKey') ?? '';
-    final storedTmdbKey = prefs.getString('tmdbApiKey') ?? '';
+    _omdbApiKey = _prefs!.getString('omdbApiKey') ?? '';
+    final storedTmdbKey = _prefs!.getString('tmdbApiKey') ?? '';
     _tmdbApiKey = storedTmdbKey.isNotEmpty ? storedTmdbKey : 'a4294c7b69c82d96850476e2439c2da6';
-    final storedBooksKey = prefs.getString('googleBooksApiKey') ?? '';
+    final storedBooksKey = _prefs!.getString('googleBooksApiKey') ?? '';
     _googleBooksApiKey = storedBooksKey.isNotEmpty ? storedBooksKey : 'AIzaSyByNQL_OhzQX3wB7eKKlOKXLvh0Ri3826Q';
 
     // Locale y moneda
-    _locale = prefs.getString('locale') ?? 'es';
-    _currency = prefs.getString('currency') ?? 'EUR';
+    _locale = _prefs!.getString('locale') ?? 'es';
+    _currency = _prefs!.getString('currency') ?? 'EUR';
 
     // Disposición de listas compartidas
-    final layoutIndex = prefs.getInt('sharedListsLayout') ?? 0;
+    final layoutIndex = _prefs!.getInt('sharedListsLayout') ?? 0;
     _sharedListsLayout = SharedListsLayout.values[layoutIndex];
 
     notifyListeners();
@@ -101,7 +106,7 @@ class SettingsProvider extends ChangeNotifier {
     if (_locale == locale) return;
     _locale = locale;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setString('locale', locale);
   }
 
@@ -112,7 +117,7 @@ class SettingsProvider extends ChangeNotifier {
     if (_currency == currency) return;
     _currency = currency;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setString('currency', currency);
   }
 
@@ -123,8 +128,7 @@ class SettingsProvider extends ChangeNotifier {
     if (_themeMode == mode) return;
     _themeMode = mode;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setInt('themeMode', mode.index);
   }
 
@@ -135,8 +139,7 @@ class SettingsProvider extends ChangeNotifier {
     if (_fontScale == scale) return;
     _fontScale = scale;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setDouble('fontScale', scale);
   }
 
@@ -147,8 +150,7 @@ class SettingsProvider extends ChangeNotifier {
     if (_accentColor == accent) return;
     _accentColor = accent;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setString('accentColor', accent);
   }
 
@@ -157,8 +159,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setOmdbApiKey(String key) async {
     _omdbApiKey = key;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setString('omdbApiKey', key);
   }
 
@@ -167,8 +168,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setTmdbApiKey(String key) async {
     _tmdbApiKey = key;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setString('tmdbApiKey', key);
   }
 
@@ -177,7 +177,7 @@ class SettingsProvider extends ChangeNotifier {
     if (_sharedListsLayout == layout) return;
     _sharedListsLayout = layout;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setInt('sharedListsLayout', layout.index);
   }
 
@@ -186,8 +186,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setGoogleBooksApiKey(String key) async {
     _googleBooksApiKey = key;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
     await prefs.setString('googleBooksApiKey', key);
   }
 }

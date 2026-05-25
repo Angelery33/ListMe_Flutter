@@ -73,6 +73,8 @@ class InvitationsProvider extends ChangeNotifier {
   Future<bool> sendInvitation(int libraryId, String username, bool readOnly) async {
     try {
       await _repository.sendInvitation(libraryId, username, readOnly);
+      _error = null;
+      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();

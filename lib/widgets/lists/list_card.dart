@@ -87,27 +87,24 @@ class ListCard extends StatelessWidget {
                   if (value == 'share') onShare?.call();
                 },
                 itemBuilder: (context) => [
-                  if (list.owner)
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Text(context.l10n.commonEdit,
-                          style: theme.textTheme.bodyMedium),
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text(context.l10n.commonEdit,
+                        style: theme.textTheme.bodyMedium),
+                  ),
+                  PopupMenuItem(
+                    value: 'share',
+                    child: Text(context.l10n.commonShare,
+                        style: theme.textTheme.bodyMedium),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(
+                      context.l10n.commonDelete,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: scheme.error),
                     ),
-                  if (list.owner)
-                    PopupMenuItem(
-                      value: 'share',
-                      child: Text(context.l10n.commonShare,
-                          style: theme.textTheme.bodyMedium),
-                    ),
-                  if (list.owner)
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text(
-                        context.l10n.commonDelete,
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(color: scheme.error),
-                      ),
-                    ),
+                  ),
                 ],
               ),
             ],

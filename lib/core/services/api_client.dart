@@ -5,11 +5,6 @@ import 'package:list_me/core/config/constants.dart';
 import 'package:list_me/core/services/logger_service.dart';
 import 'package:list_me/core/services/token_storage.dart';
 
-// Controlador global que emite un evento cuando la sesión expira sin poder
-// renovarse, para que AuthProvider pueda redirigir al login sin depender
-// de la jerarquía de widgets.
-final _logoutController = StreamController<void>.broadcast();
-
 /// Cliente HTTP singleton basado en [Dio] que maneja la autenticación JWT,
 /// el refresco transparente de tokens y el encolado de solicitudes.
 ///
@@ -28,9 +23,13 @@ class ApiClient {
   bool _isRefreshing = false;
   final List<Completer<bool>> _queuedRequests = [];
 
+  // Controlador que emite un evento cuando la sesión expira sin poder renovarse,
+  // para que AuthProvider pueda redirigir al login sin depender de la jerarquía de widgets.
+  final StreamController<void> _logoutController = StreamController<void>.broadcast();
+
   /// Stream que emite cuando el refresh falla y los tokens son borrados.
   /// [AuthProvider] escucha este stream para redirigir al login automáticamente.
-  static Stream<void> get authLogoutStream => _logoutController.stream;
+  static Stream<void> get authLogoutStream => instance._logoutController.stream;
 
   ApiClient._() {
     _dio = Dio(
@@ -53,14 +52,12 @@ class ApiClient {
         onError: (DioException e, handler) async {
           _logger.error('API Error: ${e.message} (Status: ${e.response?.statusCode})', e, e.stackTrace);
 
-          // Verificar si es un error de token expirado
           if (e.response?.statusCode == 401) {
             final isTokenExpired = e.response?.headers['x-token-expired']?.contains('true') ?? false;
 
             if (isTokenExpired || e.message?.contains('Unauthorized') == true) {
               _logger.warning('Token expirado o inválido, intentando refresh...');
 
-              // Si ya hay un refresh en progreso, esperar a que termine
               if (_isRefreshing) {
                 _logger.debug('Refresh en progreso, encolando solicitud...');
                 final completer = Completer<bool>();
@@ -87,7 +84,6 @@ class ApiClient {
                 if (refreshed) {
                   _logger.info('Token refrescado exitosamente, reintentando solicitud...');
                   final newToken = await TokenStorage.getAccessToken();
-
                   if (newToken != null) {
                     e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
                     final retryResponse = await _dio.fetch(e.requestOptions);
@@ -96,13 +92,10 @@ class ApiClient {
                 } else {
                   _logger.warning('No se pudo refrescar el token, redirigiendo a login');
                   await TokenStorage.clearTokens();
-                  // Notifica a AuthProvider para que redirija al login
                   _logoutController.add(null);
                 }
               } finally {
                 _isRefreshing = false;
-                // Pasa el resultado real para que las peticiones encoladas
-                // sepan si deben reintentar o propagar el error
                 _processQueuedRequests(success: refreshSuccess);
               }
             }
@@ -125,6 +118,12 @@ class ApiClient {
   /// La instancia subyacente de [Dio], expuesta para que los repositorios puedan realizar solicitudes
   /// tipadas mientras siguen beneficiándose de los interceptores de autenticación.
   Dio get dio => _dio;
+
+  /// Libera el [StreamController] interno. Solo necesario en tests o si se
+  /// reinicia el singleton de forma explícita.
+  void dispose() {
+    _logoutController.close();
+  }
 
   /// Resuelve todas las peticiones encoladas con [success].
   ///

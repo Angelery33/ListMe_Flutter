@@ -2,9 +2,9 @@ import 'package:flutter/widgets.dart';
 
 /// Puntos de interrupción adaptativos de Material 3.
 ///
-/// compact  < 600dp  — phone portrait, narrow browser window
-/// medium   600–840  — phone landscape, tablet portrait, iPhone in browser
-/// expanded > 840dp  — tablet landscape, desktop, wide browser window
+/// compact  < 600dp  — móvil en vertical, ventana estrecha
+/// medium   600–840  — móvil en horizontal, tablet en vertical
+/// expanded > 840dp  — tablet en horizontal, escritorio
 enum Breakpoint { compact, medium, expanded }
 
 /// [ChangeNotifier] que rastrea el tamaño de pantalla lógico y expone
@@ -32,7 +32,8 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   void didChangeMetrics() => _updateSize();
 
   void _updateSize() {
-    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final view = WidgetsBinding.instance.platformDispatcher.implicitView;
+    if (view == null) return;
     final size = view.physicalSize / view.devicePixelRatio;
     if (size.width == _width && size.height == _height) return;
     _width = size.width;
@@ -40,7 +41,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  // ── Raw dimensions ────────────────────────────────────────────────────────
+  // ── Dimensiones en bruto ─────────────────────────────────────────────────
 
   /// Ancho de pantalla lógico actual en píxeles independientes de la densidad.
   double get screenWidth => _width;
@@ -71,7 +72,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Utiliza un NavigationRail lateral en lugar de una NavigationBar inferior.
   bool get useSideNav => !isCompact;
 
-  // ── Grid columns (compact card grid in ListScreen) ────────────────────────
+  // ── Columnas de cuadrícula (cuadrícula compacta en ListScreen) ───────────
 
   /// Número de columnas para la cuadrícula de tarjetas compactas, escalado por punto de interrupción.
   int get compactGridColumns {
@@ -82,7 +83,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // ── List columns (standard list view shown as multi-column on wide screens) ─
+  // ── Columnas de lista (vista estándar multi-columna en pantallas anchas) ──
 
   /// Número de columnas al renderizar elementos como una lista estándar en pantallas anchas.
   int get listColumns {
@@ -93,7 +94,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // ── Content width cap for expanded layouts ────────────────────────────────
+  // ── Ancho máximo de contenido para layouts expanded ─────────────────────
 
   /// Ancho máximo de contenido para evitar diseños excesivamente anchos en pantallas grandes.
   double get maxContentWidth {
@@ -124,7 +125,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // ── Card item dimensions (ActiveItemsSection horizontal scroll) ─────────
+  // ── Dimensiones de tarjeta activa (scroll horizontal en ActiveItemsSection) ─
 
   /// Ancho de una tarjeta de elemento activo en la sección de desplazamiento horizontal.
   double get activeCardWidth {
@@ -144,7 +145,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // ── Section header font size ─────────────────────────────────────────────
+  // ── Tamaño de fuente del encabezado de sección ──────────────────────────
 
   /// Tamaño de fuente utilizado para las etiquetas de encabezado de grupo/sección.
   double get sectionHeaderFontSize {
@@ -155,7 +156,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // ── Tag font size (DetailHeaderTags) ──────────────────────────────────────
+  // ── Tamaño de fuente de chips de etiqueta (DetailHeaderTags) ────────────
 
   /// Tamaño de fuente utilizado para los chips de etiquetas de metadatos en los encabezados de detalles de los elementos.
   double get tagFontSize {
@@ -166,7 +167,7 @@ class ResponsiveProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // ── Tag icon size ────────────────────────────────────────────────────────
+  // ── Tamaño de icono en chips de etiqueta ─────────────────────────────────
 
   /// Tamaño de icono utilizado dentro de los chips de etiquetas de metadatos.
   double get tagIconSize {

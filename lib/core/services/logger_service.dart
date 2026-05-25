@@ -122,11 +122,11 @@ class LoggerConfig {
 /// de depuración, se añade automáticamente un [ConsoleSink] en [LogLevel.debug]; en compilaciones
 /// de producción, el nivel mínimo se eleva a [LogLevel.info] para reducir el ruido.
 ///
-/// Usage:
+/// Uso:
 /// ```dart
 /// final log = LoggerService.instance;
-/// log.info('App started');
-/// log.error('Something broke', e, stackTrace);
+/// log.info('App iniciada');
+/// log.error('Algo falló', e, stackTrace);
 /// ```
 class LoggerService {
   static LoggerService? _instance;

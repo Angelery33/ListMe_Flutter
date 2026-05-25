@@ -10,6 +10,7 @@ import 'package:list_me/widgets/shared/responsive_centered_content.dart';
 import 'package:list_me/core/config/routes.dart';
 import 'package:list_me/core/services/firebase_storage_service.dart';
 import 'package:list_me/core/services/image_picker_service.dart';
+import 'package:list_me/core/services/logger_service.dart';
 
 /// Pantalla que muestra el perfil del usuario autenticado, estadísticas de uso y
 /// acciones de gestión de cuenta.
@@ -24,7 +25,6 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final profile = context.watch<ProfileProvider>();
-    final auth = context.read<AuthProvider>();
 
     return AppShell(
       currentIndex: 1,
@@ -128,7 +128,7 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => _confirmLogout(context, auth),
+                      onPressed: () => _confirmLogout(context),
                       icon: const Icon(Icons.logout),
                       label: Text(context.l10n.settingsLogout),
                       style: OutlinedButton.styleFrom(
@@ -140,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   TextButton.icon(
-                    onPressed: () => _confirmDeleteAccount(context, profile),
+                    onPressed: () => _confirmDeleteAccount(context),
                     icon: const Icon(Icons.delete_forever, color: Colors.red),
                     label: Text(
                       context.l10n.profileDeleteAccount,
@@ -162,10 +162,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Construye una sección de tarjeta con título que contiene los widgets [children].
-  ///
-  /// El [title] se muestra como una pequeña etiqueta en mayúsculas encima de la tarjeta para
-  /// agrupar visualmente las filas de ajustes relacionados.
   Widget _buildSection(
     BuildContext context, {
     required String title,
@@ -198,10 +194,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Construye un [ListTile] que se puede tocar con [icon], [title] y [subtitle].
-  ///
-  /// Cuando [badgeCount] es mayor que cero, se muestra una placa roja tipo píldora junto a
-  /// [title] para indicar elementos pendientes (por ejemplo, invitaciones pendientes).
   Widget _buildListTile(
     BuildContext context, {
     required IconData icon,
@@ -242,8 +234,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Construye un [ListTile] de solo lectura que muestra un [value] estadístico junto con un
-  /// [title] descriptivo y un [icon] principal.
   Widget _buildStatTile(
     BuildContext context, {
     required IconData icon,
@@ -264,164 +254,21 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Muestra un [AlertDialog] con un campo de texto rellenado previamente con el nombre de usuario
-  /// actual, y llama a [ProfileProvider.updateUsername] al guardar.
   void _showEditUsernameDialog(BuildContext context) {
-    final profile = context.read<ProfileProvider>();
-    final controller = TextEditingController(text: profile.user?.username ?? '');
-
-    Future<void> submit(BuildContext ctx) async {
-      if (controller.text.isNotEmpty) {
-        final success = await profile.updateUsername(controller.text);
-        if (success && ctx.mounted) {
-          Navigator.pop(ctx);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.profileUsernameUpdated)),
-          );
-        }
-      }
-    }
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.profileEditUsername),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textInputAction: TextInputAction.done,
-          onSubmitted: (_) => submit(ctx),
-          decoration: InputDecoration(
-            labelText: ctx.l10n.profileUser,
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(ctx.l10n.commonCancel),
-          ),
-          ElevatedButton(
-            onPressed: () => submit(ctx),
-            child: Text(ctx.l10n.commonSave),
-          ),
-        ],
-      ),
-    ).then((_) => controller.dispose());
+      builder: (ctx) => _EditUsernameDialog(parentContext: context),
+    );
   }
 
-  /// Muestra un [AlertDialog] con tres campos de contraseña (actual, nueva, confirmar)
-  /// y llama a [ProfileProvider.changePassword] al guardar después de una validación básica.
   void _showChangePasswordDialog(BuildContext context) {
-    final currentCtrl = TextEditingController();
-    final newCtrl = TextEditingController();
-    final confirmCtrl = TextEditingController();
-    final newFocus = FocusNode();
-    final confirmFocus = FocusNode();
-
-    Future<void> submit(BuildContext ctx) async {
-      if (newCtrl.text != confirmCtrl.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ctx.l10n.authPasswordsMismatch)),
-        );
-        return;
-      }
-      if (newCtrl.text.length < 8) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ctx.l10n.profilePasswordTooShort)),
-        );
-        return;
-      }
-      final profile = context.read<ProfileProvider>();
-      final auth = context.read<AuthProvider>();
-      final success = await profile.changePassword(currentCtrl.text, newCtrl.text);
-      if (success && ctx.mounted) {
-        Navigator.pop(ctx);
-        // El backend invalida el refresh token al cambiar contraseña,
-        // así que hacemos logout inmediato para evitar errores posteriores.
-        await auth.logout();
-        if (context.mounted) {
-          Navigator.pushNamedAndRemoveUntil(
-            context, AppRoutes.login, (route) => false,
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(ctx.l10n.profilePasswordChanged)),
-          );
-        }
-      } else if (ctx.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(profile.errorMessage ?? 'Error')),
-        );
-      }
-    }
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.profileChangePassword),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: currentCtrl,
-              obscureText: true,
-              autofocus: true,
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) => newFocus.requestFocus(),
-              decoration: InputDecoration(
-                labelText: ctx.l10n.profileCurrentPassword,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: newCtrl,
-              focusNode: newFocus,
-              obscureText: true,
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) => confirmFocus.requestFocus(),
-              decoration: InputDecoration(
-                labelText: ctx.l10n.profileNewPassword,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: confirmCtrl,
-              focusNode: confirmFocus,
-              obscureText: true,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => submit(ctx),
-              decoration: InputDecoration(
-                labelText: ctx.l10n.profileConfirmPassword,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(ctx.l10n.commonCancel),
-          ),
-          ElevatedButton(
-            onPressed: () => submit(ctx),
-            child: Text(ctx.l10n.profileChange),
-          ),
-        ],
-      ),
-    ).then((_) {
-      currentCtrl.dispose();
-      newCtrl.dispose();
-      confirmCtrl.dispose();
-      newFocus.dispose();
-      confirmFocus.dispose();
-    });
+      builder: (ctx) => _ChangePasswordDialog(parentContext: context),
+    );
   }
 
-  /// Muestra un diálogo de confirmación antes de llamar a [AuthProvider.logout] y
-  /// navegar a la pantalla de inicio de sesión.
-  void _confirmLogout(BuildContext context, AuthProvider auth) {
+  void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -435,7 +282,7 @@ class ProfileScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await auth.logout();
+              await context.read<AuthProvider>().logout();
               if (context.mounted) {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
@@ -452,10 +299,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Muestra un diálogo de confirmación antes de llamar a [ProfileProvider.deleteAccount].
-  ///
-  /// Si tiene éxito, cierra la sesión a través de [AuthProvider] y navega a la pantalla de inicio de sesión.
-  void _confirmDeleteAccount(BuildContext context, ProfileProvider profile) {
+  void _confirmDeleteAccount(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -468,6 +312,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
+              final profile = context.read<ProfileProvider>();
               final success = await profile.deleteAccount();
               if (success && ctx.mounted) {
                 Navigator.pop(ctx);
@@ -490,6 +335,200 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Diálogo de edición de nombre de usuario
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _EditUsernameDialog extends StatefulWidget {
+  final BuildContext parentContext;
+  const _EditUsernameDialog({required this.parentContext});
+
+  @override
+  State<_EditUsernameDialog> createState() => _EditUsernameDialogState();
+}
+
+class _EditUsernameDialogState extends State<_EditUsernameDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = widget.parentContext.read<ProfileProvider>();
+    _controller = TextEditingController(text: profile.user?.username ?? '');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_controller.text.isEmpty) return;
+    final profile = widget.parentContext.read<ProfileProvider>();
+    final success = await profile.updateUsername(_controller.text);
+    if (success && mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+        SnackBar(content: Text(widget.parentContext.l10n.profileUsernameUpdated)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.profileEditUsername),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _submit(),
+        decoration: InputDecoration(
+          labelText: context.l10n.profileUser,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.commonCancel),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: Text(context.l10n.commonSave),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Diálogo de cambio de contraseña
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ChangePasswordDialog extends StatefulWidget {
+  final BuildContext parentContext;
+  const _ChangePasswordDialog({required this.parentContext});
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  final _currentCtrl   = TextEditingController();
+  final _newCtrl       = TextEditingController();
+  final _confirmCtrl   = TextEditingController();
+  final _newFocus      = FocusNode();
+  final _confirmFocus  = FocusNode();
+
+  @override
+  void dispose() {
+    _currentCtrl.dispose();
+    _newCtrl.dispose();
+    _confirmCtrl.dispose();
+    _newFocus.dispose();
+    _confirmFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_newCtrl.text != _confirmCtrl.text) {
+      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+        SnackBar(content: Text(context.l10n.authPasswordsMismatch)),
+      );
+      return;
+    }
+    if (_newCtrl.text.length < 8) {
+      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+        SnackBar(content: Text(context.l10n.profilePasswordTooShort)),
+      );
+      return;
+    }
+    final profile = widget.parentContext.read<ProfileProvider>();
+    final auth    = widget.parentContext.read<AuthProvider>();
+    final success = await profile.changePassword(_currentCtrl.text, _newCtrl.text);
+    if (success && mounted) {
+      Navigator.pop(context);
+      // El backend invalida el refresh token al cambiar contraseña → logout inmediato.
+      await auth.logout();
+      if (widget.parentContext.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          widget.parentContext, AppRoutes.login, (route) => false,
+        );
+        ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+          SnackBar(content: Text(widget.parentContext.l10n.profilePasswordChanged)),
+        );
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+        SnackBar(content: Text(profile.errorMessage ?? 'Error')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.profileChangePassword),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _currentCtrl,
+            obscureText: true,
+            autofocus: true,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => _newFocus.requestFocus(),
+            decoration: InputDecoration(
+              labelText: context.l10n.profileCurrentPassword,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _newCtrl,
+            focusNode: _newFocus,
+            obscureText: true,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => _confirmFocus.requestFocus(),
+            decoration: InputDecoration(
+              labelText: context.l10n.profileNewPassword,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _confirmCtrl,
+            focusNode: _confirmFocus,
+            obscureText: true,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submit(),
+            decoration: InputDecoration(
+              labelText: context.l10n.profileConfirmPassword,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.commonCancel),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: Text(context.l10n.profileChange),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Avatar de perfil
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Avatar de perfil interactivo que muestra la foto del usuario o su inicial.
 ///
 /// Al tocar el avatar se presenta una hoja inferior con las opciones de cámara y galería.
@@ -504,6 +543,7 @@ class _ProfileAvatar extends StatefulWidget {
 
 class _ProfileAvatarState extends State<_ProfileAvatar> {
   bool _uploading = false;
+  final _logger = LoggerService.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -579,30 +619,22 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
     final source = await _showSourceSheet(context);
     if (source == null) return;
 
-    // Capturar el provider antes del primer await largo (image picker)
     final profile = context.read<ProfileProvider>();
-
     final pickerService = ImagePickerService();
     final file = await pickerService.pickImage(source: source);
-    debugPrint('[ProfileAvatar] file picked: ${file?.path}');
 
-    // Si el usuario canceló la selección o el recortador, no hacer nada
     if (file == null) return;
 
-    // El widget puede haberse desmontado mientras el recortador nativo estaba abierto
-    // (Android destruye el Surface de Flutter al pasar a otra Activity).
-    // Aun así continuamos con la subida: el provider sigue vivo y
-    // notifyListeners() actualizará el nuevo estado del avatar al volver.
     if (mounted) setState(() => _uploading = true);
 
     final userId = profile.user?.id?.toString() ?? 'unknown';
-    debugPrint('[ProfileAvatar] uploading for userId=$userId');
+    _logger.debug('[ProfileAvatar] subiendo foto para userId=$userId');
 
     String? url;
     try {
       url = await FirebaseStorageService().uploadProfilePhoto(file, userId);
     } catch (e) {
-      debugPrint('[ProfileAvatar] Firebase error: $e');
+      _logger.error('[ProfileAvatar] Error Firebase al subir foto', e);
       if (mounted) {
         setState(() => _uploading = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -611,8 +643,6 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
       }
       return;
     }
-
-    debugPrint('[ProfileAvatar] firebase url=$url');
 
     if (url == null) {
       if (mounted) {
@@ -625,7 +655,7 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
     }
 
     final success = await profile.updateProfilePhoto(url);
-    debugPrint('[ProfileAvatar] backend save success=$success');
+    _logger.debug('[ProfileAvatar] foto guardada en backend: $success');
 
     if (mounted) {
       setState(() => _uploading = false);
@@ -641,8 +671,6 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
     }
   }
 
-  /// Muestra una hoja inferior para elegir entre cámara y galería.
-  /// Devuelve `null` si el usuario cancela.
   Future<ImageSource?> _showSourceSheet(BuildContext context) async {
     return showModalBottomSheet<ImageSource>(
       context: context,

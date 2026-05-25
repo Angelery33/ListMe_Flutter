@@ -88,13 +88,14 @@ class ProfileProvider extends ChangeNotifier {
       final updatedUser = _user!.copyWith(username: newUsername);
       _user = await _profileRepository.updateProfile(updatedUser);
       _logger.info('ProfileProvider: Username actualizado');
-      notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = 'Error al actualizar nombre de usuario';
       _logger.error('ProfileProvider: Error al actualizar username', e);
-      notifyListeners();
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -140,13 +141,14 @@ class ProfileProvider extends ChangeNotifier {
     try {
       await _profileRepository.deleteAccount();
       _logger.info('ProfileProvider: Cuenta eliminada');
-      notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = 'Error al eliminar cuenta';
       _logger.error('ProfileProvider: Error al eliminar cuenta', e);
-      notifyListeners();
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

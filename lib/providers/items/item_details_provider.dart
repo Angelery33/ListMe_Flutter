@@ -73,7 +73,7 @@ class ItemDetailsProvider extends ChangeNotifier {
     }
 
     try {
-      // 1. Refresh item data completely
+      // 1. Recargar datos del ítem completamente
       _item = await _itemsRepository.getItemById(itemId);
 
       if (_item != null) {
@@ -136,7 +136,7 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   /// Actualiza los campos de progreso a [current] y [total] y guarda el cambio.
   ///
-  /// If [total] is `null` the existing total value is preserved.
+  /// Si [total] es `null` se conserva el valor total existente.
   Future<void> updateProgress(int current, int? total) async {
     if (_item != null) {
       final updatedItem = _item!.copyWith(
@@ -172,8 +172,8 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   /// Actualiza un [field] de progreso con nombre específico a [value] y guarda el cambio.
   ///
-  /// Supported [field] values: `'chapter'`, `'page'`, `'season'`, `'volume'`.
-  /// Falls back to updating [ItemModel.currentProgress] for unknown field names.
+  /// Valores válidos de [field]: `'chapter'`, `'page'`, `'season'`, `'volume'`.
+  /// Para nombres de campo desconocidos actualiza [ItemModel.currentProgress].
   Future<void> updateProgressField(String field, int value) async {
     if (_item != null) {
       ItemModel updatedItem;
@@ -222,9 +222,9 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   /// Obtiene los sub-elementos para el elemento de colección actual desde el servidor.
   ///
-  /// Falls back to filtering all library items by [ItemModel.parentId] when
-  /// the dedicated sub-collections endpoint throws. Results are sorted by
-  /// volume number first, then alphabetically by name.
+  /// Si el endpoint de sub-colecciones falla, filtra todos los ítems de la
+  /// biblioteca por [ItemModel.parentId]. Los resultados se ordenan por número
+  /// de volumen primero y luego alfabéticamente por nombre.
   Future<void> _fetchSubItems() async {
     if (_item?.id == null) return;
     try {
@@ -263,6 +263,7 @@ class ItemDetailsProvider extends ChangeNotifier {
     notifyListeners();
 
     int created = 0;
+    final List<String> volumeErrors = [];
     try {
       final int count = _item!.totalVolume!;
       final parentId = _item!.id!;
@@ -287,7 +288,12 @@ class ItemDetailsProvider extends ChangeNotifier {
         try {
           await _itemsRepository.createItem(newItem);
           created++;
-        } catch (_) {}
+        } catch (e) {
+          volumeErrors.add('Vol. $i: $e');
+        }
+      }
+      if (volumeErrors.isNotEmpty) {
+        _errorMessage = volumeErrors.join('\n');
       }
 
       await _fetchSubItems();
@@ -302,9 +308,9 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   /// Crea un único sub-elemento dentro de la colección actual.
   ///
-  /// If [name] is omitted the item is named using the next volume number
-  /// followed by the parent's name. Returns the newly created [ItemModel]
-  /// on success, or `null` and sets [errorMessage] on failure.
+  /// Si se omite [name], el ítem toma como nombre el siguiente número de volumen
+  /// seguido del nombre del padre. Devuelve el [ItemModel] creado en caso de
+  /// éxito, o `null` y establece [errorMessage] en caso de fallo.
   Future<ItemModel?> createSubItem({String? name}) async {
     if (_item?.id == null) return null;
     try {
