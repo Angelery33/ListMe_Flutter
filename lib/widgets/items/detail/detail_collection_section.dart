@@ -174,6 +174,7 @@ class _EmptyCollection extends StatelessWidget {
     if (created > 0) {
       await itemsProvider.fetchItemsByLibrary(item.idLibrary);
     }
+    if (!context.mounted) return;
     messenger.showSnackBar(
       SnackBar(content: Text(context.l10n.collectionGenerateResult(created))),
     );

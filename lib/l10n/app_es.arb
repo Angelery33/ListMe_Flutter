@@ -283,6 +283,10 @@
   "searchImportPlaceholder": "Buscar…",
   "searchImportAuthorFilter": "Filtrar por autor (opcional)",
   "searchImportNoResults": "No se encontraron resultados",
+  "searchImportErrorApiKey": "Clave de API inválida. Revisa tus ajustes.",
+  "searchImportErrorNotConfigured": "El servidor no tiene esta fuente configurada.",
+  "searchImportErrorNetwork": "Sin conexión. Comprueba tu red e inténtalo de nuevo.",
+  "searchImportErrorGeneric": "No se pudo realizar la búsqueda. Inténtalo de nuevo.",
   "searchImportError": "Error al buscar",
 
   "infoTitle": "Información",

@@ -126,10 +126,16 @@ class _SearchImportScreenState extends State<SearchImportScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          String msg = e.toString().contains('401')
-              ? "Error 401: Key de OMDb inválida. Prueba a obtener una gratis en omdbapi.com e introducirla en Ajustes."
-              : "Error al buscar: $e";
-          _error = msg;
+          final raw = e.toString();
+          if (raw.contains('401') || raw.contains('Invalid API key')) {
+            _error = context.l10n.searchImportErrorApiKey;
+          } else if (raw.contains('503') || raw.contains('no configurado')) {
+            _error = context.l10n.searchImportErrorNotConfigured;
+          } else if (raw.contains('502') || raw.contains('SocketException') || raw.contains('TimeoutException')) {
+            _error = context.l10n.searchImportErrorNetwork;
+          } else {
+            _error = context.l10n.searchImportErrorGeneric;
+          }
         });
       }
     }

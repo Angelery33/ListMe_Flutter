@@ -81,12 +81,10 @@ class SettingsProvider extends ChangeNotifier {
     // Color de acento
     _accentColor = _prefs!.getString('accentColor') ?? 'amethyst';
 
-    // Claves de API - valores por defecto de proyectos anteriores
+    // Claves de API del usuario (TMDb y Google Books son opcionales: el servidor las gestiona)
     _omdbApiKey = _prefs!.getString('omdbApiKey') ?? '';
-    final storedTmdbKey = _prefs!.getString('tmdbApiKey') ?? '';
-    _tmdbApiKey = storedTmdbKey.isNotEmpty ? storedTmdbKey : 'a4294c7b69c82d96850476e2439c2da6';
-    final storedBooksKey = _prefs!.getString('googleBooksApiKey') ?? '';
-    _googleBooksApiKey = storedBooksKey.isNotEmpty ? storedBooksKey : 'AIzaSyByNQL_OhzQX3wB7eKKlOKXLvh0Ri3826Q';
+    _tmdbApiKey = _prefs!.getString('tmdbApiKey') ?? '';
+    _googleBooksApiKey = _prefs!.getString('googleBooksApiKey') ?? '';
 
     // Locale y moneda
     _locale = _prefs!.getString('locale') ?? 'es';

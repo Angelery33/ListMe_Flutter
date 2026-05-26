@@ -55,6 +55,7 @@ class DetailDescriptionSection extends StatelessWidget {
         ],
       ),
     );
+    controller.dispose();
     if (result != null && context.mounted) {
       await context.read<ItemDetailsProvider>().updateDescription(result);
     }

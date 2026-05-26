@@ -799,6 +799,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get searchImportNoResults => 'Keine Ergebnisse gefunden';
 
   @override
+  String get searchImportErrorApiKey =>
+      'Ungültiger API-Schlüssel. Überprüfe deine Einstellungen.';
+
+  @override
+  String get searchImportErrorNotConfigured =>
+      'Diese Quelle ist auf dem Server nicht konfiguriert.';
+
+  @override
+  String get searchImportErrorNetwork =>
+      'Keine Verbindung. Überprüfe dein Netzwerk und versuche es erneut.';
+
+  @override
+  String get searchImportErrorGeneric =>
+      'Suche fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
   String get searchImportError => 'Suchfehler';
 
   @override

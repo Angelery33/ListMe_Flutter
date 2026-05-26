@@ -794,6 +794,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchImportNoResults => 'No results found';
 
   @override
+  String get searchImportErrorApiKey => 'Invalid API key. Check your settings.';
+
+  @override
+  String get searchImportErrorNotConfigured =>
+      'This source is not configured on the server.';
+
+  @override
+  String get searchImportErrorNetwork =>
+      'No connection. Check your network and try again.';
+
+  @override
+  String get searchImportErrorGeneric => 'Search failed. Please try again.';
+
+  @override
   String get searchImportError => 'Search error';
 
   @override

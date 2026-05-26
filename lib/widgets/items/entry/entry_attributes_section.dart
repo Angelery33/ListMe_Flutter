@@ -44,109 +44,15 @@ class EntryAttributesSection extends StatefulWidget {
 /// Estado para [EntryAttributesSection]. Contiene ayudantes de diálogo que requieren
 /// acceso a las funciones de retorno del widget.
 class _EntryAttributesSectionState extends State<EntryAttributesSection> {
-  /// Abre un diálogo que permite al usuario elegir un tipo de atributo e introducir
-  /// un valor. Incluye un botón [+] junto al selector para crear un tipo nuevo
-  /// sin cerrar el diálogo.
   void _showAddAttributeDialog(BuildContext context) {
-    // Copia local de tipos para poder añadir uno nuevo sin cerrar el diálogo.
-    List<AttributeTypeModel> dialogTypes = List.of(widget.allTypes);
-    AttributeTypeModel? selectedType =
-        dialogTypes.isNotEmpty ? dialogTypes.first : null;
-    final valueController = TextEditingController();
-
     showDialog(
       context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogContext, setStateDialog) {
-            void confirm() {
-              if (selectedType != null && valueController.text.isNotEmpty) {
-                widget.onAdd(AttributeItemModel(
-                  attributeTypeId: selectedType!.id!,
-                  idItem: 0,
-                  value: valueController.text,
-                ));
-                Navigator.pop(dialogContext);
-              }
-            }
-
-            return AlertDialog(
-              title: Text(dialogContext.l10n.attributesAdd),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Selector de tipo + botón crear nuevo tipo
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: dialogTypes.isEmpty
-                            ? Text(
-                                dialogContext.l10n.attributesEmpty,
-                                style: Theme.of(dialogContext)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(fontStyle: FontStyle.italic),
-                              )
-                            : DropdownButtonFormField<AttributeTypeModel>(
-                                initialValue: selectedType,
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: dialogContext.l10n.attributesType,
-                                ),
-                                items: dialogTypes
-                                    .map((t) => DropdownMenuItem(
-                                          value: t,
-                                          child: Text(t.name),
-                                        ))
-                                    .toList(),
-                                onChanged: (val) =>
-                                    setStateDialog(() => selectedType = val),
-                              ),
-                      ),
-                      if (widget.onCreateAttributeType != null)
-                        IconButton(
-                          icon: const Icon(Icons.add_rounded),
-                          tooltip: dialogContext.l10n.attributesCreateType,
-                          onPressed: () async {
-                            final newType =
-                                await widget.onCreateAttributeType!();
-                            if (newType != null) {
-                              setStateDialog(() {
-                                dialogTypes = [...dialogTypes, newType];
-                                selectedType = newType;
-                              });
-                            }
-                          },
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: valueController,
-                    autofocus: dialogTypes.isNotEmpty,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => confirm(),
-                    decoration: InputDecoration(
-                        labelText: dialogContext.l10n.attributesValue),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(dialogContext.l10n.commonCancel),
-                ),
-                TextButton(
-                  onPressed: confirm,
-                  child: Text(dialogContext.l10n.commonAdd),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    ).then((_) => valueController.dispose());
+      builder: (_) => _AddAttributeDialog(
+        initialTypes: widget.allTypes,
+        onAdd: widget.onAdd,
+        onCreateAttributeType: widget.onCreateAttributeType,
+      ),
+    );
   }
 
   @override
@@ -216,7 +122,6 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
     );
   }
 
-  /// Renderiza la etiqueta del encabezado de la sección con estilo en color primario en mayúsculas.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),
@@ -225,6 +130,125 @@ class _EntryAttributesSectionState extends State<EntryAttributesSection> {
         fontWeight: FontWeight.bold,
         letterSpacing: 1,
       ),
+    );
+  }
+}
+
+class _AddAttributeDialog extends StatefulWidget {
+  final List<AttributeTypeModel> initialTypes;
+  final Function(AttributeItemModel) onAdd;
+  final Future<AttributeTypeModel?> Function()? onCreateAttributeType;
+
+  const _AddAttributeDialog({
+    required this.initialTypes,
+    required this.onAdd,
+    this.onCreateAttributeType,
+  });
+
+  @override
+  State<_AddAttributeDialog> createState() => _AddAttributeDialogState();
+}
+
+class _AddAttributeDialogState extends State<_AddAttributeDialog> {
+  late List<AttributeTypeModel> _types;
+  AttributeTypeModel? _selectedType;
+  final TextEditingController _valueController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _types = List.of(widget.initialTypes);
+    _selectedType = _types.isNotEmpty ? _types.first : null;
+  }
+
+  @override
+  void dispose() {
+    _valueController.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    if (_selectedType != null && _valueController.text.isNotEmpty) {
+      widget.onAdd(AttributeItemModel(
+        attributeTypeId: _selectedType!.id!,
+        idItem: 0,
+        value: _valueController.text,
+      ));
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.attributesAdd),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: _types.isEmpty
+                    ? Text(
+                        context.l10n.attributesEmpty,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontStyle: FontStyle.italic),
+                      )
+                    : DropdownButtonFormField<AttributeTypeModel>(
+                        initialValue: _selectedType,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: context.l10n.attributesType,
+                        ),
+                        items: _types
+                            .map((t) => DropdownMenuItem(
+                                  value: t,
+                                  child: Text(t.name),
+                                ))
+                            .toList(),
+                        onChanged: (val) => setState(() => _selectedType = val),
+                      ),
+              ),
+              if (widget.onCreateAttributeType != null)
+                IconButton(
+                  icon: const Icon(Icons.add_rounded),
+                  tooltip: context.l10n.attributesCreateType,
+                  onPressed: () async {
+                    final newType = await widget.onCreateAttributeType!();
+                    if (!mounted) return;
+                    if (newType != null) {
+                      setState(() {
+                        _types = [..._types, newType];
+                        _selectedType = newType;
+                      });
+                    }
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _valueController,
+            autofocus: _types.isNotEmpty,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _confirm(),
+            decoration: InputDecoration(labelText: context.l10n.attributesValue),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.commonCancel),
+        ),
+        TextButton(
+          onPressed: _confirm,
+          child: Text(context.l10n.commonAdd),
+        ),
+      ],
     );
   }
 }

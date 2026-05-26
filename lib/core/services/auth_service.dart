@@ -53,7 +53,7 @@ class AuthService {
       );
 
       final response = await dio.post(
-        'auth/refresh',
+        '/auth/refresh',
         data: TokenRefreshRequest(refreshToken: refreshToken).toJson(),
       );
 
@@ -71,8 +71,17 @@ class AuthService {
         return false;
       }
     } catch (e) {
-      _logger.error('AuthService: Error al refrescar token: $e', e);
-      await TokenStorage.clearTokens();
+      // Solo borramos tokens si el servidor los rechazó explícitamente (4xx).
+      // Errores de red (sin conexión, timeout) son transitorios — mantener los tokens
+      // para que el interceptor reactivo pueda reintentar más tarde.
+      final isDioError = e is DioException;
+      final hasResponse = isDioError && e.response != null;
+      if (hasResponse) {
+        _logger.error('AuthService: Servidor rechazó el refresh (${e.response?.statusCode}), borrando tokens', e);
+        await TokenStorage.clearTokens();
+      } else {
+        _logger.warning('AuthService: Error de red al refrescar (tokens conservados): $e');
+      }
       return false;
     } finally {
       _isRefreshing = false;

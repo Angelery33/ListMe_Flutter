@@ -617,7 +617,7 @@ class _ProfileAvatarState extends State<_ProfileAvatar> {
 
   Future<void> _pickAndUpload(BuildContext context) async {
     final source = await _showSourceSheet(context);
-    if (source == null) return;
+    if (source == null || !mounted) return;
 
     final profile = context.read<ProfileProvider>();
     final pickerService = ImagePickerService();

@@ -802,6 +802,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get searchImportNoResults => 'Aucun résultat trouvé';
 
   @override
+  String get searchImportErrorApiKey =>
+      'Clé API invalide. Vérifiez vos paramètres.';
+
+  @override
+  String get searchImportErrorNotConfigured =>
+      'Cette source n\'est pas configurée sur le serveur.';
+
+  @override
+  String get searchImportErrorNetwork =>
+      'Pas de connexion. Vérifiez votre réseau et réessayez.';
+
+  @override
+  String get searchImportErrorGeneric =>
+      'La recherche a échoué. Veuillez réessayer.';
+
+  @override
   String get searchImportError => 'Erreur de recherche';
 
   @override

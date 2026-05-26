@@ -343,7 +343,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       }
 
       if (result.containsKey('description')) {
-        _descController.text = result['description'];
+        final desc = (result['description'] as String?) ?? '';
+        _descController.text = desc.length > 4000 ? desc.substring(0, 4000) : desc;
       }
 
       if (result.containsKey('remoteImageUrl')) {
@@ -851,11 +852,11 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 onRemove: (idx) => setState(() => _attributes.removeAt(idx)),
                 onCreateAttributeType: () async {
                   final name = await _showCreateAttributeTypeDialog();
-                  if (name != null) {
+                  if (name != null && mounted) {
                     final newType = await context
                         .read<ItemsProvider>()
                         .createAttributeType(name);
-                    setState(() => _attributeTypes.add(newType));
+                    if (mounted) setState(() => _attributeTypes.add(newType));
                     return newType;
                   }
                   return null;

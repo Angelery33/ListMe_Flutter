@@ -1658,6 +1658,30 @@ abstract class AppLocalizations {
   /// **'No se encontraron resultados'**
   String get searchImportNoResults;
 
+  /// No description provided for @searchImportErrorApiKey.
+  ///
+  /// In es, this message translates to:
+  /// **'Clave de API inválida. Revisa tus ajustes.'**
+  String get searchImportErrorApiKey;
+
+  /// No description provided for @searchImportErrorNotConfigured.
+  ///
+  /// In es, this message translates to:
+  /// **'El servidor no tiene esta fuente configurada.'**
+  String get searchImportErrorNotConfigured;
+
+  /// No description provided for @searchImportErrorNetwork.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión. Comprueba tu red e inténtalo de nuevo.'**
+  String get searchImportErrorNetwork;
+
+  /// No description provided for @searchImportErrorGeneric.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo realizar la búsqueda. Inténtalo de nuevo.'**
+  String get searchImportErrorGeneric;
+
   /// No description provided for @searchImportError.
   ///
   /// In es, this message translates to:

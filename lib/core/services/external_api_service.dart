@@ -1,18 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'logger_service.dart';
+import 'api_client.dart';
 
 /// Servicio singleton que envuelve múltiples APIs de medios de terceros (Google Books,
 /// MyAnimeList a través de Jikan, MangaDex, OMDb y TMDb).
 ///
-/// Cada método de búsqueda devuelve una lista normalizada de registros `Map<String, dynamic>`
-/// para que el resto de la aplicación pueda tratar los resultados de diferentes fuentes
-/// de manera uniforme. Los nombres de los campos se mantienen consistentes en todas las fuentes (ej. `name`,
-/// `description`, `imagePath`, `year`, `externalRating`).
+/// TMDb y Google Books se enrutan a través del proxy del backend para que las
+/// claves de API nunca se distribuyan en los binarios de la app. El resto de
+/// fuentes (Jikan, MangaDex, OMDb) se siguen llamando directamente.
+///
+/// Cada método devuelve una lista normalizada de registros `Map<String, dynamic>`
+/// con campos consistentes entre fuentes (`name`, `description`, `imagePath`,
+/// `year`, `externalRating`, etc.).
 class ExternalApiService {
   /// Instancia global singleton.
   static final ExternalApiService instance = ExternalApiService._();
   final LoggerService _logger = LoggerService.instance;
+
   ExternalApiService._();
 
   /// Traduce una cadena de estado cruda de MAL/MangaDex al español.
@@ -46,6 +51,9 @@ class ExternalApiService {
   /// Busca volúmenes en Google Books que coincidan con [query] y devuelve hasta 10
   /// resultados normalizados para la [page] dada.
   ///
+  /// La búsqueda se realiza a través del proxy del backend para proteger la clave
+  /// de API. El parámetro [apiKey] se ignora (se mantiene por compatibilidad).
+  ///
   /// [query] La cadena de búsqueda (título, autor, ISBN, etc.).
   /// [page] Número de página basado en 1; convertido internamente a un `startIndex`.
   Future<List<Map<String, dynamic>>> searchBooks({
@@ -57,7 +65,6 @@ class ExternalApiService {
     bool comicMode = false,
   }) async {
     final int startIndex = (page - 1) * 10;
-    final keyParam = (apiKey != null && apiKey.isNotEmpty) ? '&key=$apiKey' : '';
     final effectiveQuery = (author != null && author.trim().isNotEmpty)
         ? '$query+inauthor:${Uri.encodeComponent(author.trim())}'
         : query;
@@ -73,19 +80,23 @@ class ExternalApiService {
     // Para comic mode, busca en paralelo la query original y "{query} comics"
     // para encontrar ediciones españolas de títulos anglosajones.
     Future<List> _fetchItems(String q) async {
-      final url = Uri.parse(
-        'https://www.googleapis.com/books/v1/volumes'
-        '?q=${Uri.encodeComponent(q)}'
-        '&startIndex=$startIndex'
-        '&maxResults=15'
-        '&printType=books'
-        '$keyParam',
-      );
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['items'] as List? ?? [];
-      }
+      try {
+        final response = await ApiClient.instance.dio.get(
+          '/search/books',
+          queryParameters: {
+            'query': q,
+            'startIndex': startIndex,
+            'maxResults': 15,
+            'printType': 'books',
+          },
+        );
+        if (response.statusCode == 200) {
+          final data = response.data is String
+              ? json.decode(response.data as String)
+              : response.data;
+          return data['items'] as List? ?? [];
+        }
+      } catch (_) {}
       return [];
     }
 
@@ -415,7 +426,7 @@ class ExternalApiService {
       'https://api.mangadex.org/manga?title=${Uri.encodeComponent(query)}&limit=10&offset=$offset&includes[]=cover_art&includes[]=author&includes[]=artist',
     );
     try {
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final items = data['data'] as List? ?? [];
@@ -552,7 +563,7 @@ class ExternalApiService {
       'https://www.omdbapi.com/?s=${Uri.encodeComponent(query)}&page=$page&apikey=$apiKey$typeParam',
     );
     try {
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['Response'] == 'True') {
@@ -603,7 +614,7 @@ class ExternalApiService {
       'https://www.omdbapi.com/?i=$imdbId&apikey=$apiKey&plot=full',
     );
     try {
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['Response'] == 'True') {
@@ -655,11 +666,11 @@ class ExternalApiService {
 
   /// Busca películas o series de TV en TMDb que coincidan con [query].
   ///
-  /// Los resultados se devuelven en español (`language=es-ES`). Lanza una [Exception]
-  /// cuando [apiKey] está vacía o el servidor devuelve un error.
+  /// La búsqueda se realiza a través del proxy del backend para proteger la clave
+  /// de API. El parámetro [apiKey] se ignora (se mantiene por compatibilidad).
   ///
   /// [query] El título a buscar.
-  /// [apiKey] Una clave de API de TMDb v3 válida.
+  /// [apiKey] Ignorado — la clave se gestiona en el servidor.
   /// [page] Número de página basado en 1.
   /// [type] `'movie'` (por defecto) o `'tv'`.
   Future<List<Map<String, dynamic>>> searchTMDb({
@@ -668,23 +679,24 @@ class ExternalApiService {
     int page = 1,
     String type = 'movie',
   }) async {
-    if (apiKey.isEmpty) {
-      _logger.warning('TMDb API Key no configurada');
-      throw Exception('TMDb API Key no configurada');
-    }
-
-    final endpoint = type == 'movie' ? 'search/movie' : 'search/tv';
-    final url = Uri.parse(
-      'https://api.themoviedb.org/3/$endpoint?query=${Uri.encodeComponent(query)}&page=$page&api_key=$apiKey&language=es-ES',
-    );
-
     try {
-      final response = await http.get(url);
+      final response = await ApiClient.instance.dio.get(
+        '/search/tmdb',
+        queryParameters: {
+          'query': query,
+          'page': page,
+          'type': type,
+          'language': 'es-ES',
+        },
+      );
+
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = response.data is String
+            ? json.decode(response.data as String)
+            : response.data;
         final results = data['results'] as List? ?? [];
         final isMovie = type == 'movie';
-        return results.map((item) {
+        return results.map<Map<String, dynamic>>((item) {
           return {
             'source': 'TMDb',
             'remoteId': item['id'].toString(),
@@ -698,8 +710,7 @@ class ExternalApiService {
             'imagePathBackdrop': item['backdrop_path'] != null
                 ? 'https://image.tmdb.org/t/p/w780${item['backdrop_path']}'
                 : null,
-            'year':
-                (item[isMovie ? 'release_date' : 'first_air_date'] as String?)
+            'year': (item[isMovie ? 'release_date' : 'first_air_date'] as String?)
                     ?.split('-')
                     .first ??
                 '',
@@ -722,26 +733,27 @@ class ExternalApiService {
 
   /// Obtiene detalles completos de películas o series de TV de TMDb para el [id] dado.
   ///
-  /// Añade créditos e imágenes a la solicitud. Devuelve un mapa normalizado o
-  /// `null` si la solicitud falla.
+  /// La petición se realiza a través del proxy del backend. El parámetro [apiKey]
+  /// se ignora (se mantiene por compatibilidad).
   ///
   /// [id] El identificador numérico de TMDb como cadena.
-  /// [apiKey] Una clave de API de TMDb v3 válida.
+  /// [apiKey] Ignorado — la clave se gestiona en el servidor.
   /// [type] `'movie'` (por defecto) o `'tv'`.
   Future<Map<String, dynamic>?> getTMDbDetails(
     String id,
     String apiKey, {
     String type = 'movie',
   }) async {
-    final endpoint = type == 'movie' ? 'movie' : 'tv';
-    final url = Uri.parse(
-      'https://api.themoviedb.org/3/$endpoint/$id?api_key=$apiKey&language=es-ES&append_to_response=credits,images',
-    );
-
     try {
-      final response = await http.get(url);
+      final response = await ApiClient.instance.dio.get(
+        '/search/tmdb/details',
+        queryParameters: {'id': id, 'type': type, 'language': 'es-ES'},
+      );
+
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = response.data is String
+            ? json.decode(response.data as String)
+            : response.data;
         final isMovie = type == 'movie';
 
         // Extraer géneros

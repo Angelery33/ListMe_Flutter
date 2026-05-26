@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../../data/lists/library_genre_model.dart';
 
@@ -92,6 +93,9 @@ class EntryPropertiesSection extends StatelessWidget {
               TextFormField(
                 controller: priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(
@@ -149,6 +153,9 @@ class EntryPropertiesSection extends StatelessWidget {
               child: TextFormField(
                 initialValue: score == 0 ? '' : score.toStringAsFixed(2),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(

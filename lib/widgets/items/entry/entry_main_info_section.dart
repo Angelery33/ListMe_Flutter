@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
 /// Cadenas de tipo de producto Funko predefinidas utilizadas como sugerencias de autocompletado en
@@ -200,6 +201,7 @@ class _EntryMainInfoSectionState extends State<EntryMainInfoSection> {
                 controller: widget.itemNumberController,
                 focusNode: _numberFocus,
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 textInputAction: hasExtra ? TextInputAction.next : TextInputAction.done,
                 onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 decoration: InputDecoration(

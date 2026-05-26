@@ -800,6 +800,21 @@ class AppLocalizationsIt extends AppLocalizations {
   String get searchImportNoResults => 'Nessun risultato trovato';
 
   @override
+  String get searchImportErrorApiKey =>
+      'Chiave API non valida. Controlla le impostazioni.';
+
+  @override
+  String get searchImportErrorNotConfigured =>
+      'Questa fonte non è configurata sul server.';
+
+  @override
+  String get searchImportErrorNetwork =>
+      'Nessuna connessione. Controlla la rete e riprova.';
+
+  @override
+  String get searchImportErrorGeneric => 'Ricerca fallita. Riprova.';
+
+  @override
   String get searchImportError => 'Errore di ricerca';
 
   @override

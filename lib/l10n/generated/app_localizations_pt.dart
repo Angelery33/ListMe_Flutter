@@ -798,6 +798,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get searchImportNoResults => 'Nenhum resultado encontrado';
 
   @override
+  String get searchImportErrorApiKey =>
+      'Chave de API inválida. Verifique as suas definições.';
+
+  @override
+  String get searchImportErrorNotConfigured =>
+      'Esta fonte não está configurada no servidor.';
+
+  @override
+  String get searchImportErrorNetwork =>
+      'Sem ligação. Verifique a sua rede e tente novamente.';
+
+  @override
+  String get searchImportErrorGeneric =>
+      'A pesquisa falhou. Por favor, tente novamente.';
+
+  @override
   String get searchImportError => 'Erro de pesquisa';
 
   @override

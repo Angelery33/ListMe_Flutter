@@ -255,8 +255,15 @@ class ItemsProvider extends ChangeNotifier {
   }
 
   /// Elimina el registro de imagen identificado por [imageId] del servidor.
-  Future<void> deleteItemImage(int imageId) async {
-    await _itemsRepository.deleteItemImage(imageId);
+  Future<bool> deleteItemImage(int imageId) async {
+    try {
+      await _itemsRepository.deleteItemImage(imageId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
 
   /// Elimina el elemento con [id] del servidor y lo quita de la lista local

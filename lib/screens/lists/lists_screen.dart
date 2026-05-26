@@ -523,6 +523,7 @@ class _StaticGridCardProxy extends StatelessWidget {
       onTap: () => Navigator.pushNamed(context, AppRoutes.list, arguments: list),
       onEdit: () async {
         await Navigator.pushNamed(context, AppRoutes.listConfig, arguments: list);
+        if (!context.mounted) return;
         context.read<ListsProvider>().fetchLists();
       },
       onDelete: () => _confirmDelete(context, list),

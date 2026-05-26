@@ -82,12 +82,20 @@ class AuthProvider extends ChangeNotifier {
       if (refreshed) {
         _logger.info('AuthProvider: Sesión renovada proactivamente al arrancar');
         _status = AuthStatus.authenticated;
-      } else if (accessToken != null) {
-        // Sin red o fallo puntual: mantenemos autenticado con token local
-        _logger.warning('AuthProvider: Refresco falló pero hay token local, continuamos autenticados');
-        _status = AuthStatus.authenticated;
       } else {
-        _status = AuthStatus.unauthenticated;
+        // Re-leer tokens para saber si el fallo fue de red (tokens conservados)
+        // o el servidor los rechazó (tokens borrados).
+        final currentRefreshToken = await TokenStorage.getRefreshToken();
+        final currentAccessToken = await TokenStorage.getAccessToken();
+        if (currentAccessToken != null || currentRefreshToken != null) {
+          // Error de red transitorio: tokens siguen en storage, quedamos autenticados
+          _logger.warning('AuthProvider: Refresco falló por red, tokens conservados, continuamos autenticados');
+          _status = AuthStatus.authenticated;
+        } else {
+          // Servidor rechazó el refresh (tokens borrados): forzar login
+          _logger.warning('AuthProvider: Servidor rechazó el refresh, redirigiendo al login');
+          _status = AuthStatus.unauthenticated;
+        }
       }
     } else if (accessToken != null) {
       _status = AuthStatus.authenticated;

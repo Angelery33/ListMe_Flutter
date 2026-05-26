@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/i18n/l10n_extension.dart';
 import '../../../../data/items/item_model.dart';
@@ -331,6 +332,7 @@ class DetailProgressSection extends StatelessWidget {
                               content: TextField(
                                 controller: controller,
                                 keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 autofocus: true,
                                 textInputAction: TextInputAction.done,
                                 onSubmitted: (_) => Navigator.pop(
@@ -355,6 +357,7 @@ class DetailProgressSection extends StatelessWidget {
                               ],
                             ),
                           );
+                          controller.dispose();
                           if (newVal != null) {
                             onManualSet(newVal);
                           }

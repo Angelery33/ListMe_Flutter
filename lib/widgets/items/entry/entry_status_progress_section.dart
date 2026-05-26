@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/i18n/l10n_extension.dart';
 
 /// Sección de formulario que combina el menú desplegable de estado del elemento, el interruptor de
@@ -96,6 +97,11 @@ class _EntryStatusProgressSectionState
   final FocusNode _totalPageFocus = FocusNode();
   final FocusNode _totalVolumeFocus = FocusNode();
 
+  void _fillCurrentFromTotal(TextEditingController? current, TextEditingController? total) {
+    if (current == null || total == null) return;
+    if (total.text.isNotEmpty) current.text = total.text;
+  }
+
   @override
   void dispose() {
     _totalProgressFocus.dispose();
@@ -142,9 +148,16 @@ class _EntryStatusProgressSectionState
               onChanged: (val) {
                 if (val != null) {
                   widget.onStatusChanged(val);
-                  // Si el nuevo estado no es IN_PROGRESS, desactivar "Disfrutando ahora"
                   if (val != "IN_PROGRESS" && widget.isCurrent) {
                     widget.onCurrentChanged(false);
+                  }
+                  // Al completar, rellenar el progreso actual con el total
+                  if (val == "COMPLETED") {
+                    _fillCurrentFromTotal(widget.currentProgressController, widget.totalProgressController);
+                    _fillCurrentFromTotal(widget.seasonController, widget.totalSeasonController);
+                    _fillCurrentFromTotal(widget.chapterController, widget.totalChapterController);
+                    _fillCurrentFromTotal(widget.pageController, widget.totalPageController);
+                    _fillCurrentFromTotal(widget.volumeController, widget.totalVolumeController);
                   }
                 }
               },
@@ -257,6 +270,7 @@ class _EntryStatusProgressSectionState
           child: TextFormField(
             controller: current,
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textInputAction: TextInputAction.next,
             onFieldSubmitted: (_) => totalFocus.requestFocus(),
             decoration: InputDecoration(
@@ -274,6 +288,7 @@ class _EntryStatusProgressSectionState
             controller: total,
             focusNode: totalFocus,
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
             decoration: InputDecoration(

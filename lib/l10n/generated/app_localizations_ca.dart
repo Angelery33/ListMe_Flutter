@@ -798,6 +798,22 @@ class AppLocalizationsCa extends AppLocalizations {
   String get searchImportNoResults => 'No s\'han trobat resultats';
 
   @override
+  String get searchImportErrorApiKey =>
+      'Clau d\'API invàlida. Revisa els ajustos.';
+
+  @override
+  String get searchImportErrorNotConfigured =>
+      'El servidor no té aquesta font configurada.';
+
+  @override
+  String get searchImportErrorNetwork =>
+      'Sense connexió. Comprova la xarxa i torna-ho a intentar.';
+
+  @override
+  String get searchImportErrorGeneric =>
+      'No s\'ha pogut fer la cerca. Torna-ho a intentar.';
+
+  @override
   String get searchImportError => 'Error en cercar';
 
   @override

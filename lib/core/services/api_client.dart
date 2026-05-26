@@ -53,51 +53,53 @@ class ApiClient {
           _logger.error('API Error: ${e.message} (Status: ${e.response?.statusCode})', e, e.stackTrace);
 
           if (e.response?.statusCode == 401) {
-            final isTokenExpired = e.response?.headers['x-token-expired']?.contains('true') ?? false;
+            _logger.warning('Token expirado o inválido (401), intentando refresh...');
 
-            if (isTokenExpired || e.message?.contains('Unauthorized') == true) {
-              _logger.warning('Token expirado o inválido, intentando refresh...');
+            if (_isRefreshing) {
+              _logger.debug('Refresh en progreso, encolando solicitud...');
+              final completer = Completer<bool>();
+              _queuedRequests.add(completer);
+              final success = await completer.future;
 
-              if (_isRefreshing) {
-                _logger.debug('Refresh en progreso, encolando solicitud...');
-                final completer = Completer<bool>();
-                _queuedRequests.add(completer);
-                final success = await completer.future;
-
-                if (success) {
-                  final newToken = await TokenStorage.getAccessToken();
-                  if (newToken != null) {
-                    e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-                    final retryResponse = await _dio.fetch(e.requestOptions);
-                    return handler.resolve(retryResponse);
-                  }
+              if (success) {
+                final newToken = await TokenStorage.getAccessToken();
+                if (newToken != null) {
+                  e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+                  final retryResponse = await _dio.fetch(e.requestOptions);
+                  return handler.resolve(retryResponse);
                 }
-                return handler.next(e);
               }
+              return handler.next(e);
+            }
 
-              _isRefreshing = true;
-              bool refreshSuccess = false;
-              try {
-                final refreshed = await _authService.refreshToken();
-                refreshSuccess = refreshed;
+            _isRefreshing = true;
+            bool refreshSuccess = false;
+            try {
+              final refreshed = await _authService.refreshToken();
+              refreshSuccess = refreshed;
 
-                if (refreshed) {
-                  _logger.info('Token refrescado exitosamente, reintentando solicitud...');
-                  final newToken = await TokenStorage.getAccessToken();
-                  if (newToken != null) {
-                    e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-                    final retryResponse = await _dio.fetch(e.requestOptions);
-                    return handler.resolve(retryResponse);
-                  }
-                } else {
+              if (refreshed) {
+                _logger.info('Token refrescado exitosamente, reintentando solicitud...');
+                final newToken = await TokenStorage.getAccessToken();
+                if (newToken != null) {
+                  e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+                  final retryResponse = await _dio.fetch(e.requestOptions);
+                  return handler.resolve(retryResponse);
+                }
+              } else {
+                // Solo forzar logout si los tokens ya fueron borrados (servidor los rechazó).
+                // Si fue error de red, los tokens siguen en storage — no desconectamos.
+                final stillHasTokens = await TokenStorage.getRefreshToken() != null;
+                if (!stillHasTokens) {
                   _logger.warning('No se pudo refrescar el token, redirigiendo a login');
-                  await TokenStorage.clearTokens();
                   _logoutController.add(null);
+                } else {
+                  _logger.warning('Refresh falló por red pero tokens conservados, propagando error 401');
                 }
-              } finally {
-                _isRefreshing = false;
-                _processQueuedRequests(success: refreshSuccess);
               }
+            } finally {
+              _isRefreshing = false;
+              _processQueuedRequests(success: refreshSuccess);
             }
           }
           return handler.next(e);
