@@ -359,7 +359,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authPasswordRequirements =>
-      'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número';
+      'La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial (@, \$, !, %, *, etc.)';
 
   @override
   String get navLists => 'Listas';

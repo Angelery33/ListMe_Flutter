@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:list_me/core/i18n/l10n_extension.dart';
+import 'package:list_me/core/theme/theme.dart';
 import 'package:list_me/providers/friends/friends_provider.dart';
 import 'package:list_me/providers/invitations/invitations_provider.dart';
 import 'package:list_me/widgets/shared/app_shell.dart';
@@ -26,7 +27,7 @@ class SocialCompactLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final fgColor = AppTheme.appBarUsesDarkText(context) ? Colors.black : Colors.white;
 
     return DefaultTabController(
       length: 3,
@@ -36,10 +37,9 @@ class SocialCompactLayout extends StatelessWidget {
           title: context.l10n.socialTitle,
           showBackButton: false,
           bottom: TabBar(
-            labelColor: theme.colorScheme.onPrimaryContainer,
-            unselectedLabelColor:
-                theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
-            indicatorColor: theme.colorScheme.onPrimaryContainer,
+            labelColor: fgColor,
+            unselectedLabelColor: fgColor.withValues(alpha: 0.6),
+            indicatorColor: fgColor,
             tabs: [
               Tab(
                 text: context.l10n.socialFriendsTab,
