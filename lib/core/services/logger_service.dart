@@ -204,8 +204,8 @@ class LoggerService {
 
   /// Registra [e] como un error, opcionalmente prefijado con una etiqueta de [context].
   ///
-  /// [e] The exception to log.
-  /// [context] Optional description of the operation that threw [e].
+  /// [e] La excepción a registrar.
+  /// [context] Descripción opcional de la operación que lanzó [e].
   void logException(Exception e, {String? context}) {
     final message = context != null
         ? '$context: ${e.toString()}'

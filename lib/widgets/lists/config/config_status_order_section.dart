@@ -111,7 +111,7 @@ class _ConfigStatusOrderSectionState extends State<ConfigStatusOrderSection> {
         .where((e) => e.enabled)
         .map((e) => e.key)
         .toList();
-    // null means "all visible in default order" — only store when customized
+    // null significa "todos visibles en orden por defecto" — solo guardar cuando se personaliza
     final isDefault =
         enabled.length == _kAllStatuses.length &&
         enabled.every((k) => enabled.indexOf(k) == _kAllStatuses.indexOf(k));

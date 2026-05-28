@@ -57,7 +57,7 @@ class UniversalImage extends StatelessWidget {
 
     if (url.isEmpty) return _placeholder(context);
 
-    // On web, Firebase Storage URLs must go through the SDK to bypass CORS
+    // En web, las URLs de Firebase Storage deben pasar por el SDK para evitar CORS
     if (kIsWeb && _isFirebaseStorageUrl(url)) {
       return _WebFirebaseImage(
         url: url,
@@ -79,7 +79,7 @@ class UniversalImage extends StatelessWidget {
       );
     }
 
-    // Local file — only valid on mobile, on the same device it was picked
+    // Archivo local — solo válido en móvil, en el mismo dispositivo donde se seleccionó
     if (kIsWeb) return _placeholder(context);
 
     final file = File(url);
@@ -91,21 +91,21 @@ class UniversalImage extends StatelessWidget {
 
   /// Selecciona la URL disponible de mayor prioridad según las reglas de resolución.
   String _getBestUrl() {
-    // If we have itemId and imageId, use the API endpoint (avoids CORS issues)
+    // Si tenemos itemId e imageId, usar el endpoint de la API (evita problemas de CORS)
     if (itemId != null && imageId != null) {
       return 'https://api.angelcantero.store/api/v1/images/$itemId/$imageId';
     }
 
-    // Remote URL as fallback (works across all devices and platforms)
+    // URL remota como fallback (funciona en todos los dispositivos y plataformas)
     if (remoteImageUrl?.isNotEmpty == true) return remoteImageUrl!;
 
-    // Blob URL from web image picker (before upload)
+    // URL blob del selector de imágenes web (antes de subir)
     if (imagePath.isNotEmpty && imagePath.startsWith('blob:')) return imagePath;
 
-    // Local paths are only valid on the same device they were picked
+    // Las rutas locales solo son válidas en el mismo dispositivo donde se seleccionaron
     if (kIsWeb) return '';
 
-    // Local path or any remaining URL (e.g. MAL image passed directly as imagePath)
+    // Ruta local o cualquier URL restante (p.ej. imagen de MAL pasada directamente como imagePath)
     if (imagePath.isNotEmpty) return imagePath;
 
     return '';
@@ -130,11 +130,11 @@ class UniversalImage extends StatelessWidget {
     if (!kIsWeb) return url;
     if (_isFirebaseStorageUrl(url)) return url;
     if (url.contains('images.weserv.nl') || url.contains('angelcantero.store')) return url;
-    // MAL images: proxy through our own backend (weserv.nl can't access MAL CDN)
+    // Imágenes de MAL: proxy a través del backend propio (weserv.nl no puede acceder a la CDN de MAL)
     if (url.contains('myanimelist.net')) {
       return '$_backendProxyBase${Uri.encodeComponent(url)}';
     }
-    // Everything else on web: weserv.nl for CORS
+    // Todo lo demás en web: weserv.nl para CORS
     return '$_weservBase${Uri.encodeComponent(url)}';
   }
 
@@ -208,7 +208,7 @@ class _WebFirebaseImageState extends State<_WebFirebaseImage> {
   /// Descarga la imagen de Firebase Storage y almacena los bytes en el
   /// [_firebaseImageCache] en memoria para renderizados posteriores.
   Future<void> _load() async {
-    // Serve from cache if available
+    // Servir desde caché si está disponible
     if (_firebaseImageCache.containsKey(widget.url)) {
       if (mounted) {
         setState(() {

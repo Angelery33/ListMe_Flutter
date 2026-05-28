@@ -75,6 +75,7 @@ ListMe es una aplicación multiplataforma (Android, Web, Windows) construida con
 git clone https://github.com/Angelery33/ListMe_Flutter.git
 cd ListMe_Flutter
 flutter pub get
+
 ```
 
 ### 2. Configurar Firebase

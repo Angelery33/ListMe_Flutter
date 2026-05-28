@@ -21,7 +21,7 @@ class SidebarProvider extends ChangeNotifier {
   /// Establece la barra lateral en un [value] específico y notifica a los oyentes solo cuando
   /// el estado cambia realmente, evitando reconstrucciones innecesarias.
   ///
-  /// [value] `true` to expand, `false` to collapse.
+  /// [value] `true` para expandir, `false` para colapsar.
   void setExpanded(bool value) {
     if (_isExpanded != value) {
       _isExpanded = value;

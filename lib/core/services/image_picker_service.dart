@@ -42,7 +42,7 @@ class ImagePickerService {
       if (source == ImageSource.camera) {
         final cameraStatus = await Permission.camera.request();
         if (!cameraStatus.isGranted) {
-          _logger.warning('Camera permission denied');
+          _logger.warning('Permiso de cámara denegado');
           return null;
         }
       } else if (source == ImageSource.gallery) {
@@ -50,7 +50,7 @@ class ImagePickerService {
         if (!photosStatus.isGranted && !photosStatus.isLimited) {
           photosStatus = await Permission.photos.request();
           if (!photosStatus.isGranted && !photosStatus.isLimited) {
-            _logger.warning('Photos permission denied');
+            _logger.warning('Permiso de galería denegado');
             return null;
           }
         }

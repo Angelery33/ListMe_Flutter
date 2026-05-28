@@ -559,7 +559,7 @@ class _StatusCell extends StatelessWidget {
   }
 }
 
-// ─── Genre cell with dropdown ─────────────────────────────────────────────────
+// ─── Celda de género con desplegable ─────────────────────────────────────────
 
 /// Celda de tabla que muestra el género actual y permite al usuario elegir uno diferente
 /// de un menú emergente, o recurre a un diálogo de texto libre cuando aún no se han configurado
@@ -585,7 +585,7 @@ class _GenreCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (genres.isEmpty) {
-      // fallback: free text if no genres configured yet
+      // Texto libre si aún no hay géneros configurados
       return _TapToEditCell(
         display: current ?? '—',
         dialogTitle: context.l10n.itemGenre,

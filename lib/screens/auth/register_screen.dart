@@ -83,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*\d).{8,}$');
+    final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$');
     if (!passwordRegex.hasMatch(password)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.authPasswordRequirements)),

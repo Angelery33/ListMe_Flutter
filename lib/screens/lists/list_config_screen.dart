@@ -346,7 +346,7 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
     final name = _genreController.text.trim();
 
     if (widget.library != null) {
-      // Editing existing list, save directly to backend
+      // Editando lista existente, guardar directamente en el backend
       final provider = Provider.of<ListsProvider>(context, listen: false);
       final newGenre = await provider.addGenreToList(widget.library!.id!, name);
       if (newGenre != null && mounted) {
@@ -425,8 +425,8 @@ class _ListConfigScreenState extends State<ListConfigScreen> {
           throw Exception(provider.errorMessage ?? "Error creando la lista");
         }
         if (_isThematic) {
-          // If a new list was created successfully, the provider adds it to the list.
-          // Getting the newly created list from the provider (assume it's the last one).
+          // Si la lista fue creada con éxito, el proveedor la añade a la colección.
+          // Se obtiene la lista recién creada del proveedor (se asume que es la última).
           final createdList = provider.lists.lastWhere(
             (l) => l.name == listObj.name,
           );

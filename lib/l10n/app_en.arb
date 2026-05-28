@@ -114,7 +114,7 @@
   "authWelcome": "Welcome",
   "authCreateAccount": "Create account",
   "authInvalidEmail": "Enter a valid email",
-  "authPasswordRequirements": "Password must be at least 8 characters, include one uppercase letter and one number",
+  "authPasswordRequirements": "Password must be at least 8 characters, include one uppercase letter, one number and one special character (@, $, !, %, *, etc.)",
   "navLists": "Lists",
   "navProfile": "Profile",
   "navSettings": "Settings",

@@ -114,7 +114,7 @@ class EntryImagePicker extends StatelessWidget {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  // Existing Images
+                  // Imágenes existentes
                   ...List.generate(existingImages.length, (index) {
                     return _buildImageItem(
                       context,
@@ -129,7 +129,7 @@ class EntryImagePicker extends StatelessWidget {
                     );
                   }),
 
-                  // New Images (local files)
+                  // Imágenes nuevas (archivos locales)
                   ...newImages.asMap().entries.map((entry) {
                     final index = totalExisting + entry.key;
                     return _buildImageItem(
@@ -142,7 +142,7 @@ class EntryImagePicker extends StatelessWidget {
                     );
                   }),
 
-                  // Add Button
+                  // Botón de añadir
                   GestureDetector(
                     onTap: () => _showImageSourceSheet(context),
                     child: Container(

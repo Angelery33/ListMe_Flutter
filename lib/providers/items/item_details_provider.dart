@@ -199,7 +199,7 @@ class ItemDetailsProvider extends ChangeNotifier {
 
   /// Actualiza la lista [subItems] desde el servidor y notifica a los oyentes.
   ///
-  /// No-op when [item] is `null` or is not a collection.
+  /// No hace nada cuando [item] es `null` o no es una colección.
   Future<void> loadSubItems() async {
     if (_item != null && _item!.collection) {
       await _fetchSubItems();
@@ -249,8 +249,8 @@ class ItemDetailsProvider extends ChangeNotifier {
   /// Genera sub-elementos de volumen hasta [ItemModel.totalVolume] para el elemento
   /// de colección actual y devuelve el número de volúmenes creados con éxito.
   ///
-  /// Volume names are zero-padded to keep alphabetical and numerical order
-  /// in sync. Skips creation silently if the item has no valid `totalVolume`.
+  /// Los nombres de volumen se rellenan con ceros para mantener el orden alfabético y numérico
+  /// sincronizados. Omite la creación silenciosamente si el ítem no tiene `totalVolume` válido.
   Future<int> generateVolumes() async {
     if (_item == null ||
         _item!.id == null ||

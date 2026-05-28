@@ -61,7 +61,7 @@ class ListSortFilterBar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Sort and filter row
+          // Fila de ordenación y filtrado
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
             child: Row(

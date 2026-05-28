@@ -77,7 +77,7 @@ class AppRoutes {
     list: (context) {
       final args = ModalRoute.of(context)!.settings.arguments;
 
-      // Soporta tanto Map como ListModel para backwards compatibility
+      // Soporta tanto Map como ListModel para compatibilidad con versiones anteriores
       if (args is Map<String, dynamic>) {
         return ListScreen(
           listId: args['id'] as int,
@@ -87,7 +87,7 @@ class AppRoutes {
         );
       }
 
-      // Legacy: si es ListModel, extraer id y name
+      // Compatibilidad anterior: si es ListModel, extraer id y name
       if (args is ListModel) {
         return ListScreen(
           listId: args.id ?? 0,
@@ -96,7 +96,7 @@ class AppRoutes {
         );
       }
 
-      // Fallback
+      // Caso por defecto
       return const ListScreen(listId: 0, listName: 'Lista');
     },
     listConfig: (context) {

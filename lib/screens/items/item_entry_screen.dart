@@ -249,8 +249,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
           final images = await itemsProvider.getItemImages(_item!.id!);
           if (mounted) {
             setState(() {
-              // Only replace if gallery has records; otherwise keep the initial
-              // entry from _initControllers (item's remoteImageUrl as fallback)
+              // Solo reemplazar si la galería tiene registros; si no, conservar la entrada
+              // inicial de _initControllers (remoteImageUrl del ítem como fallback)
               if (images.isNotEmpty) _existingImages = images;
               final favIdx = _existingImages.indexWhere((img) => img.isFavorite);
               _favoriteImageIndex = favIdx >= 0 ? favIdx : null;
@@ -285,7 +285,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
   /// Envía solicitudes de eliminación al servidor para todas las imágenes en [_deletedImages].
   Future<void> _deleteOldImages(ItemsProvider itemsProvider) async {
     for (final img in _deletedImages) {
-      // Delete from database (server handles Firebase Storage deletion)
+      // Eliminar de la base de datos (el servidor gestiona el borrado en Firebase Storage)
       if (img.id != null) {
         try { await itemsProvider.deleteItemImage(img.id!); } catch (_) {}
       }
@@ -568,7 +568,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     int savedItemId,
     String fallbackRemoteUrl,
   ) async {
-    // Persist existing images that don't have a server id yet (e.g. imported from API).
+    // Persistir imágenes existentes sin ID de servidor (p.ej. importadas desde la API).
     final List<ItemImageModel?> resolvedExisting =
         List<ItemImageModel?>.filled(_existingImages.length, null);
     bool persistedNew = false;
@@ -596,13 +596,13 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       } catch (_) {}
     }
 
-    // Upload brand-new images from device.
+    // Subir imágenes nuevas desde el dispositivo.
     List<ItemImageModel?> uploaded = const [];
     if (_newImageFiles.isNotEmpty) {
       uploaded = await _uploadImagesToCloud(savedItemId);
     }
 
-    // Determine the persisted image matching the selected favorite position.
+    // Determinar la imagen persistida que coincide con la posición favorita seleccionada.
     final int favIdx = _favoriteImageIndex ?? 0;
     ItemImageModel? favImage;
     if (favIdx < _existingImages.length) {
@@ -618,7 +618,7 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
       await itemsProvider.setFavoriteImage(savedItemId, favImage!.id!);
     }
 
-    // Return the remote URL to sync on the item only when something actually changed.
+    // Devolver la URL remota para sincronizar en el ítem solo si realmente hubo cambios.
     if (uploaded.isNotEmpty || persistedNew) {
       final url = favImage?.remoteImageUrl?.isNotEmpty == true
           ? favImage!.remoteImageUrl!

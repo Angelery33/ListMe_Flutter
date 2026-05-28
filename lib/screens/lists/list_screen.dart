@@ -142,7 +142,7 @@ class _ListScreenState extends State<ListScreen> {
   /// Carga los elementos de la fuente adecuada basándose en los argumentos del widget.
   void _loadItems() {
     final itemsProvider = context.read<ItemsProvider>();
-    // Reset search state whenever a (new) list is opened.
+    // Reiniciar estado de búsqueda cada vez que se abre una lista.
     itemsProvider.setSearchQuery('');
     _searchController.clear();
     setState(() => _isSearchVisible = false);
@@ -475,7 +475,7 @@ class _ListScreenState extends State<ListScreen> {
   /// Devuelve el widget de estado vacío que se muestra cuando la lista no tiene elementos o cuando
   /// una búsqueda no arroja resultados.
   ///
-  /// Cuando [isSearching] is `true`, se muestra una ilustración y un mensaje específicos de la búsqueda;
+  /// Cuando [isSearching] es `true`, se muestra una ilustración y un mensaje específicos de la búsqueda;
   /// de lo contrario, se muestra el estado vacío de "añade tu primer elemento".
   Widget _buildEmptyState(bool isSearching) {
     final theme = Theme.of(context);

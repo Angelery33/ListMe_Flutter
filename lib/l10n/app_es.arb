@@ -120,7 +120,7 @@
   "authWelcome": "Bienvenido",
   "authCreateAccount": "Crear cuenta",
   "authInvalidEmail": "Introduce un email válido",
-  "authPasswordRequirements": "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número",
+  "authPasswordRequirements": "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial (@, $, !, %, *, etc.)",
 
   "navLists": "Listas",
   "navProfile": "Perfil",

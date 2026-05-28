@@ -109,7 +109,7 @@ class AppShell extends StatelessWidget {
   }
 }
 
-// ── Compact: NavigationBar at the bottom ──────────────────────────────────────
+// ── Compacto: NavigationBar en la parte inferior ──────────────────────────────
 
 /// Diseño móvil utilizado cuando el ancho de la pantalla está por debajo del punto de interrupción de la navegación lateral.
 ///
@@ -200,7 +200,7 @@ class _CompactLayout extends StatelessWidget {
   }
 }
 
-// ── Wide: NavigationRail on the left ─────────────────────────────────────────
+// ── Amplio: NavigationRail a la izquierda ────────────────────────────────────
 
 /// Diseño para tablet/escritorio utilizado cuando el ancho de la pantalla supera el
 /// punto de interrupción de la navegación lateral.
@@ -248,7 +248,7 @@ class _WideLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final responsive = context.watch<ResponsiveProvider>();
-    // Auto-expand when screen is wide enough; user toggle overrides on large screens.
+    // Se expande automáticamente cuando la pantalla es suficientemente ancha; el botón del usuario sobreescribe en pantallas grandes.
     final effectiveExpanded = isExpanded && responsive.screenWidth >= _kRailExpandThreshold;
 
     return Scaffold(
