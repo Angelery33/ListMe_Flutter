@@ -128,8 +128,19 @@ class ListModel {
   @HiveField(24)
   final List<String>? statusOrder;
 
+  /// Cantidad de colaboradores (editores + lectores) que tiene la biblioteca.
+  /// Solo es relevante para el propietario, ya que le permite saber si su
+  /// lista está compartida con alguien.
+  @HiveField(26)
+  final int collaboratorCount;
+
   /// Devuelve `true` si esta biblioteca se ha compartido con otros usuarios.
   bool get isShared => shared;
+
+  /// Devuelve `true` si esta biblioteca tiene colaboradores, ya sea porque
+  /// el usuario actual es uno de ellos ([shared]) o porque el propietario
+  /// la ha compartido con otros ([collaboratorCount] > 0).
+  bool get hasCollaborators => shared || collaboratorCount > 0;
 
   const ListModel({
     this.id,
@@ -158,6 +169,7 @@ class ListModel {
     this.itemCount = 0,
     this.statusOrder,
     this.ownerUsername,
+    this.collaboratorCount = 0,
   });
 
   /// Crea un [ListModel] a partir del mapa JSON devuelto por la API, mapeando
@@ -198,6 +210,7 @@ class ListModel {
           .where((s) => s.isNotEmpty)
           .toList(),
       ownerUsername: json['ownerUsername'] as String?,
+      collaboratorCount: json['collaboratorCount'] as int? ?? 0,
     );
   }
 
@@ -266,6 +279,7 @@ class ListModel {
     int? itemCount,
     List<String>? statusOrder,
     String? ownerUsername,
+    int? collaboratorCount,
   }) {
     return ListModel(
       id: id ?? this.id,
@@ -294,6 +308,7 @@ class ListModel {
       itemCount: itemCount ?? this.itemCount,
       statusOrder: statusOrder ?? this.statusOrder,
       ownerUsername: ownerUsername ?? this.ownerUsername,
+      collaboratorCount: collaboratorCount ?? this.collaboratorCount,
     );
   }
 }

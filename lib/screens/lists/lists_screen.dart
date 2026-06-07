@@ -311,7 +311,7 @@ class _ListsScreenState extends State<ListsScreen> {
   void _showCollaboratorsDialog(ListModel list) {
     showDialog(
       context: context,
-      builder: (_) => CollaboratorsDialog(listId: list.id!, listName: list.name),
+      builder: (_) => CollaboratorsDialog(listId: list.id!, listName: list.name, isOwner: list.owner),
     );
   }
 
@@ -540,7 +540,7 @@ class _StaticGridCardProxy extends StatelessWidget {
       onShare: () => _showShare(context, list),
       onCollaborators: () => showDialog(
         context: context,
-        builder: (_) => CollaboratorsDialog(listId: list.id!, listName: list.name),
+        builder: (_) => CollaboratorsDialog(listId: list.id!, listName: list.name, isOwner: list.owner),
       ),
     );
   }

@@ -189,7 +189,7 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
               onPressed: widget.onTableToggle,
             ),
           ),
-        if (widget.list.isShared && widget.onCollaboratorsPressed != null)
+        if (widget.list.hasCollaborators && widget.onCollaboratorsPressed != null)
           IconButton(
             icon: Icon(Icons.people_alt_rounded, color: textColor),
             onPressed: widget.onCollaboratorsPressed,

@@ -21,10 +21,16 @@ class CollaboratorsDialog extends StatefulWidget {
   /// Nombre de la biblioteca, mostrado en el subtítulo del diálogo.
   final String listName;
 
+  /// Indica si el usuario actual es el propietario de la lista. Solo el
+  /// propietario puede cambiar roles o expulsar colaboradores; el resto ve
+  /// la lista en modo de solo lectura.
+  final bool isOwner;
+
   const CollaboratorsDialog({
     super.key,
     required this.listId,
     required this.listName,
+    this.isOwner = true,
   });
 
   @override
@@ -194,7 +200,9 @@ class _CollaboratorsDialogState extends State<CollaboratorsDialog> {
                               ],
                             ),
                           ),
-                          if (busy)
+                          if (!widget.isOwner)
+                            Switch(value: c.isEditor, onChanged: null)
+                          else if (busy)
                             const SizedBox(
                               width: 24,
                               height: 24,

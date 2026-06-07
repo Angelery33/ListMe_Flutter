@@ -171,7 +171,7 @@ class _WebContent extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (list.isShared) ...[
+            if (list.hasCollaborators) ...[
               const SizedBox(width: 6),
               InkWell(
                 onTap: onCollaborators,
@@ -254,7 +254,7 @@ class _MobileContent extends StatelessWidget {
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: onSurface.withValues(alpha: 0.7)),
             ),
-            if (list.isShared) ...[
+            if (list.hasCollaborators) ...[
               const SizedBox(width: 8),
               InkWell(
                 onTap: onCollaborators,

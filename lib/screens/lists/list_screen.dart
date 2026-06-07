@@ -211,6 +211,7 @@ class _ListScreenState extends State<ListScreen> {
           builder: (_) => CollaboratorsDialog(
             listId: _currentList.id!,
             listName: _currentList.name,
+            isOwner: _currentList.owner,
           ),
         ),
       ),
