@@ -14,6 +14,7 @@ import '../../widgets/shared/custom_gradient_app_bar.dart';
 import '../../widgets/shared/app_shell.dart';
 import '../../providers/friends/friends_provider.dart';
 import '../../widgets/lists/share_friend_dialog.dart';
+import '../../widgets/lists/collaborators_dialog.dart';
 
 /// Pantalla que muestra todas las bibliotecas del usuario actual.
 ///
@@ -302,6 +303,15 @@ class _ListsScreenState extends State<ListsScreen> {
       },
       onDelete: () => _confirmDeleteList(list),
       onShare: () => _showShareDialog(list),
+      onCollaborators: () => _showCollaboratorsDialog(list),
+    );
+  }
+
+  /// Muestra el diálogo de gestión de colaboradores para [list].
+  void _showCollaboratorsDialog(ListModel list) {
+    showDialog(
+      context: context,
+      builder: (_) => CollaboratorsDialog(listId: list.id!, listName: list.name),
     );
   }
 
@@ -528,6 +538,10 @@ class _StaticGridCardProxy extends StatelessWidget {
       },
       onDelete: () => _confirmDelete(context, list),
       onShare: () => _showShare(context, list),
+      onCollaborators: () => showDialog(
+        context: context,
+        builder: (_) => CollaboratorsDialog(listId: list.id!, listName: list.name),
+      ),
     );
   }
 

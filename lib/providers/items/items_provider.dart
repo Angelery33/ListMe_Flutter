@@ -40,7 +40,7 @@ class ItemsProvider extends ChangeNotifier {
   String? _filterGenre;
 
   /// Orden de clasificación aplicado actualmente a la lista de elementos.
-  SortOption _sortOption = SortOption.dateNewest;
+  SortOption _sortOption = SortOption.scoreHighLow;
 
   // Estado actual
 

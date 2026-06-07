@@ -229,12 +229,15 @@ class ItemGroupingHelper {
     List<ItemModel> items,
     Map<String, List<ItemModel>> grouped,
   ) {
+    final Map<String, List<ItemModel>> byGenre = {};
     for (var item in items) {
       final genre = item.genre ?? 'Otros';
-      if (!grouped.containsKey(genre)) {
-        grouped[genre] = [];
-      }
-      grouped[genre]!.add(item);
+      byGenre.putIfAbsent(genre, () => []).add(item);
+    }
+    // Las cabeceras de género se ordenan alfabéticamente para que su orden no
+    // dependa del criterio de ordenación de los elementos (p.ej. orden por nombre).
+    for (final genre in byGenre.keys.toList()..sort()) {
+      grouped[genre] = byGenre[genre]!;
     }
   }
 

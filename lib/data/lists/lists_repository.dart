@@ -202,6 +202,24 @@ class ListsRepository {
     }
   }
 
+  /// Cambia el rol del colaborador con [userId] en la biblioteca [libraryId] a
+  /// `'editor'` o `'viewer'`.
+  ///
+  /// Solo el propietario puede invocar este método.
+  Future<void> updateCollaboratorRole(int libraryId, int userId, String role) async {
+    try {
+      _logger.debug('ListsRepository: Cambiando rol de colaborador $userId en lista $libraryId a $role');
+      await _apiClient.dio.put(
+        '/libraries/$libraryId/collaborators/$userId',
+        data: {'role': role},
+      );
+      _logger.info('ListsRepository: Rol de colaborador $userId actualizado a $role');
+    } catch (e) {
+      _logger.error('ListsRepository: Error al cambiar rol de colaborador $userId', e);
+      rethrow;
+    }
+  }
+
   /// Permite al usuario actual abandonar la biblioteca [libraryId].
   ///
   /// Lanza excepción si el usuario es el propietario.

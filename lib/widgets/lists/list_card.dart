@@ -15,6 +15,7 @@ class ListCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onShare;
+  final VoidCallback? onCollaborators;
 
   /// Cuando es `true` usa el layout compacto de web: nombre y recuento en la
   /// misma fila, descripción debajo en una sola línea con ellipsis.
@@ -27,6 +28,7 @@ class ListCard extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onShare,
+    this.onCollaborators,
     this.webLayout = false,
   });
 
@@ -72,8 +74,8 @@ class ListCard extends StatelessWidget {
               // ── Contenido ────────────────────────────────────────────────
               Expanded(
                 child: webLayout
-                    ? _WebContent(list: list, theme: theme)
-                    : _MobileContent(list: list, theme: theme),
+                    ? _WebContent(list: list, theme: theme, onCollaborators: onCollaborators)
+                    : _MobileContent(list: list, theme: theme, onCollaborators: onCollaborators),
               ),
               // ── Menú 3 puntos (solo propietario) ──────────────────────────
               if (list.owner) PopupMenuButton<String>(
@@ -143,8 +145,9 @@ class ListCard extends StatelessWidget {
 class _WebContent extends StatelessWidget {
   final ListModel list;
   final ThemeData theme;
+  final VoidCallback? onCollaborators;
 
-  const _WebContent({required this.list, required this.theme});
+  const _WebContent({required this.list, required this.theme, this.onCollaborators});
 
   @override
   Widget build(BuildContext context) {
@@ -170,8 +173,15 @@ class _WebContent extends StatelessWidget {
             ),
             if (list.isShared) ...[
               const SizedBox(width: 6),
-              Icon(Icons.people_alt_rounded,
-                  size: 16, color: onSurface.withValues(alpha: 0.6)),
+              InkWell(
+                onTap: onCollaborators,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(Icons.people_alt_rounded,
+                      size: 16, color: onSurface.withValues(alpha: 0.6)),
+                ),
+              ),
             ],
             const SizedBox(width: 8),
             Text(
@@ -213,8 +223,9 @@ class _WebContent extends StatelessWidget {
 class _MobileContent extends StatelessWidget {
   final ListModel list;
   final ThemeData theme;
+  final VoidCallback? onCollaborators;
 
-  const _MobileContent({required this.list, required this.theme});
+  const _MobileContent({required this.list, required this.theme, this.onCollaborators});
 
   @override
   Widget build(BuildContext context) {
@@ -245,8 +256,15 @@ class _MobileContent extends StatelessWidget {
             ),
             if (list.isShared) ...[
               const SizedBox(width: 8),
-              Icon(Icons.people_alt_rounded,
-                  size: 15, color: onSurface.withValues(alpha: 0.6)),
+              InkWell(
+                onTap: onCollaborators,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Icon(Icons.people_alt_rounded,
+                      size: 15, color: onSurface.withValues(alpha: 0.6)),
+                ),
+              ),
             ],
             if (!list.owner) ...[
               const SizedBox(width: 8),

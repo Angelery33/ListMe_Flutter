@@ -68,6 +68,11 @@ class ListDetailAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// Se llama cuando el usuario toca el botón de alternancia de tabla/lista.
   final VoidCallback? onTableToggle;
 
+  /// Función de retorno opcional para el botón de gestión de colaboradores.
+  /// Cuando es no nulo y la lista es compartida, se muestra un icono persistente
+  /// a la izquierda del menú emergente.
+  final VoidCallback? onCollaboratorsPressed;
+
   const ListDetailAppBar({
     super.key,
     required this.list,
@@ -85,6 +90,7 @@ class ListDetailAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.showTableToggle = false,
     this.isTableView = false,
     this.onTableToggle,
+    this.onCollaboratorsPressed,
   });
 
   @override
@@ -182,6 +188,12 @@ class _ListDetailAppBarState extends State<ListDetailAppBar> {
               ),
               onPressed: widget.onTableToggle,
             ),
+          ),
+        if (widget.list.isShared && widget.onCollaboratorsPressed != null)
+          IconButton(
+            icon: Icon(Icons.people_alt_rounded, color: textColor),
+            onPressed: widget.onCollaboratorsPressed,
+            tooltip: 'Colaboradores',
           ),
         PopupMenuButton<String>(
           icon: Icon(Icons.more_vert, color: textColor),

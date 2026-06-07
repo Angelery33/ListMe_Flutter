@@ -267,28 +267,31 @@ class _ListsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Center(
-          child: SegmentedButton<SharedListsLayout>(
-            segments: [
-              ButtonSegment(
-                value: SharedListsLayout.section,
-                icon: const Icon(Icons.view_agenda_outlined),
-                label: Text(context.l10n.settingsLayoutSection),
-              ),
-              ButtonSegment(
-                value: SharedListsLayout.tab,
-                icon: const Icon(Icons.tab_outlined),
-                label: Text(context.l10n.settingsLayoutTab),
-              ),
-              ButtonSegment(
-                value: SharedListsLayout.bottom,
-                icon: const Icon(Icons.vertical_align_bottom_outlined),
-                label: Text(context.l10n.settingsLayoutBottom),
-              ),
-            ],
-            selected: {settings.sharedListsLayout},
-            onSelectionChanged: (val) => settings.setSharedListsLayout(val.first),
-            showSelectedIcon: false,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Center(
+            child: SegmentedButton<SharedListsLayout>(
+              segments: [
+                ButtonSegment(
+                  value: SharedListsLayout.section,
+                  icon: const Icon(Icons.view_agenda_outlined),
+                  label: Text(context.l10n.settingsLayoutSection, softWrap: false),
+                ),
+                ButtonSegment(
+                  value: SharedListsLayout.tab,
+                  icon: const Icon(Icons.tab_outlined),
+                  label: Text(context.l10n.settingsLayoutTab, softWrap: false),
+                ),
+                ButtonSegment(
+                  value: SharedListsLayout.bottom,
+                  icon: const Icon(Icons.vertical_align_bottom_outlined),
+                  label: Text(context.l10n.settingsLayoutBottom, softWrap: false),
+                ),
+              ],
+              selected: {settings.sharedListsLayout},
+              onSelectionChanged: (val) => settings.setSharedListsLayout(val.first),
+              showSelectedIcon: false,
+            ),
           ),
         ),
       ],

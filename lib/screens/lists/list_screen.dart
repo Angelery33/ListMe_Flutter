@@ -18,6 +18,7 @@ import '../../widgets/shared/app_shell.dart';
 import '../../providers/friends/friends_provider.dart';
 import '../../widgets/lists/share_friend_dialog.dart';
 import '../../widgets/lists/detail/list_table_view.dart';
+import '../../widgets/lists/collaborators_dialog.dart';
 
 /// Pantalla que muestra los elementos dentro de una sola biblioteca.
 ///
@@ -205,6 +206,13 @@ class _ListScreenState extends State<ListScreen> {
         showTableToggle: !responsive.isCompact,
         isTableView: showTable,
         onTableToggle: () => setState(() => _isTableView = !_isTableView),
+        onCollaboratorsPressed: () => showDialog(
+          context: context,
+          builder: (_) => CollaboratorsDialog(
+            listId: _currentList.id!,
+            listName: _currentList.name,
+          ),
+        ),
       ),
       floatingActionButton: _currentList.canEdit
           ? Container(

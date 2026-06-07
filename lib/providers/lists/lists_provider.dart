@@ -338,6 +338,22 @@ class ListsProvider extends ChangeNotifier {
     }
   }
 
+  /// Cambia el rol del colaborador con [userId] en la biblioteca [libraryId] a
+  /// `'editor'` o `'viewer'`.
+  ///
+  /// Solo el propietario puede invocar esto. Devuelve `true` si tiene éxito,
+  /// `false` y establece [errorMessage] en caso de fallo.
+  Future<bool> updateCollaboratorRole(int libraryId, int userId, String role) async {
+    try {
+      await _listsRepository.updateCollaboratorRole(libraryId, userId, role);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Abandona la biblioteca compartida [libraryId].
   ///
   /// Elimina la lista de [lists] y de la caché local al completar con éxito.

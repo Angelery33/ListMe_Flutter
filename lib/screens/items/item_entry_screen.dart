@@ -322,9 +322,6 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
     }
   }
 
-  /// Pares nombre/valor de atributos a persistir después de que se guarde el elemento.
-  final Map<String, String> _pendingAttributes = {};
-
   /// Abre [SearchImportScreen] para la categoría de la lista actual y rellena los
   /// campos del formulario con los metadatos devueltos.
   Future<void> _openSearchImport() async {
@@ -385,19 +382,24 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         totalVolume: _totalVolumeController,
         totalSeason: _totalSeasonController,
       );
-      _pendingAttributes.addAll(ItemImportMapper.collectAttributes(result));
+      final importedAttrs = ItemImportMapper.collectAttributes(result);
+      if (importedAttrs.isNotEmpty) {
+        await _addImportedAttributes(importedAttrs);
+      }
 
       if (mounted) setState(() {});
     }
   }
 
 
-  /// Guarda [_pendingAttributes] como registros de atributos vinculados a [itemId].
+  /// Resuelve (o crea) los tipos de atributo correspondientes a [imported] y añade los
+  /// valores resultantes a [_attributes] de inmediato, para que sean visibles en el
+  /// formulario aunque el elemento todavía no se haya guardado. Se persisten junto al
+  /// resto de atributos manuales en [_saveItem] (ver el bucle que filtra `attr.id == null`).
   ///
-  /// Crea sobre la marcha los tipos de atributos que faltan y omite los atributos que
-  /// ya existen para el elemento para evitar duplicados.
-  Future<void> _persistPendingAttributes(int itemId) async {
-    if (_pendingAttributes.isEmpty) return;
+  /// Omite los atributos cuyo nombre de tipo ya existe entre los atributos actuales,
+  /// para evitar duplicados.
+  Future<void> _addImportedAttributes(Map<String, String> imported) async {
     final itemsProvider = context.read<ItemsProvider>();
 
     List<AttributeTypeModel> types = _attributeTypes;
@@ -418,7 +420,8 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
             true,
     };
 
-    for (final entry in _pendingAttributes.entries) {
+    final newAttrs = <AttributeItemModel>[];
+    for (final entry in imported.entries) {
       try {
         if (existingNames[entry.key.toLowerCase()] == true) continue;
 
@@ -432,17 +435,22 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         type ??= await itemsProvider.createAttributeType(entry.key);
         if (type.id == null) continue;
 
-        await itemsProvider.addAttributeToItem(
-          AttributeItemModel(
-            value: entry.value,
-            idItem: itemId,
-            attributeTypeId: type.id!,
-          ),
-        );
+        newAttrs.add(AttributeItemModel(
+          value: entry.value,
+          idItem: 0,
+          attributeTypeId: type.id!,
+        ));
         types = [...types, type];
+        existingNames[entry.key.toLowerCase()] = true;
       } catch (_) {}
     }
-    _pendingAttributes.clear();
+
+    if (mounted && newAttrs.isNotEmpty) {
+      setState(() {
+        _attributeTypes = types;
+        _attributes = [..._attributes, ...newAttrs];
+      });
+    }
   }
 
   void _showAddGenreDialog() async {
@@ -672,8 +680,6 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
         }
       }
 
-      await _persistPendingAttributes(savedItemId);
-
       final updatedRemoteUrl = await _persistImages(
         itemsProvider,
         savedItemId,
@@ -790,42 +796,46 @@ class _ItemEntryScreenState extends State<ItemEntryScreen> {
                 showProductType: _list.type == "Funko",
                 showEdition: _list.type == "Funko",
               ),
-              const SizedBox(height: 16),
-              EntryStatusProgressSection(
-                status: _status,
-                onStatusChanged: (val) => setState(() => _status = val),
-                isCurrent: _isCurrent,
-                onCurrentChanged: (val) => setState(() => _isCurrent = val),
-                supportsProgress: _list.supportsProgress,
-                progressType: _list.progressType,
-                currentProgressController: _currentProgressController,
-                totalProgressController: _totalProgressController,
-                seasonController: _seasonController,
-                totalSeasonController: _totalSeasonController,
-                chapterController: _chapterController,
-                totalChapterController: _totalChapterController,
-                pageController: _pageController,
-                totalPageController: _totalPageController,
-                volumeController: _volumeController,
-                totalVolumeController: _totalVolumeController,
-              ),
-              const SizedBox(height: 16),
-              EntryPropertiesSection(
-                genre: _genre,
-                availableGenres: _libraryGenres,
-                onGenreChanged: (val) => setState(() => _genre = val),
-                onGenreSaved: (val) => _genre = val,
-                onAddGenrePressed: _showAddGenreDialog,
-                priceController: _priceController,
-                score: _score,
-                onScoreChanged: (val) =>
-                    setState(() => _score = double.tryParse(val) ?? 0),
-                onStarTap: (val) => setState(() => _score = val),
-                supportsPrice: _list.supportsPrice,
-                isGradeable: _list.gradeable,
-                isThematic: _list.thematic,
-                ratingScale: _list.ratingScale ?? 10,
-              ),
+              if (_list.supportsCompletion || _list.supportsProgress) ...[
+                const SizedBox(height: 16),
+                EntryStatusProgressSection(
+                  status: _status,
+                  onStatusChanged: (val) => setState(() => _status = val),
+                  isCurrent: _isCurrent,
+                  onCurrentChanged: (val) => setState(() => _isCurrent = val),
+                  supportsProgress: _list.supportsProgress,
+                  progressType: _list.progressType,
+                  currentProgressController: _currentProgressController,
+                  totalProgressController: _totalProgressController,
+                  seasonController: _seasonController,
+                  totalSeasonController: _totalSeasonController,
+                  chapterController: _chapterController,
+                  totalChapterController: _totalChapterController,
+                  pageController: _pageController,
+                  totalPageController: _totalPageController,
+                  volumeController: _volumeController,
+                  totalVolumeController: _totalVolumeController,
+                ),
+              ],
+              if (_list.gradeable || _list.thematic || _list.supportsPrice) ...[
+                const SizedBox(height: 16),
+                EntryPropertiesSection(
+                  genre: _genre,
+                  availableGenres: _libraryGenres,
+                  onGenreChanged: (val) => setState(() => _genre = val),
+                  onGenreSaved: (val) => _genre = val,
+                  onAddGenrePressed: _showAddGenreDialog,
+                  priceController: _priceController,
+                  score: _score,
+                  onScoreChanged: (val) =>
+                      setState(() => _score = double.tryParse(val) ?? 0),
+                  onStarTap: (val) => setState(() => _score = val),
+                  supportsPrice: _list.supportsPrice,
+                  isGradeable: _list.gradeable,
+                  isThematic: _list.thematic,
+                  ratingScale: _list.ratingScale ?? 10,
+                ),
+              ],
               const SizedBox(height: 16),
               EntryDatesSection(
                 acquisitionDate: _acquisitionDate,
