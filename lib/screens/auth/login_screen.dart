@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/i18n/l10n_extension.dart';
 import '../../providers/auth/auth_provider.dart';
+import '../../core/config/constants.dart';
 import '../../core/config/routes.dart';
 import '../../widgets/shared/app_logo_title.dart';
 
@@ -168,6 +169,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Text(
                                   context.l10n.authNoAccount,
                                   style: const TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                AppConstants.appVersionDisplay,
+                                style: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                             ],

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/api_client.dart';
 import '../../core/services/auth_service.dart';
@@ -117,9 +118,36 @@ class AuthProvider extends ChangeNotifier {
   ///
   /// Coincide con subcadenas conocidas como 'connection', '401', 'timeout' y
   /// 'username' para devolver un mensaje contextualmente apropiado.
-  String _extractUserFriendlyError(dynamic error) {
+  /// Convierte un objeto [error] en un mensaje en español legible para el usuario.
+  ///
+  /// Si el error proviene de la API de backend ([DioException]), extrae el mensaje
+  /// específico devuelto por el servidor (ej. "El correo electrónico ya está en uso" o
+  /// los errores de validación de contraseña/email).
+  String _extractUserFriendlyError(dynamic error, {bool isRegister = false}) {
+    if (error is DioException) {
+      final responseData = error.response?.data;
+      if (responseData != null) {
+        if (responseData is String && responseData.trim().isNotEmpty) {
+          final cleanMsg = responseData.replaceFirst(RegExp(r'^Error:\s*'), '').trim();
+          if (cleanMsg.isNotEmpty) return cleanMsg;
+        } else if (responseData is Map) {
+          // Extraer mapa de errores de validación de campos de Spring Boot
+          if (responseData['errors'] is Map) {
+            final fieldErrors = responseData['errors'] as Map;
+            if (fieldErrors.isNotEmpty) {
+              return fieldErrors.values.first.toString();
+            }
+          }
+          final msg = responseData['message'] ?? responseData['error'];
+          if (msg != null && msg.toString().trim().isNotEmpty) {
+            return msg.toString().replaceFirst(RegExp(r'^Error:\s*'), '').trim();
+          }
+        }
+      }
+    }
+
     final errorStr = error.toString().toLowerCase();
-    if (errorStr.contains('connection') || errorStr.contains('socket')) {
+    if (errorStr.contains('connection') || errorStr.contains('socket') || errorStr.contains('network')) {
       return 'Error de conexión. Verifica tu internet.';
     }
     if (errorStr.contains('401') || errorStr.contains('unauthorized')) {
@@ -128,10 +156,16 @@ class AuthProvider extends ChangeNotifier {
     if (errorStr.contains('timeout')) {
       return 'Tiempo de espera agotado. Intenta de nuevo.';
     }
-    if (errorStr.contains('username')) {
-      return 'El usuario ya existe.';
+    if (errorStr.contains('username') || errorStr.contains('usuario ya está en uso') || errorStr.contains('usuario ya existe')) {
+      return 'El nombre de usuario ya está en uso.';
     }
-    return 'Error al iniciar sesión. Intenta de nuevo.';
+    if (errorStr.contains('correo') || errorStr.contains('email')) {
+      return 'El correo electrónico ya está en uso.';
+    }
+
+    return isRegister
+        ? 'Error al registrarse. Intenta de nuevo.'
+        : 'Error al iniciar sesión. Intenta de nuevo.';
   }
 
   /// Intenta iniciar sesión con el [username] y [password] proporcionados.
@@ -154,7 +188,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _status = AuthStatus.error;
-      _errorMessage = _extractUserFriendlyError(e);
+      _errorMessage = _extractUserFriendlyError(e, isRegister: false);
       _logger.error('Error en login para $username', e);
       notifyListeners();
       return false;
@@ -181,7 +215,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _status = AuthStatus.error;
-      _errorMessage = _extractUserFriendlyError(e);
+      _errorMessage = _extractUserFriendlyError(e, isRegister: true);
       _logger.error('Error en registro para $username', e);
       notifyListeners();
       return false;

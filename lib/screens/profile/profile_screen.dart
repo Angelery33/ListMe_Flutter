@@ -7,6 +7,7 @@ import 'package:list_me/providers/profile/profile_provider.dart';
 import 'package:list_me/widgets/shared/custom_gradient_app_bar.dart';
 import 'package:list_me/widgets/shared/app_shell.dart';
 import 'package:list_me/widgets/shared/responsive_centered_content.dart';
+import 'package:list_me/core/config/constants.dart';
 import 'package:list_me/core/config/routes.dart';
 import 'package:list_me/core/services/firebase_storage_service.dart';
 import 'package:list_me/core/services/image_picker_service.dart';
@@ -148,13 +149,12 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  if (profile.apiVersion != null)
-                    Text(
-                      'API Version: ${profile.apiVersion}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                      ),
+                  Text(
+                    'App ${AppConstants.appVersionDisplay}${profile.apiVersion != null ? ' · API v${profile.apiVersion}' : ''}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
+                  ),
                 ],
               ),
               ),

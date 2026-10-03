@@ -797,7 +797,7 @@ abstract class AppLocalizations {
   /// No description provided for @authPasswordRequirements.
   ///
   /// In es, this message translates to:
-  /// **'La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial (@, \$, !, %, *, etc.)'**
+  /// **'La contraseña debe tener al menos 8 caracteres, mayúscula, minúscula, número y un carácter especial (@, \$, !, %, *, ?, &)'**
   String get authPasswordRequirements;
 
   /// No description provided for @navLists.

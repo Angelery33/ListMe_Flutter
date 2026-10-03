@@ -3,6 +3,7 @@
 
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -359,7 +360,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authPasswordRequirements =>
-      'La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial (@, \$, !, %, *, etc.)';
+      'La contraseña debe tener al menos 8 caracteres, mayúscula, minúscula, número y un carácter especial (@, \$, !, %, *, ?, &)';
 
   @override
   String get navLists => 'Listas';

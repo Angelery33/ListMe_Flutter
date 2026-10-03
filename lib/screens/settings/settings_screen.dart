@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/config/constants.dart';
 import '../../core/config/routes.dart';
 import '../../core/i18n/l10n_extension.dart';
 import '../../core/i18n/currencies.dart';
 import '../../providers/auth/auth_provider.dart';
+import '../../providers/profile/profile_provider.dart';
 import '../../providers/settings/settings_provider.dart';
 import '../../widgets/settings/accent_color_selector.dart';
 import '../../widgets/settings/font_scale_selector.dart';
@@ -403,10 +405,11 @@ class _VersionFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profile = context.watch<ProfileProvider>();
     return Column(
       children: [
         Text(
-          'ListMe',
+          AppConstants.appName,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: theme.colorScheme.primary,
@@ -416,7 +419,7 @@ class _VersionFooter extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '${context.l10n.settingsVersion} 0.2.0 (Build 2)',
+          'App ${AppConstants.appVersionDisplay}${profile.apiVersion != null ? ' · API v${profile.apiVersion}' : ''}',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.7),

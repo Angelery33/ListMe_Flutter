@@ -3,8 +3,16 @@ class AppConstants {
   AppConstants._();
 
   /// Nombre visible de la aplicación, usado en títulos y encabezados.
-  // Nombre de la aplicación
   static const String appName = 'ListMe';
+
+  /// Versión semántica actual de la aplicación Flutter.
+  static const String appVersion = '1.0.2';
+
+  /// Número de compilación (build number) actual.
+  static const int buildNumber = 4;
+
+  /// Cadena formateada para mostrar en la interfaz.
+  static const String appVersionDisplay = 'v$appVersion+$buildNumber';
 
   /// URL base de la API REST de producción.
   /// En Android Emulator usar 10.0.2.2 para acceder al localhost del host.
