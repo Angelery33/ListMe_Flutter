@@ -44,6 +44,8 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _TextSection(settings: settings, theme: theme),
                 const SizedBox(height: 24),
+                _PerformanceSection(settings: settings, theme: theme),
+                const SizedBox(height: 24),
                 _RegionalSection(settings: settings, theme: theme),
                 const SizedBox(height: 24),
                 _ListsSection(settings: settings, theme: theme),
@@ -294,6 +296,64 @@ class _ListsSection extends StatelessWidget {
               onSelectionChanged: (val) => settings.setSharedListsLayout(val.first),
               showSelectedIcon: false,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Sección de ajustes para rendimiento y optimización de datos (descarga y caché de imágenes).
+class _PerformanceSection extends StatelessWidget {
+  final SettingsProvider settings;
+  final ThemeData theme;
+  const _PerformanceSection({required this.settings, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return _Section(
+      title: context.l10n.settingsDataAndPerformance,
+      children: [
+        _SettingTile(
+          title: context.l10n.settingsCacheImagesLocally,
+          subtitle: context.l10n.settingsCacheImagesLocallySubtitle,
+          trailing: Switch.adaptive(
+            value: settings.cacheImagesLocally,
+            onChanged: (val) => settings.setCacheImagesLocally(val),
+          ),
+        ),
+        const Divider(height: 28),
+        _SettingTile(
+          title: context.l10n.settingsLoadImages,
+          subtitle: context.l10n.settingsLoadImagesSubtitle,
+          trailing: Switch.adaptive(
+            value: settings.loadImages,
+            onChanged: (val) => settings.setLoadImages(val),
+          ),
+        ),
+        const Divider(height: 28),
+        _SettingTile(
+          title: context.l10n.settingsClearImageCache,
+          subtitle: context.l10n.settingsClearImageCacheSubtitle,
+          trailing: OutlinedButton.icon(
+            icon: const Icon(Icons.delete_outline, size: 18),
+            label: Text(context.l10n.settingsClearImageCache),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+            onPressed: () async {
+              await settings.clearImageCache();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(context.l10n.settingsImageCacheCleared),
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
           ),
         ),
       ],

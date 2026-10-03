@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum SharedListsLayout { section, tab, bottom }
@@ -35,12 +36,24 @@ class SettingsProvider extends ChangeNotifier {
   /// Preferencia de disposición para las listas compartidas (no propias).
   SharedListsLayout _sharedListsLayout = SharedListsLayout.section;
 
+  /// Indica si se deben descargar y mostrar las imágenes remotas (para ahorro de datos y mayor fluidez).
+  bool _loadImages = true;
+
+  /// Indica si se deben descargar y almacenar en el dispositivo para que las siguientes cargas sean instantáneas.
+  bool _cacheImagesLocally = true;
+
   /// Instancia cacheada de [SharedPreferences] para evitar llamar a
   /// [SharedPreferences.getInstance] en cada setter.
   SharedPreferences? _prefs;
 
   /// El [ThemeMode] activo actualmente.
   ThemeMode get themeMode => _themeMode;
+
+  /// Indica si la carga de imágenes remotas está habilitada.
+  bool get loadImages => _loadImages;
+
+  /// Indica si el guardado en disco para carga instantánea está habilitado.
+  bool get cacheImagesLocally => _cacheImagesLocally;
 
   /// El multiplicador de escala de fuente activo.
   double get fontScale => _fontScale;
@@ -94,6 +107,34 @@ class SettingsProvider extends ChangeNotifier {
     final layoutIndex = _prefs!.getInt('sharedListsLayout') ?? 0;
     _sharedListsLayout = SharedListsLayout.values[layoutIndex];
 
+    // Carga de imágenes
+    _loadImages = _prefs!.getBool('loadImages') ?? true;
+    _cacheImagesLocally = _prefs!.getBool('cacheImagesLocally') ?? true;
+
+    notifyListeners();
+  }
+
+  /// Activa o desactiva la descarga/carga de imágenes remotas para mayor fluidez y ahorro de datos.
+  Future<void> setLoadImages(bool value) async {
+    if (_loadImages == value) return;
+    _loadImages = value;
+    notifyListeners();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    await prefs.setBool('loadImages', value);
+  }
+
+  /// Activa o desactiva el guardado de imágenes en el almacenamiento local para carga instantánea.
+  Future<void> setCacheImagesLocally(bool value) async {
+    if (_cacheImagesLocally == value) return;
+    _cacheImagesLocally = value;
+    notifyListeners();
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    await prefs.setBool('cacheImagesLocally', value);
+  }
+
+  /// Limpia todas las imágenes almacenadas en la caché del dispositivo.
+  Future<void> clearImageCache() async {
+    await DefaultCacheManager().emptyCache();
     notifyListeners();
   }
 

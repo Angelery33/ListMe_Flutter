@@ -37,6 +37,10 @@ void main() async {
   // Aseguramos que los bindings de Flutter estén inicializados
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Optimizar tamaño del caché de imágenes en memoria para fluidez extrema
+  PaintingBinding.instance.imageCache.maximumSize = 2500;
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 300 << 20; // 300 MB
+
   // Inicializar Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 

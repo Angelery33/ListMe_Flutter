@@ -458,6 +458,54 @@ abstract class AppLocalizations {
   /// **'Al final'**
   String get settingsLayoutBottom;
 
+  /// No description provided for @settingsDataAndPerformance.
+  ///
+  /// In es, this message translates to:
+  /// **'Rendimiento y Almacenamiento'**
+  String get settingsDataAndPerformance;
+
+  /// No description provided for @settingsLoadImages.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargar imágenes'**
+  String get settingsLoadImages;
+
+  /// No description provided for @settingsLoadImagesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactívalo para mayor fluidez y ahorro de datos'**
+  String get settingsLoadImagesSubtitle;
+
+  /// No description provided for @settingsCacheImagesLocally.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar imágenes en el dispositivo'**
+  String get settingsCacheImagesLocally;
+
+  /// No description provided for @settingsCacheImagesLocallySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Descarga y almacena las imágenes en local para que la carga en listas sea instantánea'**
+  String get settingsCacheImagesLocallySubtitle;
+
+  /// No description provided for @settingsClearImageCache.
+  ///
+  /// In es, this message translates to:
+  /// **'Liberar caché de imágenes'**
+  String get settingsClearImageCache;
+
+  /// No description provided for @settingsClearImageCacheSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elimina las imágenes descargadas para liberar espacio en disco'**
+  String get settingsClearImageCacheSubtitle;
+
+  /// No description provided for @settingsImageCacheCleared.
+  ///
+  /// In es, this message translates to:
+  /// **'Caché de imágenes liberada con éxito'**
+  String get settingsImageCacheCleared;
+
   /// No description provided for @listsSharedWithMe.
   ///
   /// In es, this message translates to:

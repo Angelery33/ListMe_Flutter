@@ -282,6 +282,7 @@ class _ListScreenState extends State<ListScreen> {
                             ],
                           )
                         : ListView(
+                            cacheExtent: 1500,
                             padding: const EdgeInsets.all(16),
                             children: [
                               ActiveItemsSection(

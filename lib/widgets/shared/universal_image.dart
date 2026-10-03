@@ -1,7 +1,11 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/settings/settings_provider.dart';
 
 /// Widget de imagen multiplataforma que resuelve la mejor URL disponible de
 /// múltiples fuentes y la renderiza correctamente en web y nativo.
@@ -40,6 +44,9 @@ class UniversalImage extends StatelessWidget {
   /// El ID del registro de imagen en el backend. Se utiliza junto con [itemId].
   final int? imageId;
 
+  /// Si es `true`, fuerza la carga de la imagen ignorando el ajuste global de ahorro de datos/fluidez.
+  final bool? forceLoad;
+
   const UniversalImage(
     this.imagePath, {
     super.key,
@@ -49,6 +56,7 @@ class UniversalImage extends StatelessWidget {
     this.height,
     this.itemId,
     this.imageId,
+    this.forceLoad,
   });
 
   @override
@@ -56,6 +64,19 @@ class UniversalImage extends StatelessWidget {
     final url = _getBestUrl();
 
     if (url.isEmpty) return _placeholder(context);
+
+    // Comprobar si el usuario desactivó la carga de imágenes remotas para mayor fluidez
+    final settings = Provider.of<SettingsProvider?>(context, listen: true);
+    final shouldLoad = forceLoad == true || (settings?.loadImages ?? true);
+
+    final isLocalFile = !kIsWeb &&
+        !url.startsWith('http') &&
+        !url.startsWith('blob:') &&
+        !_isFirebaseStorageUrl(url);
+
+    if (!shouldLoad && !isLocalFile) {
+      return _placeholder(context, isImageDisabled: true);
+    }
 
     // En web, las URLs de Firebase Storage deben pasar por el SDK para evitar CORS
     if (kIsWeb && _isFirebaseStorageUrl(url)) {
@@ -70,13 +91,49 @@ class UniversalImage extends StatelessWidget {
 
     if (url.startsWith('http') || url.startsWith('blob:')) {
       final displayUrl = _proxyUrl(url);
-      return Image.network(
-        displayUrl,
-        fit: fit,
-        width: width,
-        height: height,
-        errorBuilder: (_, __, ___) => _placeholder(context),
-      );
+
+      if (url.startsWith('blob:')) {
+        return Image.network(
+          displayUrl,
+          fit: fit,
+          width: width,
+          height: height,
+          errorBuilder: (_, __, ___) => _placeholder(context),
+        );
+      }
+
+      final cacheLocally = settings?.cacheImagesLocally ?? true;
+      if (cacheLocally) {
+        final isFullScreen = forceLoad == true;
+        final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
+        final memW = isFullScreen
+            ? null
+            : (width != null ? (width! * dpr).round() : 500);
+        final memH = isFullScreen
+            ? null
+            : (height != null ? (height! * dpr).round() : null);
+
+        return CachedNetworkImage(
+          imageUrl: displayUrl,
+          fit: fit,
+          width: width,
+          height: height,
+          memCacheWidth: memW,
+          memCacheHeight: memH,
+          fadeInDuration: const Duration(milliseconds: 60),
+          fadeOutDuration: Duration.zero,
+          placeholder: (_, __) => _placeholder(context, isLoading: isFullScreen),
+          errorWidget: (_, __, ___) => _placeholder(context, isError: true),
+        );
+      } else {
+        return Image.network(
+          displayUrl,
+          fit: fit,
+          width: width,
+          height: height,
+          errorBuilder: (_, __, ___) => _placeholder(context, isError: true),
+        );
+      }
     }
 
     // Archivo local — solo válido en móvil, en el mismo dispositivo donde se seleccionó
@@ -138,16 +195,45 @@ class UniversalImage extends StatelessWidget {
     return '$_weservBase${Uri.encodeComponent(url)}';
   }
 
-  /// Construye el marcador de posición de respaldo que se muestra cuando no se puede cargar ninguna imagen.
-  Widget _placeholder(BuildContext context) {
+  /// Construye el marcador de posición que se muestra cuando no se puede cargar ninguna imagen,
+  /// mientras está descargando (si [isLoading] es true), o cuando el usuario ha desactivado la descarga.
+  Widget _placeholder(
+    BuildContext context, {
+    bool isImageDisabled = false,
+    bool isLoading = false,
+    bool isError = false,
+  }) {
+    final theme = Theme.of(context);
+    final iconSize = (width != null && width! < 60) ? 20.0 : 32.0;
     return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      width: width,
+      height: height,
+      color: theme.colorScheme.surfaceContainerHighest.withValues(
+        alpha: isImageDisabled ? 0.2 : 0.35,
+      ),
       child: Center(
-        child: Icon(
-          Icons.image_not_supported_outlined,
-          color: Theme.of(context).colorScheme.outline,
-          size: 40,
-        ),
+        child: isLoading
+            ? SizedBox(
+                width: iconSize * 0.75,
+                height: iconSize * 0.75,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.0,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                ),
+              )
+            : (isImageDisabled
+                ? Icon(
+                    Icons.photo_outlined,
+                    color: theme.colorScheme.outline.withValues(alpha: 0.4),
+                    size: iconSize,
+                  )
+                : (isError
+                    ? Icon(
+                        Icons.broken_image_outlined,
+                        color: theme.colorScheme.outline.withValues(alpha: 0.4),
+                        size: iconSize,
+                      )
+                    : null)), // Durante navegación normal en lista: contenedor neutro liso, sin spinner parpadeante
       ),
     );
   }

@@ -141,6 +141,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                     img.path,
                     remoteImageUrl: img.remoteUrl,
                     fit: BoxFit.contain,
+                    forceLoad: true,
                   ),
                 ),
               );

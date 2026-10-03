@@ -3,7 +3,6 @@
 
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -186,6 +185,34 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsLayoutBottom => 'En bas';
+
+  @override
+  String get settingsDataAndPerformance => 'Performances et Stockage';
+
+  @override
+  String get settingsLoadImages => 'Télécharger les images';
+
+  @override
+  String get settingsLoadImagesSubtitle =>
+      'Désactivez pour plus de fluidité et économiser des données';
+
+  @override
+  String get settingsCacheImagesLocally =>
+      'Enregistrer les images sur l\'appareil';
+
+  @override
+  String get settingsCacheImagesLocallySubtitle =>
+      'Téléchargez et stockez les images en local pour un chargement instantané des listes';
+
+  @override
+  String get settingsClearImageCache => 'Vider le cache d\'images';
+
+  @override
+  String get settingsClearImageCacheSubtitle =>
+      'Supprime les images téléchargées pour libérer de l\'espace';
+
+  @override
+  String get settingsImageCacheCleared => 'Cache d\'images vidé avec succès';
 
   @override
   String get listsSharedWithMe => 'Partagées avec moi';

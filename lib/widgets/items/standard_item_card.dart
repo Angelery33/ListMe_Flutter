@@ -139,6 +139,8 @@ class StandardItemCard extends StatelessWidget {
       remoteImageUrl: item.remoteImageUrl,
       fit: BoxFit.cover,
       itemId: item.id,
+      width: 100,
+      height: 160,
     );
   }
 

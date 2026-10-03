@@ -89,6 +89,7 @@ class ActiveItemsSection extends StatelessWidget {
         SizedBox(
           height: responsive.activeCardHeight,
           child: ListView.builder(
+            cacheExtent: 600,
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             itemBuilder: (context, index) {

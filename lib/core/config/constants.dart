@@ -6,10 +6,10 @@ class AppConstants {
   static const String appName = 'ListMe';
 
   /// Versión semántica actual de la aplicación Flutter.
-  static const String appVersion = '1.0.2';
+  static const String appVersion = '1.0.3';
 
   /// Número de compilación (build number) actual.
-  static const int buildNumber = 4;
+  static const int buildNumber = 6;
 
   /// Cadena formateada para mostrar en la interfaz.
   static const String appVersionDisplay = 'v$appVersion+$buildNumber';
